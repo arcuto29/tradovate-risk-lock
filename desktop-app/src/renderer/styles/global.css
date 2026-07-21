@@ -193,3 +193,117 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ═══ Animations ═══ */
+
+/* Page fade-in */
+.app-main > * {
+  animation: fadeUp 0.4s ease-out both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Lock banner shimmer border */
+.lock-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.lock-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.06), transparent);
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Countdown gentle pulse */
+.countdown-value {
+  animation: countdownPulse 3s ease-in-out infinite;
+}
+
+@keyframes countdownPulse {
+  0%, 100% { text-shadow: 0 0 20px var(--accent-glow); }
+  50% { text-shadow: 0 0 30px var(--accent-glow), 0 0 50px rgba(59, 130, 246, 0.1); }
+}
+
+/* Lock icon float */
+.lock-icon {
+  animation: iconFloat 4s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Setting rows stagger entrance */
+.setting-row {
+  animation: fadeUp 0.4s ease-out both;
+}
+.setting-row:nth-child(1) { animation-delay: 0.1s; }
+.setting-row:nth-child(2) { animation-delay: 0.15s; }
+.setting-row:nth-child(3) { animation-delay: 0.2s; }
+.setting-row:nth-child(4) { animation-delay: 0.25s; }
+
+/* Cards hover lift */
+.lock-details, .form-section, .log-entry {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.lock-details:hover, .form-section:hover {
+  transform: translateY(-2px);
+  border-color: var(--surface-border);
+}
+
+.log-entry:hover {
+  transform: translateY(-1px);
+  border-color: var(--surface-border);
+}
+
+/* Nav button transition */
+.app-nav button {
+  transition: all 0.2s ease;
+}
+
+.app-nav button.active {
+  animation: navPop 0.3s ease-out;
+}
+
+@keyframes navPop {
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Lock button pulse when ready */
+.lock-button:not(:disabled) {
+  animation: lockReady 2.5s ease-in-out infinite;
+}
+
+@keyframes lockReady {
+  0%, 100% { box-shadow: 0 2px 10px var(--accent-glow); }
+  50% { box-shadow: 0 4px 20px var(--accent-glow); }
+}
+
+/* Status badge for lock */
+.lock-banner h2 {
+  animation: fadeUp 0.5s ease-out 0.2s both;
+}
+
+/* Form sections stagger */
+.form-section:nth-child(1) { animation: fadeUp 0.4s ease-out 0.05s both; }
+.form-section:nth-child(2) { animation: fadeUp 0.4s ease-out 0.1s both; }
+.form-section:nth-child(3) { animation: fadeUp 0.4s ease-out 0.15s both; }
+.form-section:nth-child(4) { animation: fadeUp 0.4s ease-out 0.2s both; }
+
