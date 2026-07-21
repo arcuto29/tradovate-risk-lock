@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Tradovate Risk Settings Lock",
+  "version": "1.0.0",
+  "description": "Prevents weakening of Tradovate risk settings when locked by the desktop app.",
+  "permissions": ["activeTab", "storage", "declarativeNetRequest", "tabs"],
+  "host_permissions": ["https://trader.tradovate.com/*", "https://*.tradovateapi.com/*"],
+  "background": { "service_worker": "src/background/service-worker.js", "type": "module" },
+  "content_scripts": [{ "matches": ["https://trader.tradovate.com/*"], "js": ["src/content/content-script.js"], "css": ["src/content/block-overlay.css"], "run_at": "document_idle" }],
+  "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" } },
+  "icons": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "declarative_net_request": { "rule_resources": [{ "id": "risk_api_rules", "enabled": false, "path": "src/shared/rules.json" }] }
+}

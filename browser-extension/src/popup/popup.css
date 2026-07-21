@@ -1,0 +1,7 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: #0f172a; color: #f1f5f9; width: 280px; padding: 16px; }
+h1 { font-size: 14px; margin-bottom: 12px; }
+#status { font-size: 13px; color: #94a3b8; }
+.locked { color: #ef4444 !important; font-weight: 700; }
+.unlocked { color: #22c55e; }
+.disconnected { color: #f59e0b; }
