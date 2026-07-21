@@ -74,9 +74,7 @@
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "runAfterFinish": true,
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico"
+      "runAfterFinish": true
     },
     "portable": {
       "artifactName": "TradovateRiskLock-Portable.exe"
