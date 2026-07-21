@@ -30,9 +30,66 @@ function createWindow(): void {
     if (lockManager.isLocked()) {
       event.preventDefault();
       mainWindow?.hide();
-      db.logActivity('app_close_attempt', 'User attempted to close while lock active');
+      db.logActivity('app_close_attempt', 'User attempted to close while lock active — minimized to tray');
     }
   });
+}
+
+function createTray(): void {
+  // Create a 16x16 red square icon programmatically (no external file needed)
+  const size = 16;
+  const canvas = Buffer.alloc(size * size * 4);
+  for (let i = 0; i < size * size; i++) {
+    canvas[i * 4] = 239;     // R
+    canvas[i * 4 + 1] = 68;  // G
+    canvas[i * 4 + 2] = 68;  // B
+    canvas[i * 4 + 3] = 255; // A
+  }
+  const icon = nativeImage.createFromBuffer(canvas, { width: size, height: size });
+
+  tray = new Tray(icon);
+  tray.setToolTip('Tradovate Risk Lock');
+
+  updateTrayMenu();
+
+  tray.on('double-click', () => {
+    mainWindow?.show();
+    mainWindow?.focus();
+  });
+}
+
+function updateTrayMenu(): void {
+  if (!tray) return;
+
+  const locked = lockManager?.isLocked() ?? false;
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show Window',
+      click: () => { mainWindow?.show(); mainWindow?.focus(); },
+    },
+    { type: 'separator' },
+    {
+      label: locked ? 'Status: LOCKED' : 'Status: Unlocked',
+      enabled: false,
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: () => {
+        if (!locked) {
+          app.exit(0);
+        } else {
+          db.logActivity('quit_attempt', 'User attempted to quit via tray while lock active');
+          mainWindow?.show();
+          mainWindow?.focus();
+        }
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+  tray.setToolTip(locked ? 'Tradovate Risk Lock — LOCKED' : 'Tradovate Risk Lock');
 }
 
 function applyStartupSetting(enabled: boolean): void {
@@ -45,8 +102,16 @@ function applyStartupSetting(enabled: boolean): void {
 
 function setupIPC(): void {
   ipcMain.handle('get-lock-state', () => lockManager.getState());
-  ipcMain.handle('lock-settings', (_e, settings) => lockManager.lock(settings));
-  ipcMain.handle('unlock-settings', (_e, password?) => lockManager.unlock(password));
+  ipcMain.handle('lock-settings', (_e, settings) => {
+    const result = lockManager.lock(settings);
+    if (result.success) updateTrayMenu();
+    return result;
+  });
+  ipcMain.handle('unlock-settings', (_e, password?) => {
+    const result = lockManager.unlock(password);
+    if (result.success) updateTrayMenu();
+    return result;
+  });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
@@ -54,7 +119,6 @@ function setupIPC(): void {
   ipcMain.handle('get-settings', () => lockManager.getSettings());
   ipcMain.handle('update-settings', (_e, settings) => {
     const result = lockManager.updateSettings(settings);
-    // Apply startup setting immediately when changed
     if (settings.startWithWindows !== undefined) {
       applyStartupSetting(settings.startWithWindows);
     }
@@ -70,6 +134,7 @@ app.whenReady().then(async () => {
   wsServer = new WebSocketServer(lockManager, db);
   tamperGuard = new TamperGuard(lockManager, db);
   createWindow();
+  createTray();
   setupIPC();
   tamperGuard.start();
 
@@ -82,7 +147,7 @@ app.whenReady().then(async () => {
   db.logActivity('app_started', 'Application started');
 });
 
-app.on('window-all-closed', () => { if (process.platform !== 'darwin' && !lockManager.isLocked()) app.quit(); });
+app.on('window-all-closed', () => { if (process.platform !== 'darwin' && !lockManager.isLocked()) app.exit(0); });
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) { app.quit(); }
