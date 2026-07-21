@@ -35,42 +35,25 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
   return (
     <div className="lock-status">
-      {/* Status indicator */}
-      <div className="status-indicator">
-        <span className="status-dot"></span>
-        <span className="status-text">Protected</span>
+      <div className="lock-banner">
+        <div className="lock-icon">&#128274;</div>
+        <h2>Risk Settings: Locked</h2>
+        <p className="motivation-message">Your Tradovate risk settings are locked for today.<br /><strong>You made this decision while calm. Do not let temporary emotions change the plan.</strong></p>
       </div>
 
-      {/* Countdown */}
-      <div className="countdown-block">
-        <span className="countdown-value">{formatTime(lockState.timeRemaining)}</span>
-        <span className="countdown-label">until reset</span>
-      </div>
-
-      {/* Settings */}
-      <div className="settings-grid">
-        <div className="stat-card">
-          <span className="stat-label">Loss Limit</span>
-          <span className="stat-value">{lockState.settings?.dailyLossLimit > 0 ? formatCurrency(lockState.settings.dailyLossLimit) : '—'}</span>
+      <div className="lock-details">
+        <div className="countdown">
+          <span className="countdown-label">Time remaining until reset</span>
+          <span className="countdown-value">{formatTime(lockState.timeRemaining)}</span>
         </div>
-        <div className="stat-card">
-          <span className="stat-label">Profit Target</span>
-          <span className="stat-value">{lockState.settings?.dailyProfitTarget > 0 ? formatCurrency(lockState.settings.dailyProfitTarget) : '—'}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Max Contracts</span>
-          <span className="stat-value">{lockState.settings?.maxContracts > 0 ? lockState.settings.maxContracts : '—'}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Bypass Attempts</span>
-          <span className="stat-value bypass">{lockState.bypassAttempts}</span>
+        <div className="settings-display">
+          <div className="setting-row"><span className="setting-label">Daily Loss Limit</span><span className="setting-value">{lockState.settings?.dailyLossLimit > 0 ? formatCurrency(lockState.settings.dailyLossLimit) : 'Not set'}</span></div>
+          <div className="setting-row"><span className="setting-label">Daily Profit Target</span><span className="setting-value">{lockState.settings?.dailyProfitTarget > 0 ? formatCurrency(lockState.settings.dailyProfitTarget) : 'Not set'}</span></div>
+          <div className="setting-row"><span className="setting-label">Maximum Contracts</span><span className="setting-value">{lockState.settings?.maxContracts > 0 ? lockState.settings.maxContracts : 'Not set'}</span></div>
+          <div className="setting-row"><span className="setting-label">Bypass Attempts</span><span className="setting-value bypass-count">{lockState.bypassAttempts}</span></div>
         </div>
       </div>
 
-      {/* Message */}
-      <p className="lock-message">You made this decision while calm. Trust your process.</p>
-
-      {/* Unlock Section */}
       <div className="unlock-section">
         {lockState.trustedPersonEnabled ? (
           <div className="trusted-unlock"><h3>Trusted Person Unlock</h3><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Trusted person password" /><button className="unlock-button" onClick={handleTrustedUnlock} disabled={submitting}>Unlock</button></div>
