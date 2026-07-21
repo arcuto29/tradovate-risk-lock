@@ -43,6 +43,7 @@ export const App: React.FC = () => {
       </main>
       <footer className="app-footer">
         <p className="disclaimer">This application adds a behavioral barrier. It does not replace Tradovate's risk management. Software controlled by the user cannot be completely tamper-proof.</p>
+        <p className="brand">made by Priisma</p>
       </footer>
     </div>
   );
