@@ -30,9 +30,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: -1;
   background: 
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 60%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 60%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
   animation: bg-shift 15s ease-in-out infinite alternate;
 }
 
@@ -42,8 +42,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   top: -50%; left: -50%; right: -50%; bottom: -50%;
   z-index: -1;
   background: 
-    radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+    radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 40%);
   animation: bg-float 20s ease-in-out infinite;
 }
 
