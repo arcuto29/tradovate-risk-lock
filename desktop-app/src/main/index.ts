@@ -5,6 +5,9 @@ import { LockManager } from './lock-manager';
 import { WebSocketServer } from './websocket-server';
 import { TamperGuard } from './tamper-guard';
 
+// Set app user model ID so Windows can pin it to taskbar
+app.setAppUserModelId('com.tradovate-risk-lock.app');
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let db: DatabaseManager;
@@ -32,6 +35,14 @@ function createWindow(): void {
   });
 }
 
+function applyStartupSetting(enabled: boolean): void {
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    path: process.execPath,
+    args: ['--hidden'],
+  });
+}
+
 function setupIPC(): void {
   ipcMain.handle('get-lock-state', () => lockManager.getState());
   ipcMain.handle('lock-settings', (_e, settings) => lockManager.lock(settings));
@@ -41,7 +52,14 @@ function setupIPC(): void {
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
   ipcMain.handle('get-activity-log', (_e, limit) => db.getActivityLog(limit));
   ipcMain.handle('get-settings', () => lockManager.getSettings());
-  ipcMain.handle('update-settings', (_e, settings) => lockManager.updateSettings(settings));
+  ipcMain.handle('update-settings', (_e, settings) => {
+    const result = lockManager.updateSettings(settings);
+    // Apply startup setting immediately when changed
+    if (settings.startWithWindows !== undefined) {
+      applyStartupSetting(settings.startWithWindows);
+    }
+    return result;
+  });
   ipcMain.handle('get-bypass-attempts', () => db.getBypassAttemptCount());
 }
 
@@ -54,6 +72,13 @@ app.whenReady().then(async () => {
   createWindow();
   setupIPC();
   tamperGuard.start();
+
+  // Apply startup setting on launch
+  const settings = lockManager.getSettings();
+  if (settings.startWithWindows) {
+    applyStartupSetting(true);
+  }
+
   db.logActivity('app_started', 'Application started');
 });
 
