@@ -93,10 +93,33 @@
   function showOverlay() {
     if (overlayShown) return; overlayShown = true;
     const o = document.createElement('div'); o.id = 'tradovate-risk-lock-overlay';
-    o.innerHTML = '<div class="trl-overlay-content"><div class="trl-lock-icon">&#128274;</div><h1>Cannot Weaken Risk Settings</h1><p class="trl-message">You tried to increase a loss limit or weaken protection. Blocked.</p><p class="trl-motivation">You made this decision while calm. Do not let emotions change the plan.</p><p class="trl-instruction">You CAN: tighten limits, lock account after a W, enable locks.<br>You CANNOT: increase loss limits, remove targets, increase position size.</p><button id="trl-dismiss-btn" class="trl-dismiss-btn">I Understand</button><p class="trl-footer">This attempt has been recorded.</p></div>';
+    o.innerHTML = `<div class="trl-overlay-content">
+      <div class="trl-alert-badge">&#9679; GUARDIAN &bull; ALERT</div>
+      <h1>LIMIT<br>TAMPERED</h1>
+      <p class="trl-message">You attempted to raise your risk limits.<br>Guardian detected it and blocked you.<br>Session is locked.</p>
+      <p class="trl-unlock-label">UNLOCKS IN</p>
+      <p class="trl-countdown" id="trl-countdown">--:--:--</p>
+      <button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button>
+      <p class="trl-footer">This attempt has been recorded.</p>
+    </div>`;
     document.body.appendChild(o);
     document.getElementById('trl-dismiss-btn').onclick = hideOverlay;
-    setTimeout(hideOverlay, 15000);
+    updateCountdown();
+    const ci = setInterval(() => { if (!document.getElementById('trl-countdown')) { clearInterval(ci); return; } updateCountdown(); }, 1000);
+    setTimeout(hideOverlay, 30000);
+  }
+
+  function updateCountdown() {
+    const el = document.getElementById('trl-countdown');
+    if (!el || !lockedSettings) return;
+    const now = new Date();
+    const rh = parseInt(lockedSettings.resetTime?.split(':')[0] || '17');
+    const rm = parseInt(lockedSettings.resetTime?.split(':')[1] || '0');
+    const reset = new Date(); reset.setHours(rh, rm, 0, 0);
+    if (reset <= now) reset.setDate(reset.getDate() + 1);
+    const diff = Math.max(0, Math.floor((reset.getTime() - now.getTime()) / 1000));
+    const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+    el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   }
   function hideOverlay() { document.getElementById('tradovate-risk-lock-overlay')?.remove(); overlayShown = false; }
 
