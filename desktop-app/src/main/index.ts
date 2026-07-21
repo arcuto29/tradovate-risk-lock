@@ -45,8 +45,9 @@ function setupIPC(): void {
   ipcMain.handle('get-bypass-attempts', () => db.getBypassAttemptCount());
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   db = new DatabaseManager();
+  await db.waitReady();
   lockManager = new LockManager(db);
   wsServer = new WebSocketServer(lockManager, db);
   tamperGuard = new TamperGuard(lockManager, db);

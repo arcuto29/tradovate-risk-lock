@@ -15,7 +15,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
+    "sql.js": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "electron-store": "^8.2.0",
     "luxon": "^3.4.4",
@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.8",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.0",
     "@types/node-schedule": "^2.1.6",
