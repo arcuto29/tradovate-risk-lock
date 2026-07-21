@@ -1,6 +1,7 @@
 {
   "name": "tradovate-risk-lock",
   "version": "1.0.0",
+  "author": "arcuto29",
   "description": "Tradovate Risk Settings Lock - Prevents traders from modifying risk settings during active trading sessions",
   "main": "dist/main/index.js",
   "scripts": {
@@ -11,7 +12,7 @@
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "vite build",
     "start": "electron dist/main/index.js",
-    "package": "electron-builder",
+    "package": "npm run build && electron-builder --win",
     "lint": "eslint src/"
   },
   "dependencies": {
@@ -43,15 +44,42 @@
   "build": {
     "appId": "com.tradovate-risk-lock.app",
     "productName": "Tradovate Risk Lock",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql-wasm.wasm"
+      }
+    ],
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
     },
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "perMachine": true,
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "TradovateRiskLock-Portable.exe"
     }
   }
 }

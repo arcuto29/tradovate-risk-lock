@@ -1,4 +1,5 @@
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+import initSqlJs from 'sql.js';
+import type { Database as SqlJsDatabase } from 'sql.js';
 import path from 'path';
 import fs from 'fs';
 import { app } from 'electron';
@@ -108,7 +109,7 @@ export class DatabaseManager {
     const cols = results[0].columns;
     const vals = results[0].values[0];
     const obj: any = {};
-    cols.forEach((c, i) => { obj[c] = vals[i]; });
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
     return obj;
   }
 
@@ -135,7 +136,7 @@ export class DatabaseManager {
     const cols = results[0].columns;
     const vals = results[0].values[0];
     const obj: any = {};
-    cols.forEach((c, i) => { obj[c] = vals[i]; });
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
     return obj;
   }
 
@@ -171,7 +172,7 @@ export class DatabaseManager {
     const cols = results[0].columns;
     const vals = results[0].values[0];
     const obj: any = {};
-    cols.forEach((c, i) => { obj[c] = vals[i]; });
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
     return obj;
   }
 
