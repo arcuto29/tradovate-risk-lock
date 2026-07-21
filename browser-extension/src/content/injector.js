@@ -1,24 +1,16 @@
 /**
- * Page-level WebSocket interceptor for Tradovate Risk Lock.
- * This script is injected into the PAGE context (not the content script isolated world)
- * so it can actually intercept WebSocket.send() calls made by Tradovate's code.
+ * Page-level interceptor for Tradovate Risk Lock.
+ * Injected into the PAGE context to intercept fetch/XHR calls.
  *
- * Communication with the content script happens via window.postMessage.
+ * DISCOVERY: Tradovate saves risk settings via:
+ * PUT https://risk-monitor-api-demo.ninjatrader.com/risk-settings/{accountId}
+ * PUT https://risk-monitor-api.ninjatrader.com/risk-settings/{accountId}
+ * 
+ * This is a regular fetch() call, NOT WebSocket.
+ * The domain is ninjatrader.com (NinjaTrader owns Tradovate).
  */
 (function() {
   'use strict';
-
-  const RISK_ENDPOINTS = [
-    'userAccountRiskParameter/update',
-    'userAccountRiskParameter/create',
-    'userAccountRiskParameter/delete',
-    'userAccountPositionLimit/update',
-    'userAccountPositionLimit/create',
-    'userAccountPositionLimit/delete',
-    'userAccountAutoLiq/update',
-    'userAccountAutoLiq/create',
-    'userAccountAutoLiq/delete',
-  ];
 
   let isLocked = false;
   let lockedSettings = null;
@@ -33,81 +25,134 @@
     }
   });
 
-  // Intercept WebSocket constructor
-  const OrigWebSocket = window.WebSocket;
-  const origSendDescriptor = Object.getOwnPropertyDescriptor(WebSocket.prototype, 'send');
+  // ─── Intercept fetch() ─────────────────────────────────────────────────────
+  const origFetch = window.fetch;
+  window.fetch = function(...args) {
+    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+    const options = typeof args[0] === 'string' ? args[1] : args[0];
 
-  // Override WebSocket.prototype.send so ALL WebSocket instances are intercepted
-  const origSend = WebSocket.prototype.send;
-  WebSocket.prototype.send = function(data) {
-    if (isLocked && typeof data === 'string' && data.length > 0) {
-      // Tradovate WS format: "endpoint\nrequestId\nqueryParams\njsonBody"
-      const firstNewline = data.indexOf('\n');
-      if (firstNewline > 0) {
-        const endpoint = data.substring(0, firstNewline);
-
-        if (RISK_ENDPOINTS.some(r => endpoint.includes(r))) {
-          // Parse body
-          const lines = data.split('\n');
-          let body = null;
-          if (lines.length >= 4 && lines[3]) {
-            try { body = JSON.parse(lines[3]); } catch {}
+    if (isLocked && isRiskSettingsUrl(url)) {
+      const method = (options?.method || 'GET').toUpperCase();
+      
+      // Only block PUT/POST (modifications), not GET (reading)
+      if (method === 'PUT' || method === 'POST') {
+        let body = null;
+        if (options?.body) {
+          if (typeof options.body === 'string') {
+            try { body = JSON.parse(options.body); } catch {}
           }
+        }
 
-          if (isWeakeningChange(endpoint, body)) {
-            console.log('[TradovateRiskLock-Injector] BLOCKED:', endpoint, body);
-            // Notify content script
-            window.postMessage({ type: 'TRL_BLOCKED', endpoint, body: JSON.stringify(body)?.substring(0, 300) }, '*');
-            return; // DROP the message - never reaches server
-          } else {
-            console.log('[TradovateRiskLock-Injector] ALLOWED (tightening):', endpoint);
-            window.postMessage({ type: 'TRL_ALLOWED', endpoint }, '*');
-          }
+        if (isWeakeningChange(body)) {
+          console.log('[TradovateRiskLock-Injector] BLOCKED:', method, url, body);
+          window.postMessage({ type: 'TRL_BLOCKED', endpoint: url, body: JSON.stringify(body)?.substring(0, 300) }, '*');
+          return Promise.reject(new Error('Blocked by Tradovate Risk Lock'));
+        } else {
+          console.log('[TradovateRiskLock-Injector] ALLOWED (tightening):', method, url);
+          window.postMessage({ type: 'TRL_ALLOWED', endpoint: url }, '*');
         }
       }
     }
-    return origSend.call(this, data);
+
+    return origFetch.apply(this, args);
   };
 
-  function isWeakeningChange(endpoint, body) {
-    // DELETE = always weakening
-    if (endpoint.includes('/delete')) return true;
+  // ─── Intercept XMLHttpRequest ──────────────────────────────────────────────
+  const origOpen = XMLHttpRequest.prototype.open;
+  const origSend = XMLHttpRequest.prototype.send;
 
-    // No body or unparseable = block to be safe
+  XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+    this._trlUrl = url;
+    this._trlMethod = method;
+    return origOpen.call(this, method, url, ...rest);
+  };
+
+  XMLHttpRequest.prototype.send = function(body) {
+    if (isLocked && isRiskSettingsUrl(this._trlUrl)) {
+      const method = (this._trlMethod || 'GET').toUpperCase();
+      if (method === 'PUT' || method === 'POST') {
+        let parsed = null;
+        if (typeof body === 'string') { try { parsed = JSON.parse(body); } catch {} }
+
+        if (isWeakeningChange(parsed)) {
+          console.log('[TradovateRiskLock-Injector] BLOCKED XHR:', this._trlUrl, parsed);
+          window.postMessage({ type: 'TRL_BLOCKED', endpoint: this._trlUrl, body: JSON.stringify(parsed)?.substring(0, 300) }, '*');
+          return; // Block
+        }
+      }
+    }
+    return origSend.call(this, body);
+  };
+
+  // ─── URL Detection ─────────────────────────────────────────────────────────
+  function isRiskSettingsUrl(url) {
+    if (!url) return false;
+    return (
+      url.includes('risk-monitor-api') && url.includes('risk-settings') ||
+      url.includes('ninjatrader.com') && url.includes('risk-settings') ||
+      url.includes('tradovateapi.com') && url.includes('userAccountRiskParameter') ||
+      url.includes('tradovateapi.com') && url.includes('userAccountPositionLimit') ||
+      url.includes('tradovateapi.com') && url.includes('userAccountAutoLiq')
+    );
+  }
+
+  // ─── Weakening Logic ───────────────────────────────────────────────────────
+  function isWeakeningChange(body) {
     if (!body || typeof body !== 'object') return true;
 
     if (lockedSettings) {
-      // Daily loss limit: block if INCREASED or removed
+      // maxLossPerTrade: block if INCREASED (allows more loss)
+      if (body.maxLossPerTrade !== undefined && lockedSettings.dailyLossLimit > 0) {
+        if (body.maxLossPerTrade > lockedSettings.dailyLossLimit) return true;
+        if (body.maxLossPerTrade === 0 || body.maxLossPerTrade === null) return true;
+      }
+
+      // dailyLossLimit: block if INCREASED
       if (body.dailyLossLimit !== undefined && lockedSettings.dailyLossLimit > 0) {
         if (body.dailyLossLimit > lockedSettings.dailyLossLimit) return true;
         if (body.dailyLossLimit === 0) return true;
       }
 
-      // Daily profit trigger: block if INCREASED (higher = harder to hit) or removed
+      // maxProfitPerTrade / dailyProfitTrigger: block if INCREASED (harder to hit = weaker protection)
+      if (body.maxProfitPerTrade !== undefined && lockedSettings.dailyProfitTarget > 0) {
+        if (body.maxProfitPerTrade > lockedSettings.dailyProfitTarget) return true;
+        if (body.maxProfitPerTrade === 0 || body.maxProfitPerTrade === null) return true;
+      }
+
       if (body.dailyProfitTrigger !== undefined && lockedSettings.dailyProfitTarget > 0) {
         if (body.dailyProfitTrigger > lockedSettings.dailyProfitTarget) return true;
         if (body.dailyProfitTrigger === 0) return true;
       }
 
-      // Max position size: block if INCREASED
+      // maxLimitInTrade / maxPositionSize: block if INCREASED
+      if (body.maxLimitInTrade !== undefined && lockedSettings.maxContracts > 0) {
+        if (body.maxLimitInTrade > lockedSettings.maxContracts) return true;
+        if (body.maxLimitInTrade === null) return true;
+      }
+
       if (body.maxPositionSize !== undefined && lockedSettings.maxContracts > 0) {
         if (body.maxPositionSize > lockedSettings.maxContracts) return true;
       }
 
-      // Lock toggle: block if being DISABLED
+      // maxLossPerDay (weekly variant)
+      if (body.maxLossPerDay !== undefined && lockedSettings.dailyLossLimit > 0) {
+        if (body.maxLossPerDay > lockedSettings.dailyLossLimit) return true;
+        if (body.maxLossPerDay === 0 || body.maxLossPerDay === null) return true;
+      }
+
+      // Lock toggles: block if disabled
       if (body.lockRiskSettings === false) return true;
       if (body.active === false) return true;
     }
 
-    // No locked settings to compare = block everything except explicit lock actions
+    // No settings to compare — block unless it's a lock action
     if (!lockedSettings) {
       if (body.lockRiskSettings === true || body.active === true) return false;
       return true;
     }
 
-    // Not weakening
     return false;
   }
 
-  console.log('[TradovateRiskLock-Injector] WebSocket interceptor installed.');
+  console.log('[TradovateRiskLock-Injector] Fetch interceptor installed. Monitoring risk-monitor-api + tradovateapi.');
 })();
