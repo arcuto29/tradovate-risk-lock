@@ -58,6 +58,5 @@ npm start
 
 ## Important Disclaimer
 
-This is a **behavioral barrier**, not a security system. It creates friction during emotional moments. A determined user with admin access CAN bypass it. The goal is that the extra steps give you time to reconsider.
 
 This does NOT replace Tradovate's risk management. It does NOT connect to Tradovate's servers. It only prevents your browser from sending API calls that weaken your settings.
