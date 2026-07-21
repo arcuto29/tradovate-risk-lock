@@ -51,16 +51,19 @@
   function removeBanner() { document.getElementById(BANNER_ID)?.remove(); }
 
   function interceptNetworkRequests() {
+    // Intercept fetch (backup - Tradovate primarily uses WebSocket)
     const origFetch = window.fetch;
     window.fetch = function(...args) {
       const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
       if (isLocked && isRiskUrl(url)) {
         const body = getBody(args[1]);
-        if (isWeakening(url, body)) { report(url, body); showOverlay(); return Promise.reject(new Error('Blocked by Risk Lock: cannot weaken settings.')); }
+        if (isWeakening(url, body)) { report(url, body); showOverlay(); return Promise.reject(new Error('Blocked by Risk Lock')); }
         reportAllowed(url);
       }
       return origFetch.apply(this, args);
     };
+
+    // Intercept XHR (backup)
     const origOpen = XMLHttpRequest.prototype.open, origSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.open = function(m, url, ...r) { this._trl = url; return origOpen.call(this, m, url, ...r); };
     XMLHttpRequest.prototype.send = function(body) {
@@ -71,6 +74,64 @@
       }
       return origSend.call(this, body);
     };
+
+    // Intercept WebSocket - THIS IS THE MAIN ONE
+    // Tradovate uses WebSocket for all API calls including risk settings
+    // Format: "endpoint\nrequestId\nqueryParams\njsonBody"
+    const OrigWebSocket = window.WebSocket;
+    window.WebSocket = function(url, protocols) {
+      const ws = protocols ? new OrigWebSocket(url, protocols) : new OrigWebSocket(url);
+
+      const origSendWs = ws.send.bind(ws);
+      ws.send = function(data) {
+        if (isLocked && typeof data === 'string') {
+          // Tradovate WebSocket format: "endpoint\nrequestId\nqueryParams\njsonBody"
+          const lines = data.split('\n');
+          const endpoint = lines[0] || '';
+
+          if (isRiskEndpoint(endpoint)) {
+            // Parse the JSON body (4th line)
+            let body = null;
+            if (lines.length >= 4 && lines[3]) {
+              try { body = JSON.parse(lines[3]); } catch {}
+            }
+
+            if (isWeakening(endpoint, body)) {
+              report('WS: ' + endpoint, body);
+              showOverlay();
+              console.log('[TradovateRiskLock] BLOCKED WebSocket:', endpoint, body);
+              return; // Block the message from being sent
+            }
+            reportAllowed('WS: ' + endpoint);
+            console.log('[TradovateRiskLock] ALLOWED WebSocket:', endpoint);
+          }
+        }
+        return origSendWs(data);
+      };
+
+      return ws;
+    };
+    // Copy over static properties
+    window.WebSocket.CONNECTING = OrigWebSocket.CONNECTING;
+    window.WebSocket.OPEN = OrigWebSocket.OPEN;
+    window.WebSocket.CLOSING = OrigWebSocket.CLOSING;
+    window.WebSocket.CLOSED = OrigWebSocket.CLOSED;
+    window.WebSocket.prototype = OrigWebSocket.prototype;
+  }
+
+  function isRiskEndpoint(endpoint) {
+    const riskEndpoints = [
+      'userAccountRiskParameter/update',
+      'userAccountRiskParameter/create',
+      'userAccountRiskParameter/delete',
+      'userAccountPositionLimit/update',
+      'userAccountPositionLimit/create',
+      'userAccountPositionLimit/delete',
+      'userAccountAutoLiq/update',
+      'userAccountAutoLiq/create',
+      'userAccountAutoLiq/delete',
+    ];
+    return riskEndpoints.some(r => endpoint.includes(r));
   }
 
   function getBody(opts) { if (!opts?.body) return null; if (typeof opts.body === 'string') try { return JSON.parse(opts.body); } catch {} return null; }
