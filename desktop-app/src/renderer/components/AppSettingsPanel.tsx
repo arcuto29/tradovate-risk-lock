@@ -1,86 +1,65 @@
 import React, { useState, useEffect } from 'react';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
-  const [settings, setSettings] = useState({
-    cooldownHours: 12,
-    startWithWindows: true,
-    minimizeToTray: true,
-  });
+  const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true });
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     (async () => {
       const s = await window.electronAPI.getSettings();
-      setSettings({
-        cooldownHours: s.cooldownHours,
-        startWithWindows: s.startWithWindows,
-        minimizeToTray: s.minimizeToTray,
-      });
+      setSettings({ cooldownHours: s.cooldownHours, startWithWindows: s.startWithWindows, minimizeToTray: s.minimizeToTray });
     })();
   }, []);
 
   const handleSave = async () => {
     await window.electronAPI.updateSettings(settings);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
   return (
-    <div className="app-settings">
-      <h2>Application Settings</h2>
-      <p className="section-description">
-        Configure how Trading Guardian behaves on your system.
-      </p>
+    <div className="max-w-lg">
+      <h2 className="text-4xl font-black tracking-tighter mb-3">Settings</h2>
+      <p className="text-neutral-500 text-sm mb-10 leading-relaxed">Application configuration.</p>
 
       {isLocked && (
-        <div className="warning-box">Some settings cannot be changed while locked.</div>
+        <div className="mb-6 px-5 py-3.5 bg-amber-500/8 border-l-2 border-amber-500 text-amber-400 text-xs font-medium">
+          Some settings locked during active session
+        </div>
       )}
 
-      <div className="form-section">
-        <h3>Early Unlock</h3>
-        <div className="form-group">
-          <label>Cooldown Period (hours)</label>
-          <input
-            type="number"
-            min="1"
-            max="48"
-            value={settings.cooldownHours}
-            onChange={(e) => setSettings({ ...settings, cooldownHours: parseInt(e.target.value) || 12 })}
-            disabled={isLocked}
-          />
-        </div>
+      <div className="border-t border-white/[0.07] py-7">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-5">Early Unlock</p>
+        <label className="block text-xs font-medium text-neutral-500 mb-2.5">Cooldown (hours)</label>
+        <input
+          type="number" min="1" max="48" value={settings.cooldownHours}
+          onChange={(e) => setSettings({ ...settings, cooldownHours: parseInt(e.target.value) || 12 })}
+          disabled={isLocked}
+          className="w-20 bg-transparent border-b border-white/[0.07] py-3 text-white font-mono text-base font-semibold text-center focus:border-white focus:outline-none transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+        />
       </div>
 
-      <div className="form-section">
-        <h3>Startup</h3>
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={settings.startWithWindows}
-            onChange={(e) => setSettings({ ...settings, startWithWindows: e.target.checked })}
-          />
-          <span>Start with Windows</span>
+      <div className="border-t border-white/[0.07] py-7 space-y-4">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-3">Startup</p>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={settings.startWithWindows} onChange={(e) => setSettings({ ...settings, startWithWindows: e.target.checked })} className="w-4 h-4 accent-white" />
+          <span className="text-sm text-neutral-400">Start with Windows</span>
         </label>
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={settings.minimizeToTray}
-            onChange={(e) => setSettings({ ...settings, minimizeToTray: e.target.checked })}
-          />
-          <span>Minimize to tray when closed</span>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={settings.minimizeToTray} onChange={(e) => setSettings({ ...settings, minimizeToTray: e.target.checked })} className="w-4 h-4 accent-white" />
+          <span className="text-sm text-neutral-400">Minimize to tray on close</span>
         </label>
       </div>
 
-      <div className="form-section">
-        <h3>Browser Extension</h3>
-        <div className="info-box mb-0">
-          <p><strong>Connection:</strong> WebSocket on port 47392</p>
-          <p>Install the extension from the browser-extension/ folder.</p>
-        </div>
+      <div className="border-t border-white/[0.07] py-7">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-3">Extension</p>
+        <p className="text-xs text-neutral-600 leading-relaxed">WebSocket port 47392 · Install from browser-extension/</p>
       </div>
 
-      {saved && <div className="success-message">Saved!</div>}
-      <button className="primary-button mt-lg" onClick={handleSave}>Save Settings</button>
+      {saved && <div className="mt-4 px-5 py-3.5 bg-emerald-500/10 border-l-2 border-emerald-400 text-emerald-400 text-xs font-medium">Saved</div>}
+
+      <button onClick={handleSave} className="mt-4 px-7 py-3.5 border border-white/[0.14] text-neutral-400 text-xs font-semibold uppercase tracking-[2px] hover:border-white hover:text-white transition-all">
+        Save
+      </button>
     </div>
   );
 };

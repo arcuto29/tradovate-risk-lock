@@ -5,43 +5,37 @@ export const ActivityLog: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const loadLog = async () => {
-    try {
-      setEntries(await window.electronAPI.getActivityLog(100));
-    } catch {
-      // silently fail — log will show empty state
-    } finally {
-      setLoading(false);
-    }
+    try { setEntries(await window.electronAPI.getActivityLog(100)); }
+    catch {} finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    loadLog();
-    const interval = setInterval(loadLog, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => { loadLog(); const i = setInterval(loadLog, 5000); return () => clearInterval(i); }, []);
 
   const filtered = entries.filter((e) => e.type !== 'heartbeat');
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  if (loading) return <span className="text-neutral-600 text-sm font-mono">Loading...</span>;
 
   return (
-    <div className="activity-log">
-      <h2>Activity Log</h2>
+    <div className="max-w-lg">
+      <h2 className="text-4xl font-black tracking-tighter mb-10">Activity</h2>
+
       {filtered.length === 0 ? (
-        <div className="empty-state">No activity recorded yet.</div>
+        <p className="text-neutral-600 text-sm py-16">No activity recorded yet.</p>
       ) : (
-        <div className="log-entries">
+        <div className="border-t border-white/[0.07]">
           {filtered.map((entry) => (
-            <div key={entry.id} className="log-entry">
-              <div className="log-entry-header">
-                <span className="log-type-badge">{entry.type}</span>
-                <span className="log-timestamp">
+            <div key={entry.id} className="py-5 border-b border-white/[0.07] group">
+              <div className="flex justify-between items-baseline mb-2">
+                <span className="font-mono text-[0.6rem] font-semibold tracking-wide uppercase text-neutral-500 border border-white/[0.07] px-2 py-0.5">
+                  {entry.type}
+                </span>
+                <span className="font-mono text-[0.6rem] text-neutral-700">
                   {new Date(entry.timestamp + 'Z').toLocaleString()}
                 </span>
               </div>
-              <div className="log-details">{entry.details}</div>
+              <p className="text-sm text-neutral-400 leading-relaxed">
+                {entry.details}
+              </p>
             </div>
           ))}
         </div>

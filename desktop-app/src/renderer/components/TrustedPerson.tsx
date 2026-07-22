@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 
-interface Props {
-  isLocked: boolean;
-  trustedPersonEnabled: boolean;
-}
+interface Props { isLocked: boolean; trustedPersonEnabled: boolean; }
 
 export const TrustedPerson: React.FC<Props> = ({ isLocked, trustedPersonEnabled }) => {
   const [password, setPassword] = useState('');
@@ -12,88 +9,69 @@ export const TrustedPerson: React.FC<Props> = ({ isLocked, trustedPersonEnabled 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const inputClass = "w-full bg-transparent border-b border-white/[0.07] py-4 text-white text-base font-medium focus:border-white focus:outline-none transition-colors";
+
   const handleSet = async () => {
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
     setError('');
-    const result = await window.electronAPI.setTrustedPassword(password);
-    if (result.success) {
-      setSuccess('Trusted person password set.');
-      setPassword('');
-      setConfirmPassword('');
-    } else {
-      setError(result.error || 'Failed');
-    }
+    if (password.length < 6) { setError('Min 6 characters'); return; }
+    if (password !== confirmPassword) { setError('Passwords don\'t match'); return; }
+    const r = await window.electronAPI.setTrustedPassword(password);
+    if (r.success) { setSuccess('Password set'); setPassword(''); setConfirmPassword(''); }
+    else setError(r.error || 'Failed');
   };
 
   const handleRemove = async () => {
     setError('');
-    const result = await window.electronAPI.removeTrustedPassword(removePassword);
-    if (result.success) {
-      setSuccess('Trusted person removed.');
-      setRemovePassword('');
-    } else {
-      setError(result.error || 'Failed');
-    }
+    const r = await window.electronAPI.removeTrustedPassword(removePassword);
+    if (r.success) { setSuccess('Removed'); setRemovePassword(''); }
+    else setError(r.error || 'Failed');
   };
 
   return (
-    <div className="trusted-person">
-      <h2>Trusted Person Mode</h2>
-      <p className="section-description">
-        A trusted person sets a password the trader does not know. During an active lock, early unlock requires this password.
+    <div className="max-w-lg">
+      <h2 className="text-4xl font-black tracking-tighter mb-3">Trusted Person</h2>
+      <p className="text-neutral-500 text-sm mb-10 leading-relaxed">
+        Someone else holds the unlock password. You can't early-unlock without them.
       </p>
 
       {isLocked && (
-        <div className="warning-box">Cannot change while locked.</div>
+        <div className="mb-6 px-5 py-3.5 bg-amber-500/8 border-l-2 border-amber-500 text-amber-400 text-xs font-medium">
+          Cannot change while locked
+        </div>
       )}
 
       {!isLocked && !trustedPersonEnabled && (
-        <div className="form-section">
-          <h3>Set Password</h3>
-          <div className="form-group">
-            <label>Password (min 6 chars)</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <div className="border-t border-white/[0.07] py-7 space-y-5">
+          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Set Password</p>
+          <div>
+            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Password (min 6)</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           </div>
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+          <div>
+            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Confirm</label>
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
           </div>
-          <button className="primary-button" onClick={handleSet}>Set Password</button>
+          <button onClick={handleSet} className="px-7 py-3.5 border border-white/[0.14] text-neutral-400 text-xs font-semibold uppercase tracking-[2px] hover:border-white hover:text-white transition-all">
+            Set Password
+          </button>
         </div>
       )}
 
       {!isLocked && trustedPersonEnabled && (
-        <div className="form-section">
-          <h3>Remove Trusted Person</h3>
-          <div className="form-group">
-            <label>Current Password</label>
-            <input
-              type="password"
-              value={removePassword}
-              onChange={(e) => setRemovePassword(e.target.value)}
-            />
+        <div className="border-t border-white/[0.07] py-7 space-y-5">
+          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Remove</p>
+          <div>
+            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Current Password</label>
+            <input type="password" value={removePassword} onChange={(e) => setRemovePassword(e.target.value)} className={inputClass} />
           </div>
-          <button className="danger-button" onClick={handleRemove}>Remove</button>
+          <button onClick={handleRemove} className="px-7 py-3.5 border border-red-500 text-red-400 text-xs font-semibold uppercase tracking-[2px] hover:bg-red-500 hover:text-black transition-all">
+            Remove
+          </button>
         </div>
       )}
 
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
+      {error && <div className="mt-4 px-5 py-3.5 bg-red-500/10 border-l-2 border-red-500 text-red-400 text-xs font-medium">{error}</div>}
+      {success && <div className="mt-4 px-5 py-3.5 bg-emerald-500/10 border-l-2 border-emerald-400 text-emerald-400 text-xs font-medium">{success}</div>}
     </div>
   );
 };

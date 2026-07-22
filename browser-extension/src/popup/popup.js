@@ -8,20 +8,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!res || !res.connected) {
       card.className = 'status-card disconnected';
-      label.textContent = 'Not Connected';
-      detail.textContent = 'Start the Trading Guardian desktop app to activate protection.';
+      label.textContent = 'Disconnected';
+      detail.textContent = 'Start the desktop app to activate.';
     } else if (res.locked) {
       card.className = 'status-card locked';
-      label.textContent = 'Protection Active';
-      detail.textContent = 'Risk settings are locked. Weakening changes will be blocked.';
+      label.textContent = 'Locked';
+      detail.textContent = 'Risk settings protected. Changes blocked.';
     } else {
       card.className = 'status-card unlocked';
-      label.textContent = 'Connected — Unlocked';
-      detail.textContent = 'Open the desktop app and lock your settings to activate protection.';
+      label.textContent = 'Unlocked';
+      detail.textContent = 'Open desktop app to lock settings.';
     }
   } catch (e) {
     card.className = 'status-card disconnected';
-    label.textContent = 'Extension Error';
-    detail.textContent = 'Unable to communicate with the background service.';
+    label.textContent = 'Error';
+    detail.textContent = 'Extension unable to communicate.';
   }
 });
