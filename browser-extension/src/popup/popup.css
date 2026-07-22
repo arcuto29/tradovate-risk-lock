@@ -1,7 +1,124 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, sans-serif; background: #0f172a; color: #f1f5f9; width: 280px; padding: 16px; }
-h1 { font-size: 14px; margin-bottom: 12px; }
-#status { font-size: 13px; color: #94a3b8; }
-.locked { color: #ef4444 !important; font-weight: 700; }
-.unlocked { color: #22c55e; }
-.disconnected { color: #f59e0b; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #08090f;
+  color: #f0f2f5;
+  width: 300px;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.popup {
+  padding: 20px;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo-mark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f8fff;
+  box-shadow: 0 0 8px rgba(79, 143, 255, 0.4);
+}
+
+h1 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #f0f2f5;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #0f1219;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.status-card.locked {
+  border-color: rgba(79, 143, 255, 0.2);
+}
+
+.status-card.unlocked {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.status-card.disconnected {
+  border-color: rgba(245, 166, 35, 0.2);
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6b7280;
+  flex-shrink: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.locked .status-indicator {
+  background: #4f8fff;
+  box-shadow: 0 0 8px rgba(79, 143, 255, 0.5);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+.unlocked .status-indicator {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.disconnected .status-indicator {
+  background: #f5a623;
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.status-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f0f2f5;
+}
+
+.status-detail {
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.popup-footer {
+  text-align: center;
+  font-size: 0.62rem;
+  color: #6b7280;
+  letter-spacing: 0.3px;
+  opacity: 0.7;
+}
