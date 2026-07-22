@@ -68,14 +68,37 @@ function broadcastCoach(config) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === 'GET_LOCK_STATE') sendResponse(lockState);
-  if (msg.type === 'GET_SESSION_STATE') sendResponse(sessionState);
-  if (msg.type === 'GET_COACH_CONFIG') { chrome.storage.local.get('coach_config', (r) => sendResponse(r.coach_config || { enabled: true, maxTradesPerDay: 10, cooldownSeconds: 120, maxDailyLoss: 500 })); return true; }
-  if (msg.type === 'GET_CONNECTION_STATUS') sendResponse({ connected: ws?.readyState === WebSocket.OPEN, locked: lockState.locked, sessionBlocked: sessionState.blocked });
-  if (msg.type === 'REPORT_BYPASS_ATTEMPT') { ws?.send(JSON.stringify({ type: 'report_bypass', details: msg.details })); sendResponse({ success: true }); }
-  if (msg.type === 'REPORT_SETTINGS_ACCESS') { ws?.send(JSON.stringify({ type: 'report_settings_access', url: msg.url })); sendResponse({ success: true }); }
-  if (msg.type === 'FORCE_RECONNECT') { connectToDesktopApp(); sendResponse({ success: true }); }
-  return true;
+  switch (msg.type) {
+    case 'GET_LOCK_STATE':
+      sendResponse(lockState);
+      break;
+    case 'GET_SESSION_STATE':
+      sendResponse(sessionState);
+      break;
+    case 'GET_COACH_CONFIG':
+      chrome.storage.local.get('coach_config', (r) => {
+        sendResponse(r.coach_config || { enabled: true, maxTradesPerDay: 10, cooldownSeconds: 120, maxDailyLoss: 500 });
+      });
+      return true; // Keep channel open for async response
+    case 'GET_CONNECTION_STATUS':
+      sendResponse({ connected: ws?.readyState === WebSocket.OPEN, locked: lockState.locked, sessionBlocked: sessionState.blocked });
+      break;
+    case 'REPORT_BYPASS_ATTEMPT':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_bypass', details: msg.details }));
+      sendResponse({ success: true });
+      break;
+    case 'REPORT_SETTINGS_ACCESS':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_settings_access', url: msg.url }));
+      sendResponse({ success: true });
+      break;
+    case 'FORCE_RECONNECT':
+      connectToDesktopApp();
+      sendResponse({ success: true });
+      break;
+    default:
+      sendResponse({ error: 'Unknown message type' });
+  }
+  return false;
 });
 
 // Check session state every minute
