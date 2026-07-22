@@ -76,32 +76,32 @@
     if (!coachEnabled) return null;
     var now = Date.now();
 
-    if (dailyLossBlocked) return { block: true, reason: 'DAILY LOSS HIT', message: 'Daily loss limit reached. Trading blocked.' };
+    if (dailyLossBlocked) return { block: true, reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority. Step away and reset for tomorrow.' };
 
     if (cooldownActive && now < cooldownUntil) {
       var remaining = Math.ceil((cooldownUntil - now) / 1000);
-      if (!warningShown) { warningShown = true; return { warn: true, reason: 'COOLDOWN', message: 'You just lost. Wait ' + remaining + 's.' }; }
-      return { block: true, reason: 'COOLDOWN VIOLATION', message: 'Cooldown ignored. Blocked. Wait ' + remaining + 's.' };
+      if (!warningShown) { warningShown = true; return { warn: true, reason: 'TAKE A MOMENT', message: 'You just took a loss. Give yourself a moment to reset before your next decision. Cooldown: ' + remaining + 's.' }; }
+      return { block: true, reason: 'COOLDOWN ACTIVE', message: 'Your cooldown is still active. This is protecting you from making an emotional decision. ' + remaining + ' seconds remaining.' };
     } else { cooldownActive = false; warningShown = false; }
 
     orderTimestamps.push(now);
     orderTimestamps = orderTimestamps.filter(function(t) { return now - t < 10000; });
     if (orderTimestamps.length >= 3) {
-      return { block: true, reason: 'RAPID FIRE', message: '3+ orders in 10 seconds. Slow down.' };
+      return { block: true, reason: 'SLOW DOWN', message: 'You are placing orders faster than your plan allows. Step back and make sure each trade is intentional.' };
     }
 
     trades.push({ timestamp: now });
     var startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
     trades = trades.filter(function(t) { return t.timestamp > startOfDay.getTime(); });
     if (trades.length > maxTradesPerDay + 2) {
-      return { block: true, reason: 'OVERTRADE', message: 'Max trades exceeded (' + maxTradesPerDay + '). Blocked.' };
+      return { block: true, reason: 'TRADE LIMIT REACHED', message: 'You have exceeded your planned number of trades for today. Quality over quantity. Walk away.' };
     }
     if (trades.length > maxTradesPerDay) {
-      return { warn: true, reason: 'OVERTRADING', message: trades.length + ' trades today. Max is ' + maxTradesPerDay + '.' };
+      return { warn: true, reason: 'APPROACHING LIMIT', message: 'You have placed ' + trades.length + ' trades today. Your plan allows ' + maxTradesPerDay + '. Consider whether this next trade is truly in your plan.' };
     }
 
     if (lastLossTime > 0 && (now - lastLossTime) < 30000) {
-      return { warn: true, reason: 'REVENGE ALERT', message: 'Trading within 30s of a loss. Are you revenge trading?' };
+      return { warn: true, reason: 'CHECK YOURSELF', message: 'You are entering a trade immediately after a loss. Make sure this is a planned setup and not an emotional reaction.' };
     }
 
     return null;
