@@ -27,6 +27,19 @@
   var totalDailyPnL = 0;
   var lastOrderTime = 0;
 
+  // ─── NEW: Advanced Protection Features ─────────────────────────────────────
+  var consecutiveLosses = 0;
+  var originalMaxSize = 0; // Stores original max at session start
+  var currentMaxSize = 0; // Current max (reduces after losses)
+  var highWaterMark = 0; // Highest P&L reached today
+  var profitLockThreshold = 0; // Lock out after reaching this profit
+  var drawdownFromHigh = 200; // Lock if P&L drops this much from high
+  var profitLocked = false;
+  var scalingLockEnabled = true; // One-way ratchet: can only reduce, never increase
+  var lossStreakEnabled = true; // Auto-reduce size after consecutive losses
+  var profitLockEnabled = true; // Lock out after hitting profit target or drawdown from high
+  var escalatingCooldown = true; // Cooldown gets longer after each loss
+
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
@@ -39,12 +52,35 @@
       maxTradesPerDay = event.data.maxTradesPerDay || 10;
       cooldownSeconds = event.data.cooldownSeconds || 120;
       maxDailyLoss = event.data.maxDailyLoss || 500;
+      if (event.data.profitLockThreshold) profitLockThreshold = event.data.profitLockThreshold;
+      if (event.data.drawdownFromHigh) drawdownFromHigh = event.data.drawdownFromHigh;
+      scalingLockEnabled = event.data.scalingLockEnabled !== false;
+      lossStreakEnabled = event.data.lossStreakEnabled !== false;
+      profitLockEnabled = event.data.profitLockEnabled !== false;
+      escalatingCooldown = event.data.escalatingCooldown !== false;
+      // Set original max size at start
+      if (!originalMaxSize) { originalMaxSize = positionLimits.nqMax; currentMaxSize = positionLimits.nqMax; }
     }
     if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
+        consecutiveLosses++;
         lastLossTime = Date.now();
         cooldownActive = true;
-        cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+        // ESCALATING COOLDOWN: 2min → 4min → 8min → 16min max
+        var escalatedCooldown = escalatingCooldown 
+          ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
+          : cooldownSeconds;
+        cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+        warningShown = false;
+        
+        // LOSS STREAK AUTO-TIGHTEN
+        if (lossStreakEnabled && consecutiveLosses >= 2) {
+          currentMaxSize = consecutiveLosses >= 3 ? 1 : Math.max(1, Math.ceil(originalMaxSize / 2));
+          console.log('[TradingGuardian] Loss streak ' + consecutiveLosses + ' - Max size: ' + currentMaxSize);
+          window.postMessage({ type: 'TRL_COACH_WARN', reason: 'SIZE REDUCED', message: 'After ' + consecutiveLosses + ' consecutive losses, your max size is now ' + currentMaxSize + ' contract(s). Protecting your capital.' }, '*');
+        }
+      } else if (event.data.result === 'win') {
+        consecutiveLosses = 0;
       }
     }
   });
@@ -69,8 +105,15 @@
     if (!body || !body.positionSize) return false;
     var symbol = (body.symbolId || '').toUpperCase();
     var size = body.positionSize;
-    if (symbol.includes('EMNQ') || symbol.includes('MNQ')) return size > positionLimits.mnqMax;
-    if (symbol.includes('ENQ') || symbol.includes('NQ')) return size > positionLimits.nqMax;
+    
+    // Use loss-streak-reduced size if active
+    var effectiveNqMax = (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < positionLimits.nqMax) 
+      ? currentMaxSize : positionLimits.nqMax;
+    var effectiveMnqMax = (lossStreakEnabled && currentMaxSize > 0) 
+      ? Math.max(1, currentMaxSize * 5) : positionLimits.mnqMax;
+    
+    if (symbol.includes('EMNQ') || symbol.includes('MNQ')) return size > effectiveMnqMax;
+    if (symbol.includes('ENQ') || symbol.includes('NQ')) return size > effectiveNqMax;
     if (symbol.includes('MES')) return size > positionLimits.mesMax;
     if (symbol.includes('ES')) return size > positionLimits.esMax;
     return size > positionLimits.defaultMax;
@@ -80,6 +123,11 @@
   function checkCoach(body) {
     if (!coachEnabled) return null;
     var now = Date.now();
+
+    // PROFIT LOCK: blocked if you hit profit target or gave back too much from high
+    if (profitLocked) {
+      return { block: true, reason: 'PROFIT PROTECTED', message: 'You reached your profit target or gave back too much from your high. Your green day is protected. Walk away.' };
+    }
 
     if (dailyLossBlocked) return { block: true, reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority. Step away and reset for tomorrow.' };
 
@@ -221,6 +269,25 @@
         var numStr = (pnlMatch[1] || pnlMatch[2] || '0').replace(/,/g, '');
         var currentPnl = parseFloat(numStr);
         
+        // Track high water mark
+        if (currentPnl > highWaterMark) {
+          highWaterMark = currentPnl;
+        }
+        
+        // PROFIT LOCK: Check if hit profit target
+        if (profitLockEnabled && profitLockThreshold > 0 && currentPnl >= profitLockThreshold && !profitLocked) {
+          profitLocked = true;
+          console.log('[TradingGuardian] PROFIT TARGET HIT: $' + currentPnl.toFixed(2) + ' >= $' + profitLockThreshold);
+          window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'PROFIT PROTECTED', message: 'You hit your profit target of $' + profitLockThreshold + '. Your green day is locked in. Walk away a winner.' }, '*');
+        }
+        
+        // DRAWDOWN FROM HIGH: If P&L drops too much from peak
+        if (profitLockEnabled && highWaterMark > 0 && (highWaterMark - currentPnl) >= drawdownFromHigh && !profitLocked) {
+          profitLocked = true;
+          console.log('[TradingGuardian] DRAWDOWN FROM HIGH: Peak $' + highWaterMark.toFixed(2) + ', Now $' + currentPnl.toFixed(2) + ', Gave back $' + (highWaterMark - currentPnl).toFixed(2));
+          window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'GIVING IT BACK', message: 'You were up $' + highWaterMark.toFixed(0) + ' and gave back $' + (highWaterMark - currentPnl).toFixed(0) + '. Protecting what is left. Session over.' }, '*');
+        }
+        
         if (lastKnownPnL !== null && currentPnl < lastKnownPnL) {
           // P&L dropped = loss detected
           var lossAmount = lastKnownPnL - currentPnl;
@@ -228,7 +295,10 @@
           
           lastLossTime = Date.now();
           cooldownActive = true;
-          cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+          var escalatedCooldown = escalatingCooldown 
+            ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
+            : cooldownSeconds;
+          cooldownUntil = Date.now() + (escalatedCooldown * 1000);
           warningShown = false;
           totalDailyPnL = currentPnl;
           
