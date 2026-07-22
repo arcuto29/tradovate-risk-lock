@@ -16,18 +16,13 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
   useEffect(() => {
     (async () => {
       try {
-        const config = await window.electronAPI.getCoachConfig();
-        if (config) {
-          setEnabled(config.enabled !== false);
-          setMaxTradesPerDay(config.maxTradesPerDay || 10);
-          setCooldownSeconds(config.cooldownSeconds || 120);
-          setMaxDailyLoss(config.maxDailyLoss || 500);
-          setEscalatingCooldown(config.escalatingCooldown !== false);
-          setLossStreakEnabled(config.lossStreakEnabled !== false);
-          setProfitLockEnabled(config.profitLockEnabled !== false);
-          setProfitLockThreshold(config.profitLockThreshold || 500);
-          setDrawdownFromHigh(config.drawdownFromHigh || 200);
-          setScalingLockEnabled(config.scalingLockEnabled !== false);
+        const c = await window.electronAPI.getCoachConfig();
+        if (c) {
+          setEnabled(c.enabled !== false); setMaxTradesPerDay(c.maxTradesPerDay || 10);
+          setCooldownSeconds(c.cooldownSeconds || 120); setMaxDailyLoss(c.maxDailyLoss || 500);
+          setEscalatingCooldown(c.escalatingCooldown !== false); setLossStreakEnabled(c.lossStreakEnabled !== false);
+          setProfitLockEnabled(c.profitLockEnabled !== false); setProfitLockThreshold(c.profitLockThreshold || 500);
+          setDrawdownFromHigh(c.drawdownFromHigh || 200); setScalingLockEnabled(c.scalingLockEnabled !== false);
         }
       } catch {}
     })();
@@ -39,175 +34,113 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
       escalatingCooldown, lossStreakEnabled, profitLockEnabled,
       profitLockThreshold, drawdownFromHigh, scalingLockEnabled,
     });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
+  const inputClass = "w-20 bg-transparent border-b border-white/[0.07] py-3 text-white font-mono text-base font-semibold text-center focus:border-white focus:outline-none transition-colors";
+  const sectionClass = "border-t border-white/[0.07] py-7";
+  const checkClass = "flex items-start gap-3 cursor-pointer mb-4";
+
   return (
-    <div className="app-settings">
-      <h2>Psychology Coach</h2>
-      <p className="section-description">
-        Choose which protections you want active. Each one can be turned on or off independently.
+    <div className="max-w-lg">
+      <h2 className="text-4xl font-black tracking-tighter mb-3">Psychology Coach</h2>
+      <p className="text-neutral-500 text-sm mb-10 leading-relaxed">
+        Behavioral guardrails. Each one independent.
       </p>
 
-      <div className="form-section">
-        <h3>Master Switch</h3>
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => setEnabled(e.target.checked)}
-          />
-          <span>Enable psychology coach</span>
+      {/* Master */}
+      <div className={sectionClass}>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="w-4 h-4 accent-white" />
+          <span className="text-sm text-neutral-300 font-medium">Enable coach</span>
         </label>
       </div>
 
       {enabled && (
         <>
-          <div className="form-section">
-            <h3>Daily Trade Limit</h3>
-            <p className="section-note">
-              Warns you when approaching your max, blocks you after.
-            </p>
-            <div className="form-group">
-              <label>Max trades per day</label>
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={maxTradesPerDay}
-                onChange={(e) => setMaxTradesPerDay(parseInt(e.target.value) || 10)}
-              />
-            </div>
+          {/* Trade limit */}
+          <div className={sectionClass}>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Daily Trade Limit</p>
+            <p className="text-xs text-neutral-600 mb-3">Warns approaching max, blocks after</p>
+            <input type="number" min="1" max="50" value={maxTradesPerDay} onChange={(e) => setMaxTradesPerDay(parseInt(e.target.value) || 10)} className={inputClass} />
           </div>
 
-          <div className="form-section">
-            <h3>Cooldown After Loss</h3>
-            <label className="checkbox-label">
-              <input type="checkbox" checked={true} disabled />
-              <span>Enable cooldown after loss (always on when coach is on)</span>
-            </label>
-            <div className="form-group">
-              <label>Base cooldown (seconds)</label>
-              <input
-                type="number"
-                min="30"
-                max="600"
-                step="30"
-                value={cooldownSeconds}
-                onChange={(e) => setCooldownSeconds(parseInt(e.target.value) || 120)}
-              />
+          {/* Cooldown */}
+          <div className={sectionClass}>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Cooldown After Loss</p>
+            <div className="mb-4">
+              <p className="text-xs text-neutral-600 mb-3">Base cooldown (seconds)</p>
+              <input type="number" min="30" max="600" step="30" value={cooldownSeconds} onChange={(e) => setCooldownSeconds(parseInt(e.target.value) || 120)} className={inputClass} />
+              <p className="text-[0.7rem] text-neutral-700 mt-2 font-mono">{Math.floor(cooldownSeconds / 60)}m {cooldownSeconds % 60}s</p>
             </div>
-            <p className="section-hint">
-              {Math.floor(cooldownSeconds / 60)}m {cooldownSeconds % 60}s wait after a loss
-            </p>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={escalatingCooldown}
-                onChange={(e) => setEscalatingCooldown(e.target.checked)}
-              />
-              <span>Escalating cooldown (doubles after each consecutive loss: 2min → 4min → 8min → 16min)</span>
+            <label className={checkClass}>
+              <input type="checkbox" checked={escalatingCooldown} onChange={(e) => setEscalatingCooldown(e.target.checked)} className="w-4 h-4 accent-white mt-0.5" />
+              <span className="text-sm text-neutral-400">Escalating — doubles each consecutive loss</span>
             </label>
           </div>
 
-          <div className="form-section">
-            <h3>Daily Loss Cutoff</h3>
-            <p className="section-note">
-              Blocks all trading when you hit this loss for the day.
-            </p>
-            <div className="form-group">
-              <label>Max daily loss ($)</label>
-              <input
-                type="number"
-                min="50"
-                max="10000"
-                step="50"
-                value={maxDailyLoss}
-                onChange={(e) => setMaxDailyLoss(parseInt(e.target.value) || 500)}
-              />
-            </div>
+          {/* Daily loss */}
+          <div className={sectionClass}>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Daily Loss Cutoff</p>
+            <p className="text-xs text-neutral-600 mb-3">Block all trading at ($)</p>
+            <input type="number" min="50" max="10000" step="50" value={maxDailyLoss} onChange={(e) => setMaxDailyLoss(parseInt(e.target.value) || 500)} className={inputClass} />
           </div>
 
-          <div className="form-section">
-            <h3>Loss Streak Auto-Tighten</h3>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={lossStreakEnabled}
-                onChange={(e) => setLossStreakEnabled(e.target.checked)}
-              />
-              <span>Automatically reduce max position size after consecutive losses</span>
+          {/* Streak */}
+          <div className={sectionClass}>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Loss Streak</p>
+            <label className={checkClass}>
+              <input type="checkbox" checked={lossStreakEnabled} onChange={(e) => setLossStreakEnabled(e.target.checked)} className="w-4 h-4 accent-white mt-0.5" />
+              <span className="text-sm text-neutral-400">Auto-reduce size on consecutive losses</span>
             </label>
             {lossStreakEnabled && (
-              <div className="info-box mt-sm mb-0">
-                <p>2 consecutive losses → max size cut in half</p>
-                <p>3+ consecutive losses → forced to 1 contract</p>
-                <p>Resets on a winning trade</p>
+              <div className="ml-7 text-xs text-neutral-600 space-y-0.5">
+                <p>2 losses → half size</p>
+                <p>3+ losses → 1 contract</p>
+                <p className="text-neutral-700">Resets on win</p>
               </div>
             )}
           </div>
 
-          <div className="form-section">
-            <h3>Scaling Lock (One-Way Ratchet)</h3>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={scalingLockEnabled}
-                onChange={(e) => setScalingLockEnabled(e.target.checked)}
-              />
-              <span>Once size is reduced, it stays reduced until next session (can never go back up)</span>
+          {/* Scaling */}
+          <div className={sectionClass}>
+            <label className={checkClass}>
+              <input type="checkbox" checked={scalingLockEnabled} onChange={(e) => setScalingLockEnabled(e.target.checked)} className="w-4 h-4 accent-white mt-0.5" />
+              <span className="text-sm text-neutral-400">One-way ratchet — size never goes back up this session</span>
             </label>
           </div>
 
-          <div className="form-section">
-            <h3>Profit Protection</h3>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={profitLockEnabled}
-                onChange={(e) => setProfitLockEnabled(e.target.checked)}
-              />
-              <span>Lock out after hitting profit target or giving back too much</span>
+          {/* Profit */}
+          <div className={sectionClass}>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Profit Protection</p>
+            <label className={checkClass}>
+              <input type="checkbox" checked={profitLockEnabled} onChange={(e) => setProfitLockEnabled(e.target.checked)} className="w-4 h-4 accent-white mt-0.5" />
+              <span className="text-sm text-neutral-400">Lock after hitting target or giving back too much</span>
             </label>
             {profitLockEnabled && (
-              <>
-                <div className="form-group mt-md">
-                  <label>Profit target — lock out after reaching ($)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10000"
-                    step="50"
-                    value={profitLockThreshold}
-                    onChange={(e) => setProfitLockThreshold(parseInt(e.target.value) || 0)}
-                  />
+              <div className="space-y-4 mt-4">
+                <div>
+                  <p className="text-xs text-neutral-600 mb-2">Profit target ($) — 0 to disable</p>
+                  <input type="number" min="0" max="10000" step="50" value={profitLockThreshold} onChange={(e) => setProfitLockThreshold(parseInt(e.target.value) || 0)} className={inputClass} />
                 </div>
-                <p className="section-hint">
-                  Set to 0 to disable profit target lock (only use drawdown from high)
-                </p>
-                <div className="form-group">
-                  <label>Drawdown from high — lock out after giving back ($)</label>
-                  <input
-                    type="number"
-                    min="50"
-                    max="5000"
-                    step="50"
-                    value={drawdownFromHigh}
-                    onChange={(e) => setDrawdownFromHigh(parseInt(e.target.value) || 200)}
-                  />
+                <div>
+                  <p className="text-xs text-neutral-600 mb-2">Drawdown from high ($)</p>
+                  <input type="number" min="50" max="5000" step="50" value={drawdownFromHigh} onChange={(e) => setDrawdownFromHigh(parseInt(e.target.value) || 200)} className={inputClass} />
                 </div>
-                <p className="section-hint">
-                  If you're up ${profitLockThreshold > 0 ? profitLockThreshold : '___'} and give back ${drawdownFromHigh}, you're done for the day.
+                <p className="text-[0.7rem] text-neutral-700">
+                  Up ${profitLockThreshold || '___'}, give back ${drawdownFromHigh} → done for the day
                 </p>
-              </>
+              </div>
             )}
           </div>
         </>
       )}
 
-      {saved && <div className="success-message">Coach settings saved!</div>}
-      <button className="primary-button mt-lg" onClick={handleSave}>Save Coach Settings</button>
+      {saved && <div className="mt-4 px-5 py-3.5 bg-emerald-500/10 border-l-2 border-emerald-400 text-emerald-400 text-xs font-medium">Saved</div>}
+
+      <button onClick={handleSave} className="mt-6 px-7 py-3.5 border border-white/[0.14] text-neutral-400 text-xs font-semibold uppercase tracking-[2px] hover:border-white hover:text-white transition-all">
+        Save Coach
+      </button>
     </div>
   );
 };
