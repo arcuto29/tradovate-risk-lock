@@ -15,7 +15,7 @@
 (function() {
   'use strict';
 
-  let isLocked = true; // DEFAULT TO LOCKED — block until we hear otherwise
+  let isLocked = false; // Start unlocked — only block when we KNOW it's locked
   let lockedSettings = null;
   let stateReceived = false;
 
