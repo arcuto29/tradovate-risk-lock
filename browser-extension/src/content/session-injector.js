@@ -10,12 +10,14 @@
 
   let sessionBlocked = false;
   let sessionHours = null;
+  let positionLimits = null;
 
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
     if (event.data && event.data.type === 'TRL_SESSION_STATE') {
       sessionBlocked = event.data.blocked;
       sessionHours = event.data.sessionHours;
+      positionLimits = event.data.positionLimits;
       console.log('[TradingGuardian-Session] State:', sessionBlocked ? 'BLOCKED' : 'ALLOWED', sessionHours);
     }
   });
@@ -78,8 +80,21 @@
 
     if (sessionBlocked && (method === 'POST' || method === 'PUT') && isOrderUrl(url)) {
       console.log('[TradingGuardian-Session] BLOCKED ORDER:', method, url);
-      window.postMessage({ type: 'TRL_ORDER_BLOCKED', url }, '*');
+      window.postMessage({ type: 'TRL_ORDER_BLOCKED', url, reason: 'Outside trading hours' }, '*');
       return Promise.reject(new Error('Blocked by Trading Guardian: Outside trading hours'));
+    }
+
+    // Position size check (always active, not just during blocked hours)
+    if ((method === 'POST' || method === 'PUT') && isOrderUrl(url)) {
+      let body = null;
+      if (options?.body && typeof options.body === 'string') {
+        try { body = JSON.parse(options.body); } catch {}
+      }
+      if (body && isOversized(body)) {
+        console.log('[TradingGuardian-Size] BLOCKED OVERSIZE:', body.positionSize, body.symbolId);
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', url, reason: `Position size ${body.positionSize} exceeds max for ${body.symbolId || 'unknown'}` }, '*');
+        return Promise.reject(new Error('Blocked by Trading Guardian: Position size exceeds limit'));
+      }
     }
 
     return origFetch.apply(this, args);
@@ -120,4 +135,38 @@
   };
 
   console.log('[TradingGuardian-Session] Order interceptor installed.');
+})();
+
+
+  // ─── Position Size Check ───────────────────────────────────────────────────
+  // Blocks orders that exceed the user's max position size.
+  // NQ (F.US.ENQ) = max 1 contract
+  // MNQ (F.US.EMNQ) = max 5 contracts
+  // These are defaults; configurable from the desktop app.
+
+  function isOversized(body) {
+    if (!body || !body.positionSize) return false;
+    if (!positionLimits) {
+      // Default limits: 1 NQ, 5 MNQ
+      positionLimits = { nqMax: 1, mnqMax: 5 };
+    }
+
+    const symbol = (body.symbolId || '').toUpperCase();
+    const size = body.positionSize;
+
+    // NQ (full-size)
+    if (symbol.includes('ENQ') && !symbol.includes('EMNQ')) {
+      return size > positionLimits.nqMax;
+    }
+
+    // MNQ (micro)
+    if (symbol.includes('EMNQ') || symbol.includes('MNQ')) {
+      return size > positionLimits.mnqMax;
+    }
+
+    // Other contracts — use NQ limit as default
+    return size > positionLimits.nqMax;
+  }
+
+  console.log('[TradingGuardian] Position size interceptor installed. Max: 1 NQ / 5 MNQ');
 })();
