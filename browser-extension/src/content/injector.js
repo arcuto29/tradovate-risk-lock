@@ -12,8 +12,9 @@
 (function() {
   'use strict';
 
-  let isLocked = false;
+  let isLocked = true; // DEFAULT TO LOCKED — block until we hear otherwise
   let lockedSettings = null;
+  let stateReceived = false;
 
   // Listen for lock state updates from the content script
   window.addEventListener('message', (event) => {
@@ -21,6 +22,7 @@
     if (event.data && event.data.type === 'TRL_LOCK_STATE') {
       isLocked = event.data.locked;
       lockedSettings = event.data.settings;
+      stateReceived = true;
       console.log('[TradovateRiskLock-Injector] Lock state:', isLocked, lockedSettings);
     }
   });

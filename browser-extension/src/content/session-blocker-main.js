@@ -11,7 +11,7 @@
 (function() {
   'use strict';
 
-  var sessionBlocked = false;
+  var sessionBlocked = true; // DEFAULT TO BLOCKED until we hear from bridge
   var positionLimits = { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 };
   var coachEnabled = true;
   var maxTradesPerDay = 10;
