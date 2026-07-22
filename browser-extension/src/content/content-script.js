@@ -1,28 +1,17 @@
 /**
- * Content Script - Tradovate Risk Lock (Directional Blocking)
- *
- * This content script:
- * 1. Injects the WebSocket interceptor into the PAGE context (so it can actually block WS calls)
- * 2. Communicates lock state from the extension background to the injected script
- * 3. Listens for blocked/allowed events from the injected script
- * 4. Shows the blocking overlay and reports to the desktop app
+ * Content Script - Tradovate Risk Lock (ISOLATED WORLD)
+ * 
+ * The injector.js now runs in MAIN world via manifest (world: "MAIN").
+ * This script handles:
+ * - Communicating lock state from extension background to the MAIN world injector
+ * - Showing overlays when risk settings changes are blocked
+ * - Reporting events to the desktop app
  */
 (function() {
   'use strict';
   let isLocked = false, lockedSettings = null, overlayShown = false;
 
-  // ─── Step 1: Inject the interceptor into the PAGE context ──────────────────
-  // Content scripts run in an isolated world and CANNOT intercept the page's WebSocket.
-  // We must inject code directly into the page via a <script> tag.
-  function injectPageScript() {
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('src/content/injector.js');
-    script.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(script);
-  }
-  injectPageScript();
-
-  // ─── Step 2: Get lock state and send it to the injected script ─────────────
+  // ─── Get lock state and send to MAIN world ─────────────────────────────────
   chrome.runtime.sendMessage({ type: 'GET_LOCK_STATE' }, (r) => {
     if (r) {
       isLocked = r.locked;
@@ -48,10 +37,10 @@
     }, '*');
   }
 
-  // Re-send state periodically in case page reloaded scripts
+  // Re-send state periodically
   setInterval(sendStateToPage, 5000);
 
-  // ─── Step 3: Listen for events from the injected script ────────────────────
+  // ─── Listen for events from MAIN world injector ────────────────────────────
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
 
@@ -60,26 +49,28 @@
       showOverlay();
       chrome.runtime.sendMessage({
         type: 'REPORT_BYPASS_ATTEMPT',
-        details: `BLOCKED WS: ${event.data.endpoint} | ${event.data.body}`,
+        details: `BLOCKED: ${event.data.endpoint} | ${event.data.body}`,
       });
     }
 
     if (event.data && event.data.type === 'TRL_ALLOWED') {
       chrome.runtime.sendMessage({
         type: 'REPORT_SETTINGS_ACCESS',
-        url: `ALLOWED WS: ${event.data.endpoint}`,
+        url: `ALLOWED: ${event.data.endpoint}`,
       });
     }
   });
 
-  // ─── Step 4: Overlay ───────────────────────────────────────────────────────
+  // ─── Overlay with quotes ───────────────────────────────────────────────────
   function showOverlay() {
     if (overlayShown) return; overlayShown = true;
+    const quote = getRandomQuote();
     const o = document.createElement('div'); o.id = 'tradovate-risk-lock-overlay';
     o.innerHTML = `<div class="trl-overlay-content">
       <div class="trl-alert-badge">&#9679; GUARDIAN &bull; ALERT</div>
       <h1>LIMIT<br>TAMPERED</h1>
       <p class="trl-message">You attempted to raise your risk limits.<br>Guardian detected it and blocked you.<br>Session is locked.</p>
+      <p class="trl-motivation">${quote}</p>
       <p class="trl-unlock-label">UNLOCKS IN</p>
       <p class="trl-countdown" id="trl-countdown">--:--:--</p>
       <button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button>
@@ -107,5 +98,21 @@
 
   function hideOverlay() { document.getElementById('tradovate-risk-lock-overlay')?.remove(); overlayShown = false; }
 
-  console.log('[TradovateRiskLock] Content script loaded. Injector deployed to page context.');
+  function getRandomQuote() {
+    const quotes = [
+      "Your future self is thanking you for stopping right now.",
+      "You already know the right decision. That's why you set these rules.",
+      "99% of traders lose money. Be the 1% that makes it. Tomorrow is a new day.",
+      "Some of the best trades are the ones you don't take. Stick to your rules.",
+      "Discipline is what separates funded traders from blown accounts.",
+      "You don't need to trade every day. You need to survive every day.",
+      "The market will be here tomorrow. Will your account?",
+      "One good day of patience is worth more than a week of revenge trading.",
+      "Protect the capital. The setups will come.",
+      "This feeling will pass. Your account balance won't come back.",
+    ];
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  }
+
+  console.log('[TradovateRiskLock] Content script loaded (ISOLATED world). Communicating with MAIN world injector.');
 })();
