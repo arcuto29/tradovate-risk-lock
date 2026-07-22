@@ -205,26 +205,26 @@
   var pnlCheckInterval = setInterval(function() {
     if (!coachEnabled) return;
     
-    // Look for P&L display elements in the page
-    var pnlElements = document.querySelectorAll('[class*="pnl"], [class*="PnL"], [class*="profit"], [class*="loss"], [class*="pl-"], [data-testid*="pnl"]');
+    // TopstepX specific: data-testid="realized-pnl-display-value-amount"
+    var realizedPnl = document.querySelector('[data-testid="realized-pnl-display-value-amount"]');
     
-    // Also look for common P&L text patterns
-    var allText = document.body ? document.body.innerText : '';
+    // Fallback selectors for other platforms
+    if (!realizedPnl) realizedPnl = document.querySelector('[data-testid*="realized-pnl"]');
+    if (!realizedPnl) realizedPnl = document.querySelector('[aria-label*="Realized Day P&L"]');
+    if (!realizedPnl) realizedPnl = document.querySelector('[class*="realized-pnl"]');
     
-    // Check for TopstepX specific P&L indicators
-    // Look for elements that show realized P&L
-    var realizedPnl = document.querySelector('[class*="realized"], [class*="Realized"], [class*="closed-pnl"], [class*="netPnl"]');
     if (realizedPnl) {
       var pnlText = realizedPnl.textContent || '';
-      var pnlMatch = pnlText.match(/[-]?\$?([\d,]+\.?\d*)/);
+      // Match dollar amounts like $-3,998.48 or $500.00 or -$1,234.56
+      var pnlMatch = pnlText.match(/\$\s*(-?[\d,]+\.?\d*)|(-[\d,]+\.?\d*)/);
       if (pnlMatch) {
-        var currentPnl = parseFloat(pnlMatch[1].replace(',', ''));
-        if (pnlText.includes('-') || pnlText.includes('(')) currentPnl = -currentPnl;
+        var numStr = (pnlMatch[1] || pnlMatch[2] || '0').replace(/,/g, '');
+        var currentPnl = parseFloat(numStr);
         
         if (lastKnownPnL !== null && currentPnl < lastKnownPnL) {
-          // P&L went down = loss detected
+          // P&L dropped = loss detected
           var lossAmount = lastKnownPnL - currentPnl;
-          console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (PnL: $' + currentPnl.toFixed(2) + ')');
+          console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
           
           lastLossTime = Date.now();
           cooldownActive = true;
@@ -233,10 +233,10 @@
           totalDailyPnL = currentPnl;
           
           // Check daily loss limit
-          if (currentPnl <= -maxDailyLoss) {
+          if (Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
             dailyLossBlocked = true;
             console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
-            window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
+            window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
           }
           
           window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
@@ -245,11 +245,6 @@
         lastKnownPnL = currentPnl;
       }
     }
-    
-    // Also check for position close events via fetch responses
-    // TopstepX shows "Order filled" or position changes
-    var positionElements = document.querySelectorAll('[class*="position"], [class*="Position"]');
-    
   }, 2000); // Check every 2 seconds
 
   // Also monitor fetch responses for order fills
