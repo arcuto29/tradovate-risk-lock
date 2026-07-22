@@ -158,6 +158,26 @@ function setupIPC(): void {
     wsServer.broadcastSessionChange();
     return { success: true };
   });
+
+  // Position limits
+  ipcMain.handle('get-position-limits', () => {
+    const settings = db.getSettings();
+    try {
+      const limits = settings.position_limits ? JSON.parse(settings.position_limits) : null;
+      return limits || { limits: [
+        { symbol: 'NQ', maxSize: 1, label: 'NQ (Nasdaq Futures)' },
+        { symbol: 'MNQ', maxSize: 5, label: 'MNQ (Micro Nasdaq)' },
+        { symbol: 'ES', maxSize: 1, label: 'ES (S&P Futures)' },
+        { symbol: 'MES', maxSize: 5, label: 'MES (Micro S&P)' },
+      ], defaultMax: 2 };
+    } catch { return { limits: [], defaultMax: 2 }; }
+  });
+
+  ipcMain.handle('update-position-limits', (_e, limitsData) => {
+    db.updatePositionLimits(JSON.stringify(limitsData));
+    db.logActivity('position_limits_updated', JSON.stringify(limitsData));
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {

@@ -199,4 +199,10 @@ export class DatabaseManager {
     );
     this.save();
   }
+
+  updatePositionLimits(limitsJson: string): void {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN position_limits TEXT'); } catch {}
+    this.db.run('UPDATE app_settings SET position_limits = ? WHERE id = 1', [limitsJson]);
+    this.save();
+  }
 }

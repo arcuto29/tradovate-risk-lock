@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "description": "Locks risk settings and blocks trading outside session hours.",
   "permissions": ["activeTab", "storage", "declarativeNetRequest", "tabs"],
-  "host_permissions": ["https://trader.tradovate.com/*", "https://*.tradovateapi.com/*", "https://*.ninjatrader.com/*", "https://app.tradesea.ai/*", "https://*.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
+  "host_permissions": ["https://trader.tradovate.com/*", "https://*.tradovateapi.com/*", "https://*.ninjatrader.com/*", "https://app.tradesea.ai/*", "https://*.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://*.tradingview.com/*", "https://www.tradingview.com/*"],
   "background": { "service_worker": "src/background/service-worker.js", "type": "module" },
   "content_scripts": [
     {
@@ -18,6 +18,12 @@
       "js": ["src/content/session-blocker.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.tradingview.com/*"],
+      "js": ["src/content/tradingview-blocker.js"],
+      "css": ["src/content/block-overlay.css"],
+      "run_at": "document_start"
     }
   ],
   "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" } },
@@ -26,7 +32,7 @@
   "web_accessible_resources": [
     {
       "resources": ["src/content/injector.js", "src/content/session-injector.js", "src/content/block-overlay.css"],
-      "matches": ["https://trader.tradovate.com/*", "https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"]
+      "matches": ["https://trader.tradovate.com/*", "https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://www.tradingview.com/*"]
     }
   ]
 }
