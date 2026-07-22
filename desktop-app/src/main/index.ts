@@ -4,6 +4,7 @@ import { DatabaseManager } from './database';
 import { LockManager } from './lock-manager';
 import { WebSocketServer } from './websocket-server';
 import { TamperGuard } from './tamper-guard';
+import { ProcessBlocker } from './process-blocker';
 
 // Set app user model ID so Windows can pin it to taskbar
 app.setAppUserModelId('com.tradovate-risk-lock.app');
@@ -14,6 +15,7 @@ let db: DatabaseManager;
 let lockManager: LockManager;
 let wsServer: WebSocketServer;
 let tamperGuard: TamperGuard;
+let processBlocker: ProcessBlocker;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -168,6 +170,10 @@ app.whenReady().then(async () => {
   createTray();
   setupIPC();
   tamperGuard.start();
+
+  // Start process blocker (kills Tradesea/TopstepX outside trading hours)
+  processBlocker = new ProcessBlocker(db);
+  processBlocker.start();
 
   // Apply startup setting on launch
   const settings = lockManager.getSettings();

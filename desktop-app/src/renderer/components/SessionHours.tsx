@@ -91,10 +91,13 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
           <div className="form-section">
             <h3>Platforms Protected</h3>
             <div className="info-box">
-              <p>Orders will be blocked on:</p>
-              <p><strong>• trader.tradovate.com</strong> (Lucid, Tradeify, etc.)</p>
-              <p><strong>• app.tradesea.ai</strong> (Tradesea)</p>
-              <p><strong>• topstepx.com</strong> (TopstepX)</p>
+              <p><strong>Browser (Chrome extension):</strong></p>
+              <p>• trader.tradovate.com — orders blocked</p>
+              <p>• app.tradesea.ai — orders blocked</p>
+              <p>• topstepx.com — orders blocked</p>
+              <p style={{ marginTop: '10px' }}><strong>Desktop apps (auto-closed):</strong></p>
+              <p>• Tradesea — closed if launched outside hours</p>
+              <p>• TopstepX — closed if launched outside hours</p>
             </div>
           </div>
         </>
