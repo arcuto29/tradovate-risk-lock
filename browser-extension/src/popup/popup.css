@@ -4,82 +4,111 @@
 
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background: #000000;
+  background: #030108;
   color: #ffffff;
   width: 300px;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow: hidden;
 }
 
-.popup {
-  padding: 24px;
+/* Nebula BG */
+body::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%; height: 200%;
+  background:
+    radial-gradient(ellipse 50% 40% at 30% 30%, rgba(88, 28, 135, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 70% 70%, rgba(15, 23, 120, 0.3) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 30% at 50% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+  animation: nebulaMove 30s ease-in-out infinite alternate;
+  z-index: -1;
 }
+
+@keyframes nebulaMove {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(2%, -2%) rotate(2deg); }
+}
+
+/* Stars */
+body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 70%, rgba(56, 189, 248, 0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, rgba(168, 85, 247, 0.4) 0%, transparent 100%);
+}
+
+.popup { padding: 24px; position: relative; }
 
 .popup-header {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.logo-mark {
-  display: none;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
 }
 
 h1 {
-  font-size: 0.55rem;
-  font-weight: 600;
+  font-size: 0.6rem;
+  font-weight: 700;
   letter-spacing: 5px;
   text-transform: uppercase;
-  color: #555;
+  color: #67e8f9;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
 .status-card {
   padding: 0;
   border: none;
   background: transparent;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+
+.status-indicator { display: none; }
+.status-content { display: flex; flex-direction: column; gap: 8px; }
+
+.status-label {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
 }
 
 .status-card.locked .status-label {
-  color: #ffffff;
+  color: #67e8f9;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 30px rgba(56, 189, 248, 0.3);
 }
 
 .status-card.unlocked .status-label {
-  color: #00e676;
+  color: #6ee7b7;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.7), 0 0 25px rgba(52, 211, 153, 0.3);
 }
 
 .status-card.disconnected .status-label {
-  color: #ffab00;
-}
-
-.status-indicator {
-  display: none;
-}
-
-.status-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.status-label {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.2;
+  color: #fcd34d;
+  text-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
 }
 
 .status-detail {
   font-size: 0.72rem;
-  color: #555;
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.3);
+  line-height: 1.5;
 }
 
 .popup-footer {
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 16px;
+  border-top: 1px solid rgba(56, 189, 248, 0.06);
   font-size: 0.5rem;
-  color: #333;
-  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.12);
+  letter-spacing: 2px;
   text-transform: uppercase;
   font-weight: 600;
 }

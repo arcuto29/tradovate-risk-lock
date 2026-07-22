@@ -9,12 +9,12 @@ export const TrustedPerson: React.FC<Props> = ({ isLocked, trustedPersonEnabled 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const inputClass = "w-full bg-transparent border-b border-white/[0.07] py-4 text-white text-base font-medium focus:border-white focus:outline-none transition-colors";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15";
 
   const handleSet = async () => {
     setError('');
     if (password.length < 6) { setError('Min 6 characters'); return; }
-    if (password !== confirmPassword) { setError('Passwords don\'t match'); return; }
+    if (password !== confirmPassword) { setError("Passwords don't match"); return; }
     const r = await window.electronAPI.setTrustedPassword(password);
     if (r.success) { setSuccess('Password set'); setPassword(''); setConfirmPassword(''); }
     else setError(r.error || 'Failed');
@@ -29,49 +29,46 @@ export const TrustedPerson: React.FC<Props> = ({ isLocked, trustedPersonEnabled 
 
   return (
     <div className="max-w-lg">
-      <h2 className="text-4xl font-black tracking-tighter mb-3">Trusted Person</h2>
-      <p className="text-neutral-500 text-sm mb-10 leading-relaxed">
-        Someone else holds the unlock password. You can't early-unlock without them.
+      <h2 className="text-4xl font-black tracking-tighter mb-3 text-glow-white">Trusted Person</h2>
+      <p className="text-white/35 text-sm mb-8 leading-relaxed">
+        Someone else holds the unlock password.
       </p>
 
       {isLocked && (
-        <div className="mb-6 px-5 py-3.5 bg-amber-500/8 border-l-2 border-amber-500 text-amber-400 text-xs font-medium">
+        <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-amber-400/20 text-amber-300/80 text-xs font-medium">
           Cannot change while locked
         </div>
       )}
 
       {!isLocked && !trustedPersonEnabled && (
-        <div className="border-t border-white/[0.07] py-7 space-y-5">
-          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Set Password</p>
+        <div className="glass rounded-xl p-6 space-y-4">
+          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-2">Set Password</p>
+
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Password (min 6)</label>
+            <label className="block text-xs text-white/35 mb-2">Password (min 6)</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Confirm</label>
+            <label className="block text-xs text-white/35 mb-2">Confirm</label>
             <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
           </div>
-          <button onClick={handleSet} className="px-7 py-3.5 border border-white/[0.14] text-neutral-400 text-xs font-semibold uppercase tracking-[2px] hover:border-white hover:text-white transition-all">
-            Set Password
-          </button>
+          <button onClick={handleSet} className="px-6 py-3 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:bg-cyan-400/20 hover:border-cyan-400/40 transition-all btn-glow">Set Password</button>
         </div>
       )}
 
       {!isLocked && trustedPersonEnabled && (
-        <div className="border-t border-white/[0.07] py-7 space-y-5">
-          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-4">Remove</p>
+        <div className="glass rounded-xl p-6 space-y-4">
+          <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-2">Remove</p>
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-2.5">Current Password</label>
+            <label className="block text-xs text-white/35 mb-2">Current Password</label>
             <input type="password" value={removePassword} onChange={(e) => setRemovePassword(e.target.value)} className={inputClass} />
           </div>
-          <button onClick={handleRemove} className="px-7 py-3.5 border border-red-500 text-red-400 text-xs font-semibold uppercase tracking-[2px] hover:bg-red-500 hover:text-black transition-all">
-            Remove
-          </button>
+          <button onClick={handleRemove} className="px-6 py-3 border border-red-400/30 text-red-300 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:bg-red-400/10 hover:border-red-400/50 transition-all">Remove</button>
         </div>
       )}
 
-      {error && <div className="mt-4 px-5 py-3.5 bg-red-500/10 border-l-2 border-red-500 text-red-400 text-xs font-medium">{error}</div>}
-      {success && <div className="mt-4 px-5 py-3.5 bg-emerald-500/10 border-l-2 border-emerald-400 text-emerald-400 text-xs font-medium">{success}</div>}
+      {error && <div className="mt-4 px-5 py-3.5 glass rounded-lg border border-red-400/20 text-red-300 text-xs font-medium">{error}</div>}
+      {success && <div className="mt-4 px-5 py-3.5 glass rounded-lg border border-emerald-400/20 text-glow-green text-xs font-medium">{success}</div>}
     </div>
   );
 };

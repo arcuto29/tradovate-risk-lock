@@ -30,8 +30,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
           if (settings.dailyLossLimit) setDailyLossLimit(String(settings.dailyLossLimit));
           if (settings.dailyProfitTrigger) setDailyProfitTarget(String(settings.dailyProfitTrigger));
           if (settings.maxPositionSize) setMaxContracts(String(settings.maxPositionSize));
-          setSynced(true);
-          setTimeout(() => setSynced(false), 5000);
+          setSynced(true); setTimeout(() => setSynced(false), 5000);
         }
       });
     }
@@ -51,63 +50,59 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
     setLocking(true); setError('');
     try {
       const result = await window.electronAPI.lockSettings(settings);
-      if (result.success) onLocked();
-      else setError(result.error || 'Failed');
+      if (result.success) onLocked(); else setError(result.error || 'Failed');
     } catch (e: any) { setError(e.message); }
     finally { setLocking(false); }
   };
 
-  const inputClass = "w-full bg-transparent border-b border-white/[0.07] py-4 text-white text-base font-medium focus:border-white focus:outline-none transition-colors placeholder:text-neutral-700";
-  const labelClass = "block text-xs font-medium text-neutral-500 mb-2.5";
-  const sectionClass = "border-t border-white/[0.07] py-7";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15";
 
   return (
     <div className="max-w-lg">
-      {/* Hero */}
       <div className="mb-12">
-        <h2 className="text-4xl font-black tracking-tighter leading-tight mb-3">
+        <h2 className="text-4xl font-black tracking-tighter leading-tight mb-3 text-glow-white">
           Lock your risk<br />settings
         </h2>
-        <p className="text-neutral-500 text-sm leading-relaxed">
+        <p className="text-white/35 text-sm leading-relaxed">
           Values auto-fill from Tradovate. Set limits, confirm, lock.
         </p>
       </div>
 
       {synced && (
-        <div className="mb-6 px-5 py-3.5 bg-emerald-500/10 border-l-2 border-emerald-400 text-emerald-400 text-xs font-medium">
+        <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-emerald-400/20 text-glow-green text-xs font-medium">
           Synced from Tradovate
         </div>
       )}
 
       {/* Risk Limits */}
-      <div className={sectionClass}>
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-6">Risk Limits</p>
-        <div className="space-y-5">
+      <div className="glass rounded-xl p-6 mb-4">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Risk Limits</p>
+        <div className="space-y-4">
           <div>
-            <label className={labelClass}>Daily Loss Limit ($)</label>
+            <label className="block text-xs font-medium text-white/35 mb-2">Daily Loss Limit ($)</label>
             <input type="number" min="0" step="50" value={dailyLossLimit} onChange={(e) => setDailyLossLimit(e.target.value)} placeholder="0" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Daily Profit Target ($)</label>
+            <label className="block text-xs font-medium text-white/35 mb-2">Daily Profit Target ($)</label>
             <input type="number" min="0" step="50" value={dailyProfitTarget} onChange={(e) => setDailyProfitTarget(e.target.value)} placeholder="0" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Max Contracts</label>
+            <label className="block text-xs font-medium text-white/35 mb-2">Max Contracts</label>
             <input type="number" min="0" step="1" value={maxContracts} onChange={(e) => setMaxContracts(e.target.value)} placeholder="0" className={inputClass} />
           </div>
         </div>
       </div>
 
       {/* Session Reset */}
-      <div className={sectionClass}>
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-6">Session Reset</p>
-        <div className="space-y-5">
+      <div className="glass rounded-xl p-6 mb-4">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Session Reset</p>
+        <div className="space-y-4">
           <div>
-            <label className={labelClass}>Reset Time</label>
+            <label className="block text-xs font-medium text-white/35 mb-2">Reset Time</label>
             <input type="time" value={resetTime} onChange={(e) => setResetTime(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Timezone</label>
+            <label className="block text-xs font-medium text-white/35 mb-2">Timezone</label>
             <select value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} className={inputClass + " appearance-none cursor-pointer"}>
               {TIMEZONES.map((tz) => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
             </select>
@@ -116,8 +111,8 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
       </div>
 
       {/* Platform */}
-      <div className={sectionClass}>
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-neutral-600 mb-6">Platform</p>
+      <div className="glass rounded-xl p-6 mb-4">
+        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Platform</p>
         <select value={platform} onChange={(e) => setPlatform(e.target.value as any)} className={inputClass + " appearance-none cursor-pointer"}>
           <option value="web">Web Browser</option>
           <option value="pwa">Progressive Web App</option>
@@ -126,22 +121,17 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
       </div>
 
       {/* Confirm */}
-      <div className="border-t border-b border-white/[0.07] py-7">
+      <div className="glass rounded-xl p-6 mb-4">
         <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => setConfirmed(e.target.checked)}
-            className="mt-0.5 w-4 h-4 accent-white"
-          />
-          <span className="text-sm text-neutral-400 leading-relaxed">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 w-4 h-4 accent-cyan-400" />
+          <span className="text-sm text-white/40 leading-relaxed">
             I confirm these settings and want to lock them for this session.
           </span>
         </label>
       </div>
 
       {error && (
-        <div className="mt-4 px-5 py-3.5 bg-red-500/10 border-l-2 border-red-500 text-red-400 text-xs font-medium">
+        <div className="mt-4 px-5 py-3.5 glass rounded-lg border border-red-400/20 text-red-300 text-xs font-medium">
           {error}
         </div>
       )}
@@ -149,7 +139,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
       <button
         onClick={handleLock}
         disabled={locking || !confirmed}
-        className="w-full mt-8 py-5 bg-white text-black text-xs font-bold uppercase tracking-[3px] border border-white hover:bg-transparent hover:text-white transition-all disabled:opacity-10 disabled:cursor-not-allowed"
+        className="w-full mt-6 py-4.5 bg-cyan-400 text-black text-xs font-bold uppercase tracking-[3px] rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] transition-all disabled:opacity-10 disabled:cursor-not-allowed btn-glow"
       >
         {locking ? 'Locking...' : 'Lock for Today'}
       </button>
