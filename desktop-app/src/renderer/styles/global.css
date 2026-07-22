@@ -22,7 +22,7 @@
 body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; position: relative; overflow: hidden; }
 
 /* Animated Background */
-.app-container { display: flex; flex-direction: column; min-height: 100vh; position: relative; z-index: 1; }
+.app-container { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; overflow: hidden; }
 
 .app-container::before {
   content: '';
