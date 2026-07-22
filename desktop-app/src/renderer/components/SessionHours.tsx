@@ -41,18 +41,19 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   return (
     <div className="app-settings">
       <h2>Session Hours</h2>
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
-        Block order placement outside your allowed trading window. You can still view charts — just can't place trades.
+      <p className="section-description">
+        Block order placement outside your allowed trading window.
+        You can still view charts — just can't place trades.
       </p>
 
       {currentlyBlocked && enabled && (
-        <div className="error-message" style={{ marginBottom: '16px', marginTop: 0 }}>
+        <div className="error-message status-message-top">
           Orders are currently BLOCKED — outside your allowed hours.
         </div>
       )}
 
       {!currentlyBlocked && enabled && (
-        <div className="success-message" style={{ marginBottom: '16px', marginTop: 0 }}>
+        <div className="success-message status-message-top">
           Trading is currently ALLOWED — inside your session window.
         </div>
       )}
@@ -60,7 +61,11 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       <div className="form-section">
         <h3>Enable Session Lock</h3>
         <label className="checkbox-label">
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+          />
           <span>Block orders outside allowed hours</span>
         </label>
       </div>
@@ -71,11 +76,19 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             <h3>Allowed Trading Window</h3>
             <div className="form-group">
               <label>Start Time (orders allowed from)</label>
-              <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
             </div>
             <div className="form-group">
               <label>End Time (orders blocked after)</label>
-              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
             </div>
             <div className="form-group">
               <label>Timezone</label>
@@ -95,7 +108,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
               <p>• trader.tradovate.com — orders blocked</p>
               <p>• app.tradesea.ai — orders blocked</p>
               <p>• topstepx.com — orders blocked</p>
-              <p style={{ marginTop: '10px' }}><strong>Desktop apps (auto-closed):</strong></p>
+              <p className="mt-sm"><strong>Desktop apps (auto-closed):</strong></p>
               <p>• Tradesea — closed if launched outside hours</p>
               <p>• TopstepX — closed if launched outside hours</p>
             </div>

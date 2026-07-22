@@ -22,12 +22,11 @@ export const PositionLimits: React.FC<{ isLocked: boolean }> = ({ isLocked }) =>
   const [newLabel, setNewLabel] = useState('');
 
   useEffect(() => {
-    // Load saved limits from app
     (async () => {
       try {
-        const saved = await window.electronAPI.getPositionLimits();
-        if (saved && saved.limits) setLimits(saved.limits);
-        if (saved && saved.defaultMax) setDefaultMax(saved.defaultMax);
+        const data = await window.electronAPI.getPositionLimits();
+        if (data?.limits) setLimits(data.limits);
+        if (data?.defaultMax) setDefaultMax(data.defaultMax);
       } catch {}
     })();
   }, []);
@@ -50,7 +49,14 @@ export const PositionLimits: React.FC<{ isLocked: boolean }> = ({ isLocked }) =>
 
   const addLimit = () => {
     if (!newSymbol.trim()) return;
-    setLimits([...limits, { symbol: newSymbol.toUpperCase().trim(), maxSize: parseInt(newMax) || 1, label: newLabel || newSymbol.toUpperCase() }]);
+    setLimits([
+      ...limits,
+      {
+        symbol: newSymbol.toUpperCase().trim(),
+        maxSize: parseInt(newMax) || 1,
+        label: newLabel || newSymbol.toUpperCase(),
+      },
+    ]);
     setNewSymbol('');
     setNewMax('1');
     setNewLabel('');
@@ -59,62 +65,60 @@ export const PositionLimits: React.FC<{ isLocked: boolean }> = ({ isLocked }) =>
   return (
     <div className="app-settings">
       <h2>Position Limits</h2>
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
-        Set maximum contracts per symbol. Orders exceeding these limits will be blocked on all platforms (TopstepX, TradingView, Tradovate, Tradesea).
+      <p className="section-description">
+        Set maximum contracts per symbol. Orders exceeding these limits will be blocked
+        on all platforms (TopstepX, TradingView, Tradovate, Tradesea).
       </p>
 
       <div className="form-section">
         <h3>Contract Limits</h3>
         {limits.map((limit, index) => (
-          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-            <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text)' }}>{limit.label}</span>
+          <div key={index} className="limit-row">
+            <span className="limit-row-label">{limit.label}</span>
             <input
+              className="limit-row-input"
               type="number"
               min="1"
               max="100"
               value={limit.maxSize}
               onChange={(e) => updateLimit(index, parseInt(e.target.value) || 1)}
-              style={{ width: '70px', padding: '6px 10px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg)', color: 'var(--text)', fontSize: '0.85rem', textAlign: 'center' }}
             />
-            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>max</span>
-            <button
-              onClick={() => removeLimit(index)}
-              style={{ padding: '4px 8px', border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '1rem' }}
-            >&times;</button>
+            <span className="limit-row-suffix">max</span>
+            <button className="limit-row-remove" onClick={() => removeLimit(index)}>
+              &times;
+            </button>
           </div>
         ))}
       </div>
 
       <div className="form-section">
         <h3>Add Custom Symbol</h3>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--muted)', marginBottom: '4px' }}>Symbol</label>
+        <div className="add-symbol-row">
+          <div className="add-symbol-field">
+            <label>Symbol</label>
             <input
               type="text"
               value={newSymbol}
               onChange={(e) => setNewSymbol(e.target.value)}
               placeholder="e.g. CL"
-              style={{ width: '100%', padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg)', color: 'var(--text)', fontSize: '0.85rem' }}
             />
           </div>
-          <div style={{ width: '70px' }}>
-            <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--muted)', marginBottom: '4px' }}>Max</label>
+          <div className="add-symbol-field-small">
+            <label>Max</label>
             <input
               type="number"
               min="1"
               value={newMax}
               onChange={(e) => setNewMax(e.target.value)}
-              style={{ width: '100%', padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg)', color: 'var(--text)', fontSize: '0.85rem', textAlign: 'center' }}
             />
           </div>
-          <button onClick={addLimit} className="primary-button" style={{ padding: '8px 14px' }}>Add</button>
+          <button onClick={addLimit} className="primary-button">Add</button>
         </div>
       </div>
 
       <div className="form-section">
         <h3>Default Limit</h3>
-        <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '10px' }}>For any contract not listed above:</p>
+        <p className="section-note">For any contract not listed above:</p>
         <div className="form-group">
           <label>Max contracts (default)</label>
           <input
@@ -129,7 +133,7 @@ export const PositionLimits: React.FC<{ isLocked: boolean }> = ({ isLocked }) =>
 
       <div className="form-section">
         <h3>Platforms Protected</h3>
-        <div className="info-box" style={{ marginBottom: 0 }}>
+        <div className="info-box mb-0">
           <p><strong>Position limits active on:</strong></p>
           <p>• TopstepX (topstepx.com)</p>
           <p>• TradingView — all connected brokers</p>
@@ -139,7 +143,7 @@ export const PositionLimits: React.FC<{ isLocked: boolean }> = ({ isLocked }) =>
       </div>
 
       {saved && <div className="success-message">Position limits saved!</div>}
-      <button className="primary-button" onClick={handleSave} style={{ marginTop: '16px' }}>Save Position Limits</button>
+      <button className="primary-button mt-lg" onClick={handleSave}>Save Position Limits</button>
     </div>
   );
 };
