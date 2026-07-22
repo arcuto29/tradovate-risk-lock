@@ -6,6 +6,9 @@
  * PUT https://risk-monitor-api-demo.ninjatrader.com/risk-settings/{accountId}
  * PUT https://risk-monitor-api.ninjatrader.com/risk-settings/{accountId}
  * 
+ * AUTO-SYNC: Also reads GET responses from the same endpoint to automatically
+ * capture the user's current risk settings and send them to the desktop app.
+ * 
  * This is a regular fetch() call, NOT WebSocket.
  * The domain is ninjatrader.com (NinjaTrader owns Tradovate).
  */
@@ -33,11 +36,25 @@
     const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
     const options = typeof args[0] === 'string' ? args[1] : args[0];
 
-    if (isLocked && isRiskSettingsUrl(url)) {
+    if (isRiskSettingsUrl(url)) {
       const method = (options?.method || 'GET').toUpperCase();
-      
-      // Only block PUT/POST (modifications), not GET (reading)
-      if (method === 'PUT' || method === 'POST') {
+
+      // AUTO-SYNC: Intercept GET responses to read current risk settings
+      if (method === 'GET') {
+        return origFetch.apply(this, args).then(response => {
+          const clone = response.clone();
+          clone.json().then(data => {
+            if (data && typeof data === 'object') {
+              console.log('[TradovateRiskLock-Injector] Read current risk settings:', data);
+              window.postMessage({ type: 'TRL_RISK_SETTINGS_READ', settings: data }, '*');
+            }
+          }).catch(() => {});
+          return response;
+        });
+      }
+
+      // BLOCK: Only block PUT/POST (modifications) when locked
+      if (isLocked && (method === 'PUT' || method === 'POST')) {
         let body = null;
         if (options?.body) {
           if (typeof options.body === 'string') {

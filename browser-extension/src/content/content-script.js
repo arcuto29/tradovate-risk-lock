@@ -63,6 +63,15 @@
         url: `ALLOWED: ${event.data.endpoint}`,
       });
     }
+
+    // AUTO-SYNC: Forward Tradovate's current risk settings to the desktop app
+    if (event.data && event.data.type === 'TRL_RISK_SETTINGS_READ') {
+      console.log('[TradovateRiskLock] Auto-read risk settings from Tradovate:', event.data.settings);
+      chrome.runtime.sendMessage({
+        type: 'TRADOVATE_SETTINGS_READ',
+        settings: event.data.settings,
+      });
+    }
   });
 
   // ─── Overlay with quotes ───────────────────────────────────────────────────

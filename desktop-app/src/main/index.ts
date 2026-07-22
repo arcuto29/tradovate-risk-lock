@@ -201,6 +201,13 @@ app.whenReady().then(async () => {
   await db.waitReady();
   lockManager = new LockManager(db);
   wsServer = new WebSocketServer(lockManager, db);
+  
+  // Auto-sync: when extension reads Tradovate risk settings, send to renderer
+  wsServer.onTradovateSettingsRead = (settings) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('tradovate-settings-synced', settings);
+    }
+  };
   tamperGuard = new TamperGuard(lockManager, db);
   createWindow();
   createTray();

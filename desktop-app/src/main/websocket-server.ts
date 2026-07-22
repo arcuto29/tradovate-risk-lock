@@ -43,6 +43,13 @@ export class WebSocketServer {
         if (this.lockManager.isLocked()) { this.db.logActivity('settings_access_blocked', `Extension: ${message.url || 'risk settings'}`); }
         ws.send(JSON.stringify({ type: 'access_blocked_recorded' }));
         break;
+      case 'tradovate_settings_read':
+        // Auto-sync: Tradovate's current risk settings have been read by the extension
+        console.log('Received Tradovate risk settings:', message.settings);
+        this.db.logActivity('tradovate_settings_read', JSON.stringify(message.settings));
+        // Broadcast to the desktop app UI
+        this.broadcastTradovateSettings(message.settings);
+        break;
       case 'ping':
         ws.send(JSON.stringify({ type: 'pong', locked: this.lockManager.isLocked() }));
         break;
@@ -66,6 +73,15 @@ export class WebSocketServer {
     const msg = JSON.stringify({ type: 'coach_config', ...config });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
+
+  broadcastTradovateSettings(settings: any): void {
+    // Send to the Electron renderer via IPC (will be handled in index.ts)
+    if (this.onTradovateSettingsRead) {
+      this.onTradovateSettingsRead(settings);
+    }
+  }
+
+  onTradovateSettingsRead: ((settings: any) => void) | null = null;
 
   private getSessionState(): any {
     const settings = this.db.getSettings();

@@ -17,4 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updatePositionLimits: (limits: any) => ipcRenderer.invoke('update-position-limits', limits),
   getCoachConfig: () => ipcRenderer.invoke('get-coach-config'),
   updateCoachConfig: (config: any) => ipcRenderer.invoke('update-coach-config', config),
+  onTradovateSettingsSynced: (callback: (settings: any) => void) => {
+    ipcRenderer.on('tradovate-settings-synced', (_event, settings) => callback(settings));
+  },
 });

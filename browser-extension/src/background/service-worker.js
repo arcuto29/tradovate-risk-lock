@@ -91,6 +91,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_settings_access', url: msg.url }));
       sendResponse({ success: true });
       break;
+    case 'TRADOVATE_SETTINGS_READ':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'tradovate_settings_read', settings: msg.settings }));
+      sendResponse({ success: true });
+      break;
     case 'FORCE_RECONNECT':
       connectToDesktopApp();
       sendResponse({ success: true });
