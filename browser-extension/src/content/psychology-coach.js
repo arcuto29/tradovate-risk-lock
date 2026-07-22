@@ -74,7 +74,7 @@
     
     // 1. Daily loss cutoff
     if (dailyLossBlocked) {
-      return { block: true, reason: 'DAILY LOSS HIT', message: 'You have hit your daily loss limit of $' + maxDailyLoss + '. Trading is blocked for the rest of the session.' };
+      return { block: true, reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority. Step away and reset for tomorrow.' };
     }
     
     // 2. Cooldown after loss
@@ -82,10 +82,10 @@
       var remaining = Math.ceil((cooldownUntil - now) / 1000);
       if (!warningShown) {
         warningShown = true;
-        return { block: false, warn: true, reason: 'COOLDOWN', message: 'You just took a loss. Take a breath. Cooldown: ' + remaining + 's remaining.' };
+        return { block: false, warn: true, reason: 'TAKE A MOMENT', message: 'You just took a loss. Give yourself a moment to reset before your next decision. Cooldown: ' + remaining + 's remaining.' };
       }
       // Second attempt during cooldown = BLOCK
-      return { block: true, reason: 'COOLDOWN VIOLATION', message: 'You ignored the cooldown warning. Order blocked. Wait ' + remaining + ' seconds.' };
+      return { block: true, reason: 'COOLDOWN ACTIVE', message: 'Your cooldown is still active. This is protecting you from making an emotional decision. ' + remaining + ' seconds remaining.' };
     } else {
       cooldownActive = false;
       warningShown = false;
@@ -97,9 +97,9 @@
     if (orderTimestamps.length >= 3) {
       if (!warningShown) {
         warningShown = true;
-        return { block: false, warn: true, reason: 'RAPID FIRE', message: 'You\\'re placing orders too fast. Slow down and think.' };
+        return { block: false, warn: true, reason: 'SLOW DOWN', message: 'You are placing orders faster than your plan allows. Step back and make sure each trade is intentional.' };
       }
-      return { block: true, reason: 'RAPID FIRE BLOCKED', message: '3+ orders in 10 seconds. Blocked. Take a step back.' };
+      return { block: true, reason: 'SLOW DOWN', message: 'You are placing orders faster than your plan allows. Step back and make sure each trade is intentional.' };
     }
     
     // 4. Max trades per day
@@ -110,16 +110,16 @@
     
     if (trades.length > maxTradesPerDay) {
       if (trades.length === maxTradesPerDay + 1) {
-        return { block: false, warn: true, reason: 'OVERTRADING', message: 'You have placed ' + trades.length + ' trades today. Your max is ' + maxTradesPerDay + '. Consider stopping.' };
+        return { block: false, warn: true, reason: 'APPROACHING LIMIT', message: 'You have placed ' + trades.length + ' trades today. Your plan allows ' + maxTradesPerDay + '. Consider whether this next trade is truly in your plan.' };
       }
       if (trades.length > maxTradesPerDay + 2) {
-        return { block: true, reason: 'OVERTRADE BLOCKED', message: 'You exceeded your max trades (' + maxTradesPerDay + '). Order blocked.' };
+        return { block: true, reason: 'TRADE LIMIT REACHED', message: 'You have exceeded your planned number of trades for today. Quality over quantity. Walk away.' };
       }
     }
     
     // 5. Revenge trading (trade within 30s of a loss)
     if (lastLossTime > 0 && (now - lastLossTime) < 30000) {
-      return { block: false, warn: true, reason: 'REVENGE ALERT', message: 'You just lost and immediately tried to trade again. Are you revenge trading?' };
+      return { block: false, warn: true, reason: 'CHECK YOURSELF', message: 'You are entering a trade immediately after a loss. Make sure this is a planned setup and not an emotional reaction.' };
     }
     
     return null; // All clear
