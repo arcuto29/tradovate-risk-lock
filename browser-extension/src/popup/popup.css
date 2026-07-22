@@ -1,143 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #060810;
-  color: #f0f2f9;
-  width: 320px;
-  padding: 0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #000000;
+  color: #ffffff;
+  width: 300px;
   -webkit-font-smoothing: antialiased;
-  position: relative;
-  overflow: hidden;
 }
 
-body::before {
-  content: '';
-  position: absolute;
-  top: -30%; left: -30%; right: -30%; bottom: -30%;
-  background: radial-gradient(circle at 30% 20%, rgba(91, 156, 255, 0.08) 0%, transparent 50%);
-  z-index: -1;
-  pointer-events: none;
+.popup {
+  padding: 24px;
 }
-
-.popup { padding: 22px; position: relative; }
 
 .popup-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(91, 156, 255, 0.08);
-  position: relative;
-}
-
-.popup-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 10%; right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(91, 156, 255, 0.25), transparent);
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .logo-mark {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #5b9cff, #a78bfa);
-  box-shadow: 0 0 12px rgba(91, 156, 255, 0.5);
-  animation: logoPulse 3s ease-in-out infinite;
-}
-
-@keyframes logoPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(91, 156, 255, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(91, 156, 255, 0.7); }
+  display: none;
 }
 
 h1 {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 5px;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #5b9cff, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #555;
 }
 
 .status-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  background: rgba(14, 18, 30, 0.85);
-  border: 1px solid rgba(91, 156, 255, 0.08);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
-  position: relative;
-  overflow: hidden;
+  padding: 0;
+  border: none;
+  background: transparent;
+  margin-bottom: 24px;
 }
 
-.status-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(91, 156, 255, 0.2), transparent);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+.status-card.locked .status-label {
+  color: #ffffff;
 }
 
-.status-card.locked {
-  border-color: rgba(91, 156, 255, 0.25);
-  box-shadow: 0 4px 20px rgba(91, 156, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.02);
-}
-.status-card.locked::before { opacity: 1; }
-
-.status-card.unlocked {
-  border-color: rgba(52, 211, 153, 0.25);
-  box-shadow: 0 4px 20px rgba(52, 211, 153, 0.1);
+.status-card.unlocked .status-label {
+  color: #00e676;
 }
 
-.status-card.disconnected {
-  border-color: rgba(251, 191, 36, 0.2);
-  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.08);
+.status-card.disconnected .status-label {
+  color: #ffab00;
 }
 
 .status-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #5a6378;
-  flex-shrink: 0;
-  transition: all 0.25s ease;
+  display: none;
 }
 
-.locked .status-indicator {
-  background: linear-gradient(135deg, #5b9cff, #a78bfa);
-  box-shadow: 0 0 12px rgba(91, 156, 255, 0.6);
-  animation: indicatorPulse 2.5s ease-in-out infinite;
+.status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.unlocked .status-indicator {
-  background: #34d399;
-  box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+.status-label {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
 }
 
-.disconnected .status-indicator {
-  background: #fbbf24;
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-  animation: indicatorPulse 2s ease-in-out infinite;
+.status-detail {
+  font-size: 0.72rem;
+  color: #555;
+  line-height: 1.6;
 }
 
-@keyframes indicatorPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(0.9); }
+.popup-footer {
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 0.5rem;
+  color: #333;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
 }
-
-.status-content { display: flex; flex-direction: column; gap: 4px; }
-.status-label { font-size: 0.82rem; font-weight: 600; color: #f0f2f9; }
-.status-detail { font-size: 0.72rem; color: #5a6378; line-height: 1.5; }
-.popup-footer { text-align: center; font-size: 0.6rem; color: #5a6378; letter-spacing: 0.5px; opacity: 0.7; }
