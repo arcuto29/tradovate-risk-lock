@@ -205,4 +205,10 @@ export class DatabaseManager {
     this.db.run('UPDATE app_settings SET position_limits = ? WHERE id = 1', [limitsJson]);
     this.save();
   }
+
+  updateCoachConfig(configJson: string): void {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN coach_config TEXT'); } catch {}
+    this.db.run('UPDATE app_settings SET coach_config = ? WHERE id = 1', [configJson]);
+    this.save();
+  }
 }

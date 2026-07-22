@@ -15,4 +15,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateSessionHours: (hours: any) => ipcRenderer.invoke('update-session-hours', hours),
   getPositionLimits: () => ipcRenderer.invoke('get-position-limits'),
   updatePositionLimits: (limits: any) => ipcRenderer.invoke('update-position-limits', limits),
+  getCoachConfig: () => ipcRenderer.invoke('get-coach-config'),
+  updateCoachConfig: (config: any) => ipcRenderer.invoke('update-coach-config', config),
 });

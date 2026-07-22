@@ -6,8 +6,9 @@ import { TrustedPerson } from './components/TrustedPerson';
 import { AppSettingsPanel } from './components/AppSettingsPanel';
 import { SessionHours } from './components/SessionHours';
 import { PositionLimits } from './components/PositionLimits';
+import { PsychologyCoach } from './components/PsychologyCoach';
 
-type Page = 'main' | 'session' | 'position' | 'log' | 'trusted' | 'settings';
+type Page = 'main' | 'session' | 'position' | 'coach' | 'log' | 'settings';
 
 declare global { interface Window { electronAPI: any; } }
 
@@ -32,8 +33,9 @@ export const App: React.FC = () => {
         <h1>Trading Guardian</h1>
         <nav className="app-nav">
           <button className={currentPage === 'main' ? 'active' : ''} onClick={() => setCurrentPage('main')}>{lockState?.isLocked ? 'Lock Status' : 'Risk Lock'}</button>
-          <button className={currentPage === 'session' ? 'active' : ''} onClick={() => setCurrentPage('session')}>Session Hours</button>
-          <button className={currentPage === 'position' ? 'active' : ''} onClick={() => setCurrentPage('position')}>Position Limits</button>
+          <button className={currentPage === 'session' ? 'active' : ''} onClick={() => setCurrentPage('session')}>Session</button>
+          <button className={currentPage === 'position' ? 'active' : ''} onClick={() => setCurrentPage('position')}>Size Limits</button>
+          <button className={currentPage === 'coach' ? 'active' : ''} onClick={() => setCurrentPage('coach')}>Coach</button>
           <button className={currentPage === 'log' ? 'active' : ''} onClick={() => setCurrentPage('log')}>Log</button>
           <button className={currentPage === 'settings' ? 'active' : ''} onClick={() => setCurrentPage('settings')}>Settings</button>
         </nav>
@@ -42,6 +44,7 @@ export const App: React.FC = () => {
         {currentPage === 'main' && (lockState?.isLocked ? <LockStatus lockState={lockState} onRefresh={refreshState} /> : <SettingsForm onLocked={refreshState} />)}
         {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
         {currentPage === 'position' && <PositionLimits isLocked={lockState?.isLocked} />}
+        {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
         {currentPage === 'log' && <ActivityLog />}
         {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
       </main>

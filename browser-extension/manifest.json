@@ -9,19 +9,19 @@
   "content_scripts": [
     {
       "matches": ["https://trader.tradovate.com/*"],
-      "js": ["src/content/content-script.js"],
+      "js": ["src/content/content-script.js", "src/content/psychology-coach.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
-      "js": ["src/content/session-blocker.js"],
+      "js": ["src/content/session-blocker.js", "src/content/psychology-coach.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://www.tradingview.com/*"],
-      "js": ["src/content/tradingview-blocker.js"],
+      "js": ["src/content/tradingview-blocker.js", "src/content/psychology-coach.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start"
     }

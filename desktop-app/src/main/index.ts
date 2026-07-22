@@ -178,6 +178,22 @@ function setupIPC(): void {
     db.logActivity('position_limits_updated', JSON.stringify(limitsData));
     return { success: true };
   });
+
+  // Psychology coach
+  ipcMain.handle('get-coach-config', () => {
+    const settings = db.getSettings();
+    try {
+      const config = settings.coach_config ? JSON.parse(settings.coach_config) : null;
+      return config || { enabled: true, maxTradesPerDay: 10, cooldownSeconds: 120, maxDailyLoss: 500 };
+    } catch { return { enabled: true, maxTradesPerDay: 10, cooldownSeconds: 120, maxDailyLoss: 500 }; }
+  });
+
+  ipcMain.handle('update-coach-config', (_e, config) => {
+    db.updateCoachConfig(JSON.stringify(config));
+    db.logActivity('coach_config_updated', JSON.stringify(config));
+    wsServer.broadcastCoachConfig(config);
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {

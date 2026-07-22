@@ -61,6 +61,11 @@ export class WebSocketServer {
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 
+  broadcastCoachConfig(config: any): void {
+    const msg = JSON.stringify({ type: 'coach_config', ...config });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
   private getSessionState(): any {
     const settings = this.db.getSettings();
     const enabled = settings?.session_enabled === 1;
