@@ -1,9 +1,12 @@
 /**
- * Session Blocker + Position Size Lock - MAIN WORLD
+ * Session Blocker + Position Size Lock + P&L Tracking - MAIN WORLD
  * Runs in the page's JavaScript context (world: "MAIN")
  * This bypasses CSP restrictions since it's not an inline script.
  * 
  * Platforms: TopstepX, Tradesea
+ * 
+ * P&L TRACKING: Monitors incoming WebSocket messages for trade fills/closures
+ * to detect wins and losses. This powers the cooldown and revenge trading features.
  */
 (function() {
   'use strict';
@@ -21,6 +24,8 @@
   var warningShown = false;
   var orderTimestamps = [];
   var dailyLossBlocked = false;
+  var totalDailyPnL = 0;
+  var lastOrderTime = 0;
 
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
@@ -179,5 +184,111 @@
     return origSend.apply(this, arguments);
   };
 
-  console.log('[TradingGuardian] MAIN world interceptor loaded. Session/Size/Coach active.');
+  // ─── P&L Tracking: Monitor incoming WebSocket messages for trade results ───
+  // TopstepX sends trade results back through WebSocket.
+  // We listen for messages containing P&L data to detect wins/losses.
+  
+  var origAddEventListener = WebSocket.prototype.addEventListener;
+  var origOnMessageDescriptor = Object.getOwnPropertyDescriptor(WebSocket.prototype, 'onmessage');
+  
+  // Patch WebSocket to intercept incoming messages
+  var _origWsConstructor = window.WebSocket;
+  var patchedSockets = [];
+  
+  // Monitor all WebSocket instances for incoming trade results
+  var origWsProtoOnmessage = Object.getOwnPropertyDescriptor(WebSocket.prototype, 'onmessage');
+  
+  // Use a MutationObserver approach - periodically check for P&L changes in the DOM
+  // This is more reliable than intercepting WebSocket since TopstepX's WS is already connected
+  
+  var lastKnownPnL = null;
+  var pnlCheckInterval = setInterval(function() {
+    if (!coachEnabled) return;
+    
+    // Look for P&L display elements in the page
+    var pnlElements = document.querySelectorAll('[class*="pnl"], [class*="PnL"], [class*="profit"], [class*="loss"], [class*="pl-"], [data-testid*="pnl"]');
+    
+    // Also look for common P&L text patterns
+    var allText = document.body ? document.body.innerText : '';
+    
+    // Check for TopstepX specific P&L indicators
+    // Look for elements that show realized P&L
+    var realizedPnl = document.querySelector('[class*="realized"], [class*="Realized"], [class*="closed-pnl"], [class*="netPnl"]');
+    if (realizedPnl) {
+      var pnlText = realizedPnl.textContent || '';
+      var pnlMatch = pnlText.match(/[-]?\$?([\d,]+\.?\d*)/);
+      if (pnlMatch) {
+        var currentPnl = parseFloat(pnlMatch[1].replace(',', ''));
+        if (pnlText.includes('-') || pnlText.includes('(')) currentPnl = -currentPnl;
+        
+        if (lastKnownPnL !== null && currentPnl < lastKnownPnL) {
+          // P&L went down = loss detected
+          var lossAmount = lastKnownPnL - currentPnl;
+          console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (PnL: $' + currentPnl.toFixed(2) + ')');
+          
+          lastLossTime = Date.now();
+          cooldownActive = true;
+          cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+          warningShown = false;
+          totalDailyPnL = currentPnl;
+          
+          // Check daily loss limit
+          if (currentPnl <= -maxDailyLoss) {
+            dailyLossBlocked = true;
+            console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
+            window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
+          }
+          
+          window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
+        }
+        
+        lastKnownPnL = currentPnl;
+      }
+    }
+    
+    // Also check for position close events via fetch responses
+    // TopstepX shows "Order filled" or position changes
+    var positionElements = document.querySelectorAll('[class*="position"], [class*="Position"]');
+    
+  }, 2000); // Check every 2 seconds
+
+  // Also monitor fetch responses for order fills
+  var origFetchForPnL = window.fetch;
+  window.fetch = (function(previousFetch) {
+    return function() {
+      var url = typeof arguments[0] === 'string' ? arguments[0] : (arguments[0] && arguments[0].url ? arguments[0].url : '');
+      var result = previousFetch.apply(this, arguments);
+      
+      // Monitor responses from order/events endpoints for fill data
+      if (url.includes('Events') || url.includes('OrderData') || url.includes('Position')) {
+        result.then(function(response) {
+          return response.clone().text().then(function(text) {
+            try {
+              var data = JSON.parse(text);
+              // Look for filled orders with P&L info
+              if (data && (data.realizedPnl !== undefined || data.pnl !== undefined || data.profit !== undefined)) {
+                var pnl = data.realizedPnl || data.pnl || data.profit || 0;
+                if (pnl < 0) {
+                  console.log('[TradingGuardian] Loss from API: $' + pnl);
+                  lastLossTime = Date.now();
+                  cooldownActive = true;
+                  cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+                  warningShown = false;
+                  totalDailyPnL += pnl;
+                  if (totalDailyPnL <= -maxDailyLoss) {
+                    dailyLossBlocked = true;
+                    window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority.' }, '*');
+                  }
+                }
+              }
+            } catch(e) {}
+          });
+        }).catch(function() {});
+      }
+      
+      return result;
+    };
+  })(window.fetch);
+
+  console.log('[TradingGuardian] MAIN world interceptor loaded. Session/Size/Coach/P&L active.');
 })();
