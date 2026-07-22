@@ -1,208 +1,106 @@
 /**
- * TradingView Blocker - Session hours + Position size lock for TradingView.
- * Covers ALL brokers connected through TradingView (Coinexx, Fyntura, Tradovate, etc.)
- *
- * TradingView order API:
- * POST https://papertrading.tradingview.com/trading/place/{accountId}
- * POST https://trading.tradingview.com/trading/place/{accountId}
- * POST https://*.tradingview.com/trading/place/{accountId}
- * 
- * Also covers: /trading/modify/, /trading/cancel/ (we only block place)
+ * TradingView Bridge - ISOLATED WORLD
+ * Communicates between Chrome extension APIs and the MAIN world script (tradingview-main.js).
+ * Shows overlays with quotes when orders are blocked.
  */
 (function() {
   'use strict';
 
-  // ─── Inline fetch override BEFORE TradingView loads ────────────────────────
-  const inlineScript = document.createElement('script');
-  inlineScript.textContent = `
-(function() {
-  'use strict';
-  
-  var sessionBlocked = false;
-  var positionLimits = { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 };
-  
-  window.addEventListener('message', function(event) {
-    if (event.source !== window) return;
-    if (event.data && event.data.type === 'TRL_SESSION_STATE') {
-      sessionBlocked = event.data.blocked;
-      if (event.data.positionLimits) positionLimits = event.data.positionLimits;
-    }
-  });
-  
-  function isOrderPlaceUrl(url) {
-    if (!url) return false;
-    return url.includes('/trading/place');
-  }
-  
-  function getMaxForSymbol(symbol) {
-    if (!symbol) return positionLimits.defaultMax;
-    var s = symbol.toUpperCase();
-    // Micro NQ
-    if (s.includes('MNQ') || s.includes('MNQU') || s.includes('MICRO') && s.includes('NQ')) return positionLimits.mnqMax;
-    // Full NQ
-    if (s.includes('NQ')) return positionLimits.nqMax;
-    // Micro ES
-    if (s.includes('MES') || s.includes('MICRO') && s.includes('ES')) return positionLimits.mesMax;
-    // Full ES
-    if (s.includes('ES')) return positionLimits.esMax;
-    // Default
-    return positionLimits.defaultMax;
-  }
-  
-  function checkOrder(body) {
-    if (!body) return null;
-    var qty = body.qty || body.quantity || body.amount || body.lots || body.size;
-    var symbol = body.symbol || body.instrument || body.ticker || '';
-    
-    if (!qty) return null;
-    
-    var max = getMaxForSymbol(symbol);
-    if (qty > max) {
-      return 'Position size ' + qty + ' exceeds max ' + max + ' for ' + (symbol || 'contract');
-    }
-    return null;
-  }
-  
-  // Override fetch
-  var origFetch = window.fetch;
-  window.fetch = function() {
-    var url = typeof arguments[0] === 'string' ? arguments[0] : (arguments[0] && arguments[0].url ? arguments[0].url : '');
-    var opts = typeof arguments[0] === 'string' ? arguments[1] : arguments[0];
-    var method = (opts && opts.method ? opts.method : 'GET').toUpperCase();
-    
-    if ((method === 'POST' || method === 'PUT') && isOrderPlaceUrl(url)) {
-      // Session block
-      if (sessionBlocked) {
-        console.log('[TradingGuardian] BLOCKED TV order: Outside trading hours');
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', url: url, reason: 'Outside trading hours' }, '*');
-        return Promise.reject(new Error('Blocked by Trading Guardian: Outside trading hours'));
-      }
-      
-      // Position size check
-      var body = null;
-      if (opts && opts.body) {
-        if (typeof opts.body === 'string') {
-          try { body = JSON.parse(opts.body); } catch(e) {}
-        }
-      }
-      
-      if (body) {
-        var violation = checkOrder(body);
-        if (violation) {
-          console.log('[TradingGuardian] BLOCKED TV order:', violation);
-          window.postMessage({ type: 'TRL_ORDER_BLOCKED', url: url, reason: violation }, '*');
-          return Promise.reject(new Error('Blocked by Trading Guardian: ' + violation));
-        }
-      }
-    }
-    
-    return origFetch.apply(this, arguments);
-  };
-  
-  // Override XHR
-  var origOpen = XMLHttpRequest.prototype.open;
-  var origSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.open = function(m, url) {
-    this._tgUrl = url;
-    this._tgMethod = m;
-    return origOpen.apply(this, arguments);
-  };
-  XMLHttpRequest.prototype.send = function(body) {
-    var method = (this._tgMethod || 'GET').toUpperCase();
-    if ((method === 'POST' || method === 'PUT') && isOrderPlaceUrl(this._tgUrl)) {
-      if (sessionBlocked) {
-        console.log('[TradingGuardian] BLOCKED TV XHR order: Outside hours');
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', url: this._tgUrl, reason: 'Outside trading hours' }, '*');
-        return;
-      }
-      var parsed = null;
-      if (typeof body === 'string') { try { parsed = JSON.parse(body); } catch(e) {} }
-      if (parsed) {
-        var violation = checkOrder(parsed);
-        if (violation) {
-          console.log('[TradingGuardian] BLOCKED TV XHR:', violation);
-          window.postMessage({ type: 'TRL_ORDER_BLOCKED', url: this._tgUrl, reason: violation }, '*');
-          return;
-        }
-      }
-    }
-    return origSend.apply(this, arguments);
-  };
-  
-  console.log('[TradingGuardian] TradingView interceptor installed. Covers all TV-connected brokers.');
-})();
-`;
-  (document.head || document.documentElement).prepend(inlineScript);
-
-  // ─── Content script communication ──────────────────────────────────────────
   let sessionBlocked = false;
   let sessionHours = null;
 
   chrome.runtime.sendMessage({ type: 'GET_SESSION_STATE' }, (r) => {
-    if (r) {
-      sessionBlocked = r.blocked;
-      sessionHours = r.sessionHours;
-      sendStateToPage();
-    }
+    if (r) { sessionBlocked = r.blocked; sessionHours = r.sessionHours; sendStateToPage(); }
+  });
+
+  chrome.runtime.sendMessage({ type: 'GET_COACH_CONFIG' }, (r) => {
+    if (r) sendCoachToPage(r);
   });
 
   chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.type === 'SESSION_STATE_UPDATE') {
-      sessionBlocked = msg.blocked;
-      sessionHours = msg.sessionHours;
-      sendStateToPage();
-      if (!sessionBlocked) hideOverlay();
-    }
+    if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
+    if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
   });
 
   function sendStateToPage() {
-    window.postMessage({
-      type: 'TRL_SESSION_STATE',
-      blocked: sessionBlocked,
-      sessionHours: sessionHours,
-      positionLimits: { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 },
-    }, '*');
+    window.postMessage({ type: 'TRL_SESSION_STATE', blocked: sessionBlocked, sessionHours, positionLimits: { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 } }, '*');
+  }
+
+  function sendCoachToPage(config) {
+    window.postMessage({ type: 'TRL_COACH_CONFIG', enabled: config.enabled, maxTradesPerDay: config.maxTradesPerDay, cooldownSeconds: config.cooldownSeconds, maxDailyLoss: config.maxDailyLoss }, '*');
   }
 
   setInterval(sendStateToPage, 5000);
 
-  // ─── Listen for blocked events ─────────────────────────────────────────────
+  // Listen for events from MAIN world
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
+
     if (event.data && event.data.type === 'TRL_ORDER_BLOCKED') {
       showOverlay(event.data.reason);
-      chrome.runtime.sendMessage({
-        type: 'REPORT_BYPASS_ATTEMPT',
-        details: `BLOCKED on TradingView: ${event.data.reason || 'order blocked'}`,
-      });
+      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `BLOCKED on TradingView: ${event.data.reason}` });
+    }
+
+    if (event.data && event.data.type === 'TRL_COACH_WARN') {
+      showWarning(event.data.reason, event.data.message);
+      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH WARN on TV: ${event.data.reason}` });
+    }
+
+    if (event.data && event.data.type === 'TRL_COACH_BLOCK') {
+      showBlock(event.data.reason, event.data.message);
+      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK on TV: ${event.data.reason}` });
     }
   });
 
-  // ─── Overlay ───────────────────────────────────────────────────────────────
-  let overlayShown = false;
-
+  // ─── Overlays with quotes ──────────────────────────────────────────────────
   function showOverlay(reason) {
-    if (overlayShown) return; overlayShown = true;
+    if (document.getElementById('tradovate-risk-lock-overlay')) return;
     const isSession = reason && reason.includes('hours');
     const title = isSession ? 'SESSION<br>BLOCKED' : 'OVERSIZE<br>BLOCKED';
-    const message = isSession
-      ? 'You are outside your allowed trading hours.<br>Orders are blocked until NY session.'
-      : `${reason || 'Position size exceeds your limit.'}`;
-
+    const quote = getRandomQuote();
     const o = document.createElement('div'); o.id = 'tradovate-risk-lock-overlay';
-    o.innerHTML = `<div class="trl-overlay-content">
-      <div class="trl-alert-badge">&#9679; GUARDIAN &bull; ALERT</div>
-      <h1>${title}</h1>
-      <p class="trl-message">${message}</p>
-      <button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button>
-      <p class="trl-footer">This attempt has been recorded.</p>
-    </div>`;
+    o.innerHTML = `<div class="trl-overlay-content"><div class="trl-alert-badge">&#9679; GUARDIAN &bull; ALERT</div><h1>${title}</h1><p class="trl-message">${reason}</p><p class="trl-motivation">${quote}</p><button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button><p class="trl-footer">This attempt has been recorded.</p></div>`;
     document.body.appendChild(o);
-    document.getElementById('trl-dismiss-btn').onclick = hideOverlay;
-    setTimeout(hideOverlay, 20000);
+    document.getElementById('trl-dismiss-btn').onclick = () => o.remove();
+    setTimeout(() => o.remove(), 20000);
   }
 
-  function hideOverlay() { document.getElementById('tradovate-risk-lock-overlay')?.remove(); overlayShown = false; }
+  function showWarning(reason, message) {
+    if (document.getElementById('trl-coach-warning')) return;
+    const quote = getRandomQuote();
+    const w = document.createElement('div'); w.id = 'trl-coach-warning';
+    w.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483646;background:#1a1a2e;border:1px solid #f59e0b;border-radius:12px;padding:20px 24px;max-width:360px;font-family:-apple-system,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    w.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:20px;">&#9888;</span><span style="font-size:12px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;">${reason}</span></div><p style="color:#e2e8f0;font-size:14px;line-height:1.5;margin:0 0 10px 0;">${message}</p><p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0 0 14px 0;">${quote}</p><button id="trl-coach-dismiss" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:6px;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">I understand</button>`;
+    document.body.appendChild(w);
+    document.getElementById('trl-coach-dismiss').onclick = () => w.remove();
+    setTimeout(() => w.remove(), 10000);
+  }
 
-  console.log('[TradingGuardian] TradingView blocker loaded.');
+  function showBlock(reason, message) {
+    if (document.getElementById('tradovate-risk-lock-overlay')) return;
+    const quote = getRandomQuote();
+    const o = document.createElement('div'); o.id = 'tradovate-risk-lock-overlay';
+    o.innerHTML = `<div class="trl-overlay-content"><div class="trl-alert-badge">&#9679; GUARDIAN &bull; COACH</div><h1>${reason}</h1><p class="trl-message">${message}</p><p class="trl-motivation">${quote}</p><button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button><p class="trl-footer">This has been recorded.</p></div>`;
+    document.body.appendChild(o);
+    document.getElementById('trl-dismiss-btn').onclick = () => o.remove();
+    setTimeout(() => o.remove(), 20000);
+  }
+
+  function getRandomQuote() {
+    const quotes = [
+      "Your future self is thanking you for stopping right now.",
+      "You already know the right decision. That's why you set these rules.",
+      "99% of traders lose money. Be the 1% that makes it. Tomorrow is a new day.",
+      "Some of the best trades are the ones you don't take. Stick to your rules.",
+      "Discipline is what separates funded traders from blown accounts.",
+      "You don't need to trade every day. You need to survive every day.",
+      "The market will be here tomorrow. Will your account?",
+      "One good day of patience is worth more than a week of revenge trading.",
+      "Protect the capital. The setups will come.",
+      "This feeling will pass. Your account balance won't come back.",
+    ];
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  }
+
+  console.log('[TradingGuardian] TradingView bridge loaded.');
 })();

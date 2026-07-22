@@ -45,7 +45,7 @@
   "declarative_net_request": { "rule_resources": [{ "id": "risk_api_rules", "enabled": false, "path": "src/shared/rules.json" }] },
   "web_accessible_resources": [
     {
-      "resources": ["src/content/injector.js", "src/content/session-injector.js", "src/content/block-overlay.css"],
+      "resources": ["src/content/injector.js", "src/content/block-overlay.css"],
       "matches": ["https://trader.tradovate.com/*", "https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://www.tradingview.com/*"]
     }
   ]
