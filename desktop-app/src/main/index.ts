@@ -125,6 +125,37 @@ function setupIPC(): void {
     return result;
   });
   ipcMain.handle('get-bypass-attempts', () => db.getBypassAttemptCount());
+
+  // Session hours
+  ipcMain.handle('get-session-hours', () => {
+    const settings = db.getSettings();
+    const sessionHours = {
+      enabled: settings.session_enabled === 1,
+      startTime: settings.session_start || '08:30',
+      endTime: settings.session_end || '16:00',
+      timezone: settings.session_timezone || 'America/New_York',
+      currentlyBlocked: false,
+    };
+    // Check if currently blocked
+    if (sessionHours.enabled) {
+      const now = new Date();
+      const [sh, sm] = sessionHours.startTime.split(':').map(Number);
+      const [eh, em] = sessionHours.endTime.split(':').map(Number);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const startMinutes = sh * 60 + sm;
+      const endMinutes = eh * 60 + em;
+      sessionHours.currentlyBlocked = currentMinutes < startMinutes || currentMinutes >= endMinutes;
+    }
+    return sessionHours;
+  });
+
+  ipcMain.handle('update-session-hours', (_e, hours) => {
+    const current = db.getSettings();
+    db.updateSessionHours(hours);
+    db.logActivity('session_hours_updated', JSON.stringify(hours));
+    wsServer.broadcastSessionChange();
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {

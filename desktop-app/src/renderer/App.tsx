@@ -4,8 +4,9 @@ import { LockStatus } from './components/LockStatus';
 import { ActivityLog } from './components/ActivityLog';
 import { TrustedPerson } from './components/TrustedPerson';
 import { AppSettingsPanel } from './components/AppSettingsPanel';
+import { SessionHours } from './components/SessionHours';
 
-type Page = 'main' | 'log' | 'trusted' | 'settings';
+type Page = 'main' | 'session' | 'log' | 'trusted' | 'settings';
 
 declare global { interface Window { electronAPI: any; } }
 
@@ -27,22 +28,24 @@ export const App: React.FC = () => {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Tradovate Risk Settings Lock</h1>
+        <h1>Trading Guardian</h1>
         <nav className="app-nav">
-          <button className={currentPage === 'main' ? 'active' : ''} onClick={() => setCurrentPage('main')}>{lockState?.isLocked ? 'Lock Status' : 'Settings'}</button>
+          <button className={currentPage === 'main' ? 'active' : ''} onClick={() => setCurrentPage('main')}>{lockState?.isLocked ? 'Lock Status' : 'Risk Lock'}</button>
+          <button className={currentPage === 'session' ? 'active' : ''} onClick={() => setCurrentPage('session')}>Session Hours</button>
           <button className={currentPage === 'log' ? 'active' : ''} onClick={() => setCurrentPage('log')}>Activity Log</button>
           <button className={currentPage === 'trusted' ? 'active' : ''} onClick={() => setCurrentPage('trusted')}>Trusted Person</button>
-          <button className={currentPage === 'settings' ? 'active' : ''} onClick={() => setCurrentPage('settings')}>App Settings</button>
+          <button className={currentPage === 'settings' ? 'active' : ''} onClick={() => setCurrentPage('settings')}>Settings</button>
         </nav>
       </header>
       <main className="app-main">
         {currentPage === 'main' && (lockState?.isLocked ? <LockStatus lockState={lockState} onRefresh={refreshState} /> : <SettingsForm onLocked={refreshState} />)}
+        {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
         {currentPage === 'log' && <ActivityLog />}
         {currentPage === 'trusted' && <TrustedPerson isLocked={lockState?.isLocked} trustedPersonEnabled={lockState?.trustedPersonEnabled} />}
         {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
       </main>
       <footer className="app-footer">
-        <p className="disclaimer">This application adds a behavioral barrier. It does not replace Tradovate's risk management. Software controlled by the user cannot be completely tamper-proof.</p>
+        <p className="disclaimer">This application adds a behavioral barrier. It does not replace your broker's risk management.</p>
         <p className="brand">Made by Priisma</p>
       </footer>
     </div>

@@ -45,12 +45,39 @@ export class WebSocketServer {
       case 'ping':
         ws.send(JSON.stringify({ type: 'pong', locked: this.lockManager.isLocked() }));
         break;
+      case 'check_session':
+        ws.send(JSON.stringify(this.getSessionState()));
+        break;
     }
   }
 
   broadcastLockChange(): void {
     const msg = JSON.stringify({ type: 'lock_state_changed', locked: this.lockManager.isLocked() });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  broadcastSessionChange(): void {
+    const msg = JSON.stringify(this.getSessionState());
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  private getSessionState(): any {
+    const settings = this.db.getSettings();
+    const enabled = settings?.session_enabled === 1;
+    let blocked = false;
+    if (enabled) {
+      const now = new Date();
+      const [sh, sm] = (settings.session_start || '08:30').split(':').map(Number);
+      const [eh, em] = (settings.session_end || '16:00').split(':').map(Number);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      blocked = currentMinutes < (sh * 60 + sm) || currentMinutes >= (eh * 60 + em);
+    }
+    return {
+      type: 'session_state',
+      enabled,
+      blocked,
+      sessionHours: enabled ? { startHour: parseInt(settings.session_start), startMin: parseInt(settings.session_start?.split(':')[1] || '0'), endHour: parseInt(settings.session_end), endMin: parseInt(settings.session_end?.split(':')[1] || '0') } : null,
+    };
   }
 
   getAuthToken(): string { return this.authToken; }

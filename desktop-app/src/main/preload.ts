@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   updateSettings: (settings: any) => ipcRenderer.invoke('update-settings', settings),
   getBypassAttempts: () => ipcRenderer.invoke('get-bypass-attempts'),
+  getSessionHours: () => ipcRenderer.invoke('get-session-hours'),
+  updateSessionHours: (hours: any) => ipcRenderer.invoke('update-session-hours', hours),
 });

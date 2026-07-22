@@ -70,6 +70,13 @@ export class DatabaseManager {
       INSERT OR IGNORE INTO app_settings (id, cooldown_hours, start_with_windows, minimize_to_tray, trusted_person_enabled) VALUES (1, 12, 1, 1, 0);
       INSERT OR IGNORE INTO lock_state (id, is_locked, bypass_attempts) VALUES (1, 0, 0);
     `);
+
+    // Add session columns if they don't exist
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_enabled INTEGER DEFAULT 0'); } catch {}
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_start TEXT DEFAULT "08:30"'); } catch {}
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_end TEXT DEFAULT "16:00"'); } catch {}
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_timezone TEXT DEFAULT "America/New_York"'); } catch {}
+
     this.save();
   }
 
@@ -182,4 +189,14 @@ export class DatabaseManager {
   }
 
   close(): void { this.save(); }
+
+  // Session hours
+  updateSessionHours(hours: { enabled: boolean; startTime: string; endTime: string; timezone: string }): void {
+    this.db.run(
+      `INSERT OR REPLACE INTO app_settings (id, cooldown_hours, start_with_windows, minimize_to_tray, trusted_person_enabled, trusted_password_hash, session_enabled, session_start, session_end, session_timezone)
+       VALUES (1, (SELECT cooldown_hours FROM app_settings WHERE id=1), (SELECT start_with_windows FROM app_settings WHERE id=1), (SELECT minimize_to_tray FROM app_settings WHERE id=1), (SELECT trusted_person_enabled FROM app_settings WHERE id=1), (SELECT trusted_password_hash FROM app_settings WHERE id=1), ?, ?, ?, ?)`,
+      [hours.enabled ? 1 : 0, hours.startTime, hours.endTime, hours.timezone]
+    );
+    this.save();
+  }
 }
