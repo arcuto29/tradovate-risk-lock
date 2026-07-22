@@ -21,7 +21,7 @@ const isDev = process.env.NODE_ENV === 'development';
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 800, height: 700, minWidth: 600, minHeight: 500,
+    width: 800, height: 850, minWidth: 600, minHeight: 600,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
     title: 'Tradovate Risk Settings Lock', autoHideMenuBar: true,
   });
