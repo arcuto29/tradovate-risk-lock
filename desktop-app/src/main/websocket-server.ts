@@ -33,7 +33,8 @@ export class WebSocketServer {
   private handleMessage(ws: WebSocket, message: any): void {
     switch (message.type) {
       case 'check_lock':
-        ws.send(JSON.stringify({ type: 'lock_state', locked: this.lockManager.isLocked(), settings: this.lockManager.isLocked() ? this.lockManager.getState().settings : null }));
+        const state = this.lockManager.getState();
+        ws.send(JSON.stringify({ type: 'lock_state', locked: state.isLocked, settings: state.isLocked ? { ...state.settings, resetTimeISO: state.resetTime, timeRemaining: state.timeRemaining } : null }));
         break;
       case 'report_bypass':
         if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(message.details || 'Browser bypass attempt'); ws.send(JSON.stringify({ type: 'bypass_recorded' })); }

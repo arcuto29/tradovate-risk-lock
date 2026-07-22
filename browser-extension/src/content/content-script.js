@@ -33,7 +33,11 @@
     window.postMessage({
       type: 'TRL_LOCK_STATE',
       locked: isLocked,
-      settings: lockedSettings,
+      settings: lockedSettings ? {
+        ...lockedSettings,
+        resetTimeISO: lockedSettings.resetTime || null,
+        timeRemaining: lockedSettings.timeRemaining || null,
+      } : null,
     }, '*');
   }
 
@@ -86,14 +90,21 @@
   function updateCountdown() {
     const el = document.getElementById('trl-countdown');
     if (!el || !lockedSettings) return;
-    const now = new Date();
-    const rh = parseInt(lockedSettings.resetTime?.split(':')[0] || '17');
-    const rm = parseInt(lockedSettings.resetTime?.split(':')[1] || '0');
-    const reset = new Date(); reset.setHours(rh, rm, 0, 0);
-    if (reset <= now) reset.setDate(reset.getDate() + 1);
-    const diff = Math.max(0, Math.floor((reset.getTime() - now.getTime()) / 1000));
-    const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
-    el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    // Use the resetTime from the lock state (which is an ISO timestamp calculated by the desktop app)
+    // This matches what the desktop app shows
+    if (lockedSettings.resetTimeISO) {
+      const reset = new Date(lockedSettings.resetTimeISO);
+      const diff = Math.max(0, Math.floor((reset.getTime() - Date.now()) / 1000));
+      const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+      el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    } else {
+      // Fallback: use timeRemaining from lock state if available
+      const remaining = lockedSettings.timeRemaining;
+      if (remaining && remaining > 0) {
+        const h = Math.floor(remaining / 3600), m = Math.floor((remaining % 3600) / 60), s = remaining % 60;
+        el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }
+    }
   }
 
   function hideOverlay() { document.getElementById('tradovate-risk-lock-overlay')?.remove(); overlayShown = false; }
