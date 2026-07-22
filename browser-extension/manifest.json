@@ -15,14 +15,28 @@
     },
     {
       "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
-      "js": ["src/content/session-blocker.js", "src/content/psychology-coach.js"],
+      "js": ["src/content/session-blocker-main.js"],
       "css": ["src/content/block-overlay.css"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
+      "js": ["src/content/session-blocker-bridge.js"],
+      "css": [],
       "run_at": "document_start"
     },
     {
       "matches": ["https://www.tradingview.com/*"],
-      "js": ["src/content/tradingview-blocker.js", "src/content/psychology-coach.js"],
+      "js": ["src/content/tradingview-main.js"],
       "css": ["src/content/block-overlay.css"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://www.tradingview.com/*"],
+      "js": ["src/content/tradingview-blocker.js"],
+      "css": [],
       "run_at": "document_start"
     }
   ],
