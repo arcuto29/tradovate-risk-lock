@@ -176,6 +176,7 @@ function setupIPC(): void {
   ipcMain.handle('update-position-limits', (_e, limitsData) => {
     db.updatePositionLimits(JSON.stringify(limitsData));
     db.logActivity('position_limits_updated', JSON.stringify(limitsData));
+    wsServer.broadcastPositionLimits();
     return { success: true };
   });
 

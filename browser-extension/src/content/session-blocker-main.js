@@ -12,7 +12,7 @@
   'use strict';
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
-  var positionLimits = { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 };
+  var positionLimits = { limits: [], defaultMax: 2 };
   var coachEnabled = true;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
@@ -47,6 +47,9 @@
       sessionBlocked = event.data.blocked;
       if (event.data.positionLimits) positionLimits = event.data.positionLimits;
     }
+    if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
+      positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
+    }
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       coachEnabled = event.data.enabled !== false;
       maxTradesPerDay = event.data.maxTradesPerDay || 10;
@@ -59,7 +62,7 @@
       profitLockEnabled = event.data.profitLockEnabled !== false;
       escalatingCooldown = event.data.escalatingCooldown !== false;
       // Set original max size at start
-      if (!originalMaxSize) { originalMaxSize = positionLimits.nqMax; currentMaxSize = positionLimits.nqMax; }
+      if (!originalMaxSize) { originalMaxSize = positionLimits.defaultMax || 2; currentMaxSize = positionLimits.defaultMax || 2; }
     }
     if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
@@ -118,22 +121,31 @@
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
+  function getMaxForSymbol(symbol) {
+    if (!symbol) return positionLimits.defaultMax || 2;
+    var upper = symbol.toUpperCase();
+    // Check against user-defined limits
+    var limits = positionLimits.limits || [];
+    for (var i = 0; i < limits.length; i++) {
+      var sym = (limits[i].symbol || '').toUpperCase();
+      if (sym && upper.includes(sym)) return limits[i].maxSize || 1;
+    }
+    return positionLimits.defaultMax || 2;
+  }
+
   function isOversized(body) {
-    if (!body || !body.positionSize) return false;
-    var symbol = (body.symbolId || '').toUpperCase();
-    var size = body.positionSize;
+    if (!body) return false;
+    var size = body.positionSize || body.qty || body.quantity || body.amount || body.size || 0;
+    if (!size || size <= 0) return false;
+    var symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+    var max = getMaxForSymbol(symbol);
     
-    // Use loss-streak-reduced size if active
-    var effectiveNqMax = (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < positionLimits.nqMax) 
-      ? currentMaxSize : positionLimits.nqMax;
-    var effectiveMnqMax = (lossStreakEnabled && currentMaxSize > 0) 
-      ? Math.max(1, currentMaxSize * 5) : positionLimits.mnqMax;
+    // Apply loss-streak reduction if active
+    if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
+      max = currentMaxSize;
+    }
     
-    if (symbol.includes('EMNQ') || symbol.includes('MNQ')) return size > effectiveMnqMax;
-    if (symbol.includes('ENQ') || symbol.includes('NQ')) return size > effectiveNqMax;
-    if (symbol.includes('MES')) return size > positionLimits.mesMax;
-    if (symbol.includes('ES')) return size > positionLimits.esMax;
-    return size > positionLimits.defaultMax;
+    return size > max;
   }
 
   // ─── Psychology coach check ────────────────────────────────────────────────

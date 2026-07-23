@@ -28,6 +28,12 @@ export class WebSocketServer {
     ws.on('close', () => this.clients.delete(ws));
     ws.on('error', () => this.clients.delete(ws));
     ws.send(JSON.stringify({ type: 'connected', locked: this.lockManager.isLocked(), token: this.authToken }));
+
+    // Send position limits on connection
+    const settings = this.db.getSettings();
+    let limitsData = { limits: [], defaultMax: 2 };
+    try { if (settings.position_limits) limitsData = JSON.parse(settings.position_limits); } catch {}
+    ws.send(JSON.stringify({ type: 'position_limits', ...limitsData }));
   }
 
   private handleMessage(ws: WebSocket, message: any): void {
@@ -71,6 +77,16 @@ export class WebSocketServer {
 
   broadcastCoachConfig(config: any): void {
     const msg = JSON.stringify({ type: 'coach_config', ...config });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  broadcastPositionLimits(): void {
+    const settings = this.db.getSettings();
+    let limitsData = { limits: [], defaultMax: 2 };
+    try {
+      if (settings.position_limits) limitsData = JSON.parse(settings.position_limits);
+    } catch {}
+    const msg = JSON.stringify({ type: 'position_limits', ...limitsData });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 

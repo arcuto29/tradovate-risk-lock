@@ -20,15 +20,30 @@
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
+    if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
   });
 
   function sendStateToPage() {
-    window.postMessage({ type: 'TRL_SESSION_STATE', blocked: sessionBlocked, sessionHours, positionLimits: { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 } }, '*');
+    window.postMessage({ type: 'TRL_SESSION_STATE', blocked: sessionBlocked, sessionHours, positionLimits: currentLimits }, '*');
   }
 
   function sendCoachToPage(config) {
     window.postMessage({ type: 'TRL_COACH_CONFIG', enabled: config.enabled, maxTradesPerDay: config.maxTradesPerDay, cooldownSeconds: config.cooldownSeconds, maxDailyLoss: config.maxDailyLoss }, '*');
   }
+
+  function sendLimitsToPage(data) {
+    if (data.limits) currentLimits = { limits: data.limits, defaultMax: data.defaultMax || 2 };
+    window.postMessage({ type: 'TRL_POSITION_LIMITS', limits: data.limits, defaultMax: data.defaultMax || 2 }, '*');
+  }
+
+  var currentLimits = { limits: [], defaultMax: 2 };
+
+  chrome.storage.local.get('position_limits', (r) => {
+    if (r.position_limits) {
+      currentLimits = { limits: r.position_limits.limits || [], defaultMax: r.position_limits.defaultMax || 2 };
+      sendLimitsToPage(currentLimits);
+    }
+  });
 
   setInterval(sendStateToPage, 5000);
 

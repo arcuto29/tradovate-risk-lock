@@ -7,7 +7,7 @@
   'use strict';
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
-  var positionLimits = { nqMax: 1, mnqMax: 5, esMax: 1, mesMax: 5, defaultMax: 2 };
+  var positionLimits = { limits: [], defaultMax: 2 };
 
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
@@ -15,19 +15,23 @@
       sessionBlocked = event.data.blocked;
       if (event.data.positionLimits) positionLimits = event.data.positionLimits;
     }
+    if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
+      positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
+    }
   });
 
   function isOrderPlaceUrl(url) { return url && url.includes('/trading/place'); }
   function isOrderModifyUrl(url) { return url && (url.includes('/trading/modify') || url.includes('/trading/cancel') || url.includes('/trading/close')); }
 
   function getMaxForSymbol(symbol) {
-    if (!symbol) return positionLimits.defaultMax;
+    if (!symbol) return positionLimits.defaultMax || 2;
     var s = symbol.toUpperCase();
-    if (s.includes('MNQ')) return positionLimits.mnqMax;
-    if (s.includes('NQ')) return positionLimits.nqMax;
-    if (s.includes('MES')) return positionLimits.mesMax;
-    if (s.includes('ES')) return positionLimits.esMax;
-    return positionLimits.defaultMax;
+    var limits = positionLimits.limits || [];
+    for (var i = 0; i < limits.length; i++) {
+      var sym = (limits[i].symbol || '').toUpperCase();
+      if (sym && s.includes(sym)) return limits[i].maxSize || 1;
+    }
+    return positionLimits.defaultMax || 2;
   }
 
   var origFetch = window.fetch;
