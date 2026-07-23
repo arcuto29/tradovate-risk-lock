@@ -5,7 +5,6 @@ export const TiltMeter: React.FC = () => {
   const [level, setLevel] = useState<'green' | 'yellow' | 'red'>('green');
 
   useEffect(() => {
-    // Listen for tilt updates from the extension via WebSocket
     if ((window as any).electronAPI?.onTiltUpdate) {
       (window as any).electronAPI.onTiltUpdate((data: any) => {
         if (data) {
@@ -14,19 +13,6 @@ export const TiltMeter: React.FC = () => {
         }
       });
     }
-
-    // Poll every second for latest tilt state
-    const interval = setInterval(async () => {
-      try {
-        const state = await (window as any).electronAPI?.getTiltState?.();
-        if (state) {
-          setScore(state.score || 0);
-          setLevel(state.level || 'green');
-        }
-      } catch {}
-    }, 2000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const getColor = () => {

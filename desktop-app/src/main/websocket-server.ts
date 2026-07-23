@@ -66,6 +66,9 @@ export class WebSocketServer {
       case 'ping':
         ws.send(JSON.stringify({ type: 'pong', locked: this.lockManager.isLocked() }));
         break;
+      case 'tilt_update':
+        if (this.onTiltUpdate) this.onTiltUpdate(message);
+        break;
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));
         break;
@@ -109,6 +112,7 @@ export class WebSocketServer {
 
   onTradovateSettingsRead: ((settings: any) => void) | null = null;
   onExtensionDisconnected: (() => void) | null = null;
+  onTiltUpdate: ((data: any) => void) | null = null;
 
   private getSessionState(): any {
     const settings = this.db.getSettings();
