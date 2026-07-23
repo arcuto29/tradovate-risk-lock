@@ -4,7 +4,7 @@ const MESSAGES = [
   "You set these rules for a reason. Whatever you're about to do — you already know it's wrong.",
   "If you want trading to work long-term, don't do this. Close everything and walk away.",
   "This feeling will pass in 10 minutes. Your losses won't come back.",
-  "Every blown account started with 'just one more trade.' You're better than that.",
+  "Go touch grass. Get off charts and do something else. The market will always be here tomorrow.",
 ];
 
 export const BypassWarning: React.FC = () => {
