@@ -9,6 +9,7 @@ import RiskSettings from './components/RiskSettings';
 import { PsychologyCoach } from './components/PsychologyCoach';
 import { UpdateBanner } from './components/UpdateBanner';
 import { TiltMeter } from './components/TiltMeter';
+import { BypassWarning } from './components/BypassWarning';
 
 type Page = 'main' | 'session' | 'coach' | 'log' | 'settings';
 
@@ -72,6 +73,9 @@ export const App: React.FC = () => {
     <div className="h-screen flex flex-col overflow-hidden relative">
       {/* Update Banner */}
       <UpdateBanner />
+
+      {/* Bypass Warning Overlay */}
+      <BypassWarning />
 
       {/* Nebula + Stars Background */}
       <div className="nebula-bg" />
