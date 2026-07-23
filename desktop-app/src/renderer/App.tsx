@@ -46,6 +46,19 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [refreshState]);
 
+  // Dev shortcut: Ctrl+Shift+F12 to force unlock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'F12') {
+        (window as any).electronAPI?.devForceUnlock?.().then((r: any) => {
+          if (r?.success) refreshState();
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [refreshState]);
+
   if (loading) {
     return (
       <div className="h-screen bg-[#030108] flex items-center justify-center">
@@ -66,10 +79,10 @@ export const App: React.FC = () => {
 
       {/* Header */}
       <header className="relative z-10 px-8 pt-6 glass-strong">
-        <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-5 animate-breathe">
+        <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-5 animate-breathe text-center">
           Trading Guardian
         </p>
-        <nav className="flex border-b border-cyan-400/10">
+        <nav className="flex justify-center border-b border-cyan-400/10">
           {NAV_ITEMS.map(({ page, label, lockedLabel }) => (
             <button
               key={page}
@@ -92,10 +105,19 @@ export const App: React.FC = () => {
 
       {/* Main */}
       <main className="relative z-10 flex-1 px-8 py-10 overflow-y-auto">
-        <div className="animate-reveal" key={currentPage}>
+        <div className="animate-reveal max-w-2xl mx-auto" key={currentPage}>
           {currentPage === 'main' && (
             lockState?.isLocked
-              ? <><TiltMeter /><LockStatus lockState={lockState} onRefresh={refreshState} /></>
+              ? <>
+                  <TiltMeter />
+                  <LockStatus lockState={lockState} onRefresh={refreshState} />
+                  <button
+                    onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
+                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                  >
+                    Dev Unlock
+                  </button>
+                </>
               : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}

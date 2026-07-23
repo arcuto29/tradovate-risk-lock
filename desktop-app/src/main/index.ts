@@ -115,6 +115,16 @@ function setupIPC(): void {
     if (result.success) updateTrayMenu();
     return result;
   });
+
+  // Dev-only force unlock
+  ipcMain.handle('dev-force-unlock', () => {
+    if (isDev) {
+      lockManager.forceUnlock();
+      updateTrayMenu();
+      return { success: true };
+    }
+    return { success: false, error: 'Not in dev mode' };
+  });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
@@ -218,17 +228,11 @@ app.whenReady().then(async () => {
     }
   };
 
-  // Anti-bypass: if extension disconnects while locked, kill trading apps
+  // Anti-bypass: if extension disconnects while locked, warn the user
   wsServer.onExtensionDisconnected = () => {
     if (lockManager.isLocked()) {
-      const { exec } = require('child_process');
-      // Kill browser tabs by closing known trading processes
-      // This forces the user to reopen the browser — which will reload the extension
-      exec('taskkill /F /IM chrome.exe /T', () => {});
-      exec('taskkill /F /IM msedge.exe /T', () => {});
-      exec('taskkill /F /IM brave.exe /T', () => {});
-      db.logActivity('browser_killed', 'Browsers closed because extension was disconnected while locked');
-      // Notify user
+      db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
+      // Show the app window with warning
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();

@@ -159,6 +159,11 @@ export class LockManager {
     return { success: true };
   }
 
+  forceUnlock(): void {
+    this.performReset();
+    this.db.logActivity('dev_force_unlock', 'Force unlocked via dev shortcut');
+  }
+
   requestEarlyUnlock(reason: string): { success: boolean; error?: string } {
     if (!this.locked) return { success: false, error: 'Settings are not locked' };
     if (!reason || reason.trim().length < 10) return { success: false, error: 'Please provide a detailed reason (at least 10 characters)' };
