@@ -78,7 +78,22 @@
 
   function isTradeUrl(url) {
     if (!url) return false;
-    return url.includes('/Order') || url.includes('/trading/place') || url.includes('/order/place') || url.includes('risk-monitor-api');
+    return url.includes('/Order') || url.includes('/trading/place') || url.includes('/order/place');
+  }
+
+  function isModifyUrl(url, body) {
+    if (!url) return false;
+    var lower = url.toLowerCase();
+    // ONLY skip on explicit modify/cancel/close endpoints
+    if (lower.includes('/order/modify') || lower.includes('/order/cancel') || lower.includes('/order/update')) return true;
+    if (lower.includes('/trading/modify') || lower.includes('/trading/cancel') || lower.includes('/trading/close')) return true;
+    // Body MUST have orderId AND no size — only then it's safe to skip
+    if (body && body.orderId) {
+      var hasSize = body.qty || body.quantity || body.positionSize || body.amount || body.size;
+      if (hasSize) return false; // Has size = could be new order, don't skip
+      return true; // orderId + no size = modifying existing
+    }
+    return false; // When in doubt, let coach fire
   }
 
   // Override fetch for coach checks on Tradovate
@@ -92,6 +107,16 @@
       var body = null;
       if (opts && opts.body && typeof opts.body === 'string') {
         try { body = JSON.parse(opts.body); } catch(e) {}
+      }
+
+      // Skip coach for order modifications (moving SL/TP, canceling, closing)
+      if (isModifyUrl(url, body)) {
+        return origFetch.apply(this, arguments);
+      }
+
+      // Also skip if URL is risk-settings (that's handled by the injector, not coach)
+      if (url.includes('risk-monitor-api')) {
+        return origFetch.apply(this, arguments);
       }
 
       var result = checkOrder(url, body);
