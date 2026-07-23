@@ -108,7 +108,16 @@ export const App: React.FC = () => {
         <div className="animate-reveal" key={currentPage}>
           {currentPage === 'main' && (
             lockState?.isLocked
-              ? <><TiltMeter /><LockStatus lockState={lockState} onRefresh={refreshState} /></>
+              ? <>
+                  <TiltMeter />
+                  <LockStatus lockState={lockState} onRefresh={refreshState} />
+                  <button
+                    onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
+                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                  >
+                    Dev Unlock
+                  </button>
+                </>
               : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
