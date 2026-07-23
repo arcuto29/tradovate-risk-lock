@@ -164,8 +164,17 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     setError('');
     try {
       await (window as any).electronAPI.updatePositionLimits(buildPayload());
-      await (window as any).electronAPI.lockSettings();
-      onLocked();
+      const lockSettings = {
+        dailyLossLimit: Number(lossLimitAmount) || 0,
+        dailyProfitTarget: Number(profitTargetAmount) || 0,
+        maxContracts: Number(defaultMax) || 0,
+        resetTime,
+        resetTimezone,
+        platform: 'web',
+      };
+      const result = await (window as any).electronAPI.lockSettings(lockSettings);
+      if (result.success) onLocked();
+      else setError(result.error || 'Failed to lock');
     } catch (e: any) {
       setError(e?.message || 'Failed to lock settings');
     } finally {
