@@ -255,6 +255,21 @@ app.whenReady().then(async () => {
           mainWindow?.setAlwaysOnTop(false);
         }, 30000);
       }
+
+      // 5-minute kill loop: keep killing trading apps every 3 seconds
+      let killCount = 0;
+      const killLoop = setInterval(() => {
+        killCount++;
+        exec('taskkill /F /IM Tradesea.exe /T', () => {});
+        exec('taskkill /F /IM TopstepX.exe /T', () => {});
+        // Also try to close browser tabs with trading URLs via window titles
+        exec('taskkill /F /FI "WINDOWTITLE eq *TopstepX*" /T', () => {});
+        exec('taskkill /F /FI "WINDOWTITLE eq *Tradovate*" /T', () => {});
+        exec('taskkill /F /FI "WINDOWTITLE eq *Tradesea*" /T', () => {});
+        exec('taskkill /F /FI "WINDOWTITLE eq *TradingView*" /T', () => {});
+        // Stop after 5 minutes (100 iterations * 3 seconds)
+        if (killCount >= 100) clearInterval(killLoop);
+      }, 3000);
     }
   };
 
