@@ -30,4 +30,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onTiltUpdate: (callback: (data: any) => void) => {
     ipcRenderer.on('tilt-update', (_event, data) => callback(data));
   },
+  // Dev force unlock
+  devForceUnlock: () => ipcRenderer.invoke('dev-force-unlock'),
 });

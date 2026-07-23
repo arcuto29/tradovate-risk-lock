@@ -46,6 +46,19 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [refreshState]);
 
+  // Dev shortcut: Ctrl+Shift+F12 to force unlock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'F12') {
+        (window as any).electronAPI?.devForceUnlock?.().then((r: any) => {
+          if (r?.success) refreshState();
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [refreshState]);
+
   if (loading) {
     return (
       <div className="h-screen bg-[#030108] flex items-center justify-center">
