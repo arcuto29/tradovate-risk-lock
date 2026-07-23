@@ -34,6 +34,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onExtensionDisconnected: (callback: () => void) => {
     ipcRenderer.on('extension-disconnected', () => callback());
   },
+  // Exit fullscreen
+  exitFullscreen: () => ipcRenderer.invoke('exit-fullscreen'),
   // Dev force unlock
   devForceUnlock: () => ipcRenderer.invoke('dev-force-unlock'),
 });

@@ -122,6 +122,15 @@ function setupIPC(): void {
     updateTrayMenu();
     return { success: true };
   });
+
+  // Exit fullscreen
+  ipcMain.handle('exit-fullscreen', () => {
+    if (mainWindow) {
+      mainWindow.setFullScreen(false);
+      mainWindow.setAlwaysOnTop(false);
+    }
+    return { success: true };
+  });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
@@ -231,17 +240,20 @@ app.whenReady().then(async () => {
       db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
       // Kill trading platforms
       const { exec } = require('child_process');
-      // Close known trading desktop apps
       exec('taskkill /F /IM Tradesea.exe /T', () => {});
       exec('taskkill /F /IM TopstepX.exe /T', () => {});
-      // Show the app window with fullscreen warning
+      // Go fullscreen and show warning
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();
+        mainWindow.setFullScreen(true);
         mainWindow.setAlwaysOnTop(true);
         mainWindow.webContents.send('extension-disconnected');
-        // Release always-on-top after 30 seconds
-        setTimeout(() => { mainWindow?.setAlwaysOnTop(false); }, 30000);
+        // Release fullscreen after 30 seconds
+        setTimeout(() => {
+          mainWindow?.setFullScreen(false);
+          mainWindow?.setAlwaysOnTop(false);
+        }, 30000);
       }
     }
   };
