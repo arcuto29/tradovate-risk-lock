@@ -18,6 +18,7 @@
   });
 
   function isOrderPlaceUrl(url) { return url && url.includes('/trading/place'); }
+  function isOrderModifyUrl(url) { return url && (url.includes('/trading/modify') || url.includes('/trading/cancel') || url.includes('/trading/close')); }
 
   function getMaxForSymbol(symbol) {
     if (!symbol) return positionLimits.defaultMax;
@@ -36,6 +37,11 @@
     var method = (opts && opts.method ? opts.method : 'GET').toUpperCase();
 
     if ((method === 'POST' || method === 'PUT') && isOrderPlaceUrl(url)) {
+      // Skip checks for order modifications (moving SL/TP, closing positions)
+      if (isOrderModifyUrl(url)) {
+        return origFetch.apply(this, arguments);
+      }
+
       if (sessionBlocked) {
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return Promise.reject(new Error('Blocked: Outside trading hours'));
