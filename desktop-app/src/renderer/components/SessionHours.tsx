@@ -25,6 +25,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   };
 
   const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all";
+  const selectClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white";
 
   return (
     <div className="max-w-lg">
@@ -60,7 +61,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-white/35 mb-2">Timezone</label>
-                <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={inputClass + " appearance-none cursor-pointer"}>
+                <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={selectClass}>
                   <option value="America/New_York">Eastern (ET)</option>
                   <option value="America/Chicago">Central (CT)</option>
                   <option value="America/Denver">Mountain (MT)</option>
