@@ -5,20 +5,19 @@ import { ActivityLog } from './components/ActivityLog';
 import { TrustedPerson } from './components/TrustedPerson';
 import { AppSettingsPanel } from './components/AppSettingsPanel';
 import { SessionHours } from './components/SessionHours';
-import { PositionLimits } from './components/PositionLimits';
+import RiskSettings from './components/RiskSettings';
 import { PsychologyCoach } from './components/PsychologyCoach';
 import { UpdateBanner } from './components/UpdateBanner';
 
-type Page = 'main' | 'session' | 'position' | 'coach' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'log' | 'settings';
 
 declare global {
   interface Window { electronAPI: any; }
 }
 
 const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string }[] = [
-  { page: 'main', label: 'Risk Lock', lockedLabel: 'Status' },
+  { page: 'main', label: 'Risk Settings', lockedLabel: 'Status' },
   { page: 'session', label: 'Session' },
-  { page: 'position', label: 'Limits' },
   { page: 'coach', label: 'Coach' },
   { page: 'log', label: 'Log' },
   { page: 'settings', label: 'Settings' },
@@ -96,10 +95,9 @@ export const App: React.FC = () => {
           {currentPage === 'main' && (
             lockState?.isLocked
               ? <LockStatus lockState={lockState} onRefresh={refreshState} />
-              : <SettingsForm onLocked={refreshState} />
+              : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
-          {currentPage === 'position' && <PositionLimits isLocked={lockState?.isLocked} />}
           {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
