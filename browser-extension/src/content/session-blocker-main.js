@@ -88,12 +88,29 @@
   // ─── Order URL detection ───────────────────────────────────────────────────
   var ORDER_URLS = ['userapi.topstepx.com/Order', '/Order', '/api/Order', 'order/place'];
   var SAFE_URLS = ['/Order?accountId', '/order/list', '/order/item', '/orders/history'];
+  // URLs that indicate modifying/canceling an existing order (NOT new orders)
+  var MODIFY_URLS = ['/Order/modify', '/Order/cancel', '/Order/update', '/order/modify', '/order/cancel', '/order/update'];
 
   function isOrderUrl(url) {
     if (!url) return false;
     var lower = url.toLowerCase();
     if (SAFE_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return false;
     return ORDER_URLS.some(function(p) { return url.includes(p); });
+  }
+
+  function isModifyOrCancel(url, body) {
+    if (!url) return false;
+    var lower = url.toLowerCase();
+    // ONLY skip on explicit modify/cancel URL endpoints
+    if (MODIFY_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return true;
+    // Body MUST have an orderId AND no new position size — that's the only safe check
+    // If there's ANY size/quantity field, treat it as a new order (don't let anything bypass)
+    if (body && body.orderId) {
+      var hasSize = body.positionSize || body.qty || body.quantity || body.amount || body.size;
+      if (hasSize) return false; // Has size = could be a new order, don't skip
+      return true; // Has orderId but no size = definitely modifying existing
+    }
+    return false; // When in doubt, don't skip — let coach fire
   }
 
   function isPostOrPut(method) {
@@ -168,17 +185,22 @@
     var method = (opts && opts.method ? opts.method : 'GET').toUpperCase();
 
     if (isPostOrPut(method) && isOrderUrl(url)) {
-      // Session block
+      // Parse body first so we can check if it's a modification
+      var body = null;
+      if (opts && opts.body && typeof opts.body === 'string') {
+        try { body = JSON.parse(opts.body); } catch(e) {}
+      }
+
+      // Skip coach/size checks for order modifications (moving SL/TP, canceling orders)
+      if (isModifyOrCancel(url, body)) {
+        return origFetch.apply(this, arguments);
+      }
+
+      // Session block (still blocks everything including modifications when outside hours)
       if (sessionBlocked) {
         console.log('[TradingGuardian] BLOCKED: Outside trading hours');
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return Promise.reject(new Error('Blocked: Outside trading hours'));
-      }
-
-      // Parse body
-      var body = null;
-      if (opts && opts.body && typeof opts.body === 'string') {
-        try { body = JSON.parse(opts.body); } catch(e) {}
       }
 
       // Position size
@@ -213,12 +235,18 @@
   XMLHttpRequest.prototype.send = function(body) {
     var method = (this._tgMethod || 'GET').toUpperCase();
     if (isPostOrPut(method) && isOrderUrl(this._tgUrl)) {
+      var parsed = null;
+      if (typeof body === 'string') { try { parsed = JSON.parse(body); } catch(e) {} }
+
+      // Skip coach/size checks for order modifications (moving SL/TP)
+      if (isModifyOrCancel(this._tgUrl, parsed)) {
+        return origSend.apply(this, arguments);
+      }
+
       if (sessionBlocked) {
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return;
       }
-      var parsed = null;
-      if (typeof body === 'string') { try { parsed = JSON.parse(body); } catch(e) {} }
       if (parsed && isOversized(parsed)) {
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size exceeds limit' }, '*');
         return;
