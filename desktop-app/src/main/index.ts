@@ -210,6 +210,26 @@ app.whenReady().then(async () => {
       mainWindow.webContents.send('tradovate-settings-synced', settings);
     }
   };
+
+  // Anti-bypass: if extension disconnects while locked, kill trading apps
+  wsServer.onExtensionDisconnected = () => {
+    if (lockManager.isLocked()) {
+      const { exec } = require('child_process');
+      // Kill browser tabs by closing known trading processes
+      // This forces the user to reopen the browser — which will reload the extension
+      exec('taskkill /F /IM chrome.exe /T', () => {});
+      exec('taskkill /F /IM msedge.exe /T', () => {});
+      exec('taskkill /F /IM brave.exe /T', () => {});
+      db.logActivity('browser_killed', 'Browsers closed because extension was disconnected while locked');
+      // Notify user
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+        mainWindow.webContents.send('extension-disconnected');
+      }
+    }
+  };
+
   tamperGuard = new TamperGuard(lockManager, db);
   createWindow();
   createTray();

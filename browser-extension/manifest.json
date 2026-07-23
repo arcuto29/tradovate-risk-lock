@@ -9,7 +9,7 @@
   "content_scripts": [
     {
       "matches": ["https://trader.tradovate.com/*"],
-      "js": ["src/content/injector.js", "src/content/psychology-coach-main.js"],
+      "js": ["src/content/injector.js", "src/content/psychology-coach-main.js", "src/content/tilt-meter.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start",
       "world": "MAIN"
@@ -22,7 +22,7 @@
     },
     {
       "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
-      "js": ["src/content/session-blocker-main.js"],
+      "js": ["src/content/session-blocker-main.js", "src/content/tilt-meter.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start",
       "world": "MAIN"
@@ -35,7 +35,7 @@
     },
     {
       "matches": ["https://www.tradingview.com/*"],
-      "js": ["src/content/tradingview-main.js"],
+      "js": ["src/content/tradingview-main.js", "src/content/tilt-meter.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start",
       "world": "MAIN"
