@@ -1,6 +1,6 @@
 {
   "name": "tradovate-risk-lock",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "author": "arcuto29",
   "description": "Tradovate Risk Settings Lock - Prevents traders from modifying risk settings during active trading sessions",
   "main": "dist/main/index.js",
@@ -46,7 +46,7 @@
   },
   "build": {
     "appId": "com.tradovate-risk-lock.app",
-    "productName": "Tradovate Risk Lock",
+    "productName": "Trading Guardian",
     "directories": {
       "output": "release"
     },
@@ -78,10 +78,15 @@
       ]
     },
     "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
-      "runAfterFinish": true
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Trading Guardian",
+      "runAfterFinish": true,
+      "installerIcon": "icons/icon-256.ico",
+      "uninstallerIcon": "icons/icon-256.ico"
     },
     "portable": {
       "artifactName": "TradovateRiskLock-Portable.exe"
