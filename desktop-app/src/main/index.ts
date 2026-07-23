@@ -5,6 +5,7 @@ import { LockManager } from './lock-manager';
 import { WebSocketServer } from './websocket-server';
 import { TamperGuard } from './tamper-guard';
 import { ProcessBlocker } from './process-blocker';
+import { setupAutoUpdater } from './auto-updater';
 
 // Set app user model ID so Windows can pin it to taskbar
 app.setAppUserModelId('com.tradovate-risk-lock.app');
@@ -214,6 +215,11 @@ app.whenReady().then(async () => {
   createTray();
   setupIPC();
   tamperGuard.start();
+
+  // Auto-updater
+  if (!isDev && mainWindow) {
+    setupAutoUpdater(mainWindow);
+  }
 
   // Start process blocker (kills Tradesea/TopstepX outside trading hours)
   processBlocker = new ProcessBlocker(db);
