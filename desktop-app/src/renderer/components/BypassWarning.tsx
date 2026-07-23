@@ -44,7 +44,10 @@ export const BypassWarning: React.FC = () => {
 
       {/* Dismiss */}
       <button
-        onClick={() => setVisible(false)}
+        onClick={() => {
+          setVisible(false);
+          (window as any).electronAPI?.exitFullscreen?.();
+        }}
         className="px-8 py-4 border border-white/10 text-white/30 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:border-white/20 hover:text-white/50 transition-all"
       >
         I understand
