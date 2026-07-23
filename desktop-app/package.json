@@ -1,6 +1,6 @@
 {
   "name": "tradovate-risk-lock",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": "arcuto29",
   "description": "Tradovate Risk Settings Lock - Prevents traders from modifying risk settings during active trading sessions",
   "main": "dist/main/index.js",
