@@ -232,11 +232,19 @@ app.whenReady().then(async () => {
   wsServer.onExtensionDisconnected = () => {
     if (lockManager.isLocked()) {
       db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
-      // Show the app window with warning
+      // Kill trading platforms
+      const { exec } = require('child_process');
+      // Close known trading desktop apps
+      exec('taskkill /F /IM Tradesea.exe /T', () => {});
+      exec('taskkill /F /IM TopstepX.exe /T', () => {});
+      // Show the app window with fullscreen warning
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();
+        mainWindow.setAlwaysOnTop(true);
         mainWindow.webContents.send('extension-disconnected');
+        // Release always-on-top after 30 seconds
+        setTimeout(() => { mainWindow?.setAlwaysOnTop(false); }, 30000);
       }
     }
   };
