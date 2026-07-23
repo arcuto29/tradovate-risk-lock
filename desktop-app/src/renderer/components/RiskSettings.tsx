@@ -77,7 +77,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [lossLimitEnabled, setLossLimitEnabled] = useState(false);
   const [lossLimitAmount, setLossLimitAmount] = useState('');
   const [lossLimitAction, setLossLimitAction] = useState('block');
-  const [trailingEnabled, setTrailingEnabled] = useState(false);
 
   // Profit Target
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
@@ -116,7 +115,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (limits.lossLimitEnabled !== undefined) setLossLimitEnabled(limits.lossLimitEnabled);
       if (limits.lossLimitAmount !== undefined) setLossLimitAmount(String(limits.lossLimitAmount));
       if (limits.lossLimitAction) setLossLimitAction(limits.lossLimitAction);
-      if (limits.trailingEnabled !== undefined) setTrailingEnabled(limits.trailingEnabled);
       if (limits.profitTargetEnabled !== undefined) setProfitTargetEnabled(limits.profitTargetEnabled);
       if (limits.profitTargetAmount !== undefined) setProfitTargetAmount(String(limits.profitTargetAmount));
       if (limits.profitTargetAction) setProfitTargetAction(limits.profitTargetAction);
@@ -150,7 +148,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     lossLimitEnabled,
     lossLimitAmount: Number(lossLimitAmount) || 0,
     lossLimitAction,
-    trailingEnabled,
     profitTargetEnabled,
     profitTargetAmount: Number(profitTargetAmount) || 0,
     profitTargetAction,
@@ -278,16 +275,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   <option value="block">Block Trading</option>
                   <option value="warn">Warn Only</option>
                 </select>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={trailingEnabled}
-                  onChange={(e) => setTrailingEnabled(e.target.checked)}
-                  disabled={isLocked}
-                  className="accent-cyan-400"
-                />
-                <span className="text-xs text-white/50">Enable trailing (locks in gains)</span>
               </div>
             </div>
             <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
