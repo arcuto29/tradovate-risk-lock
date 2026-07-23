@@ -68,7 +68,6 @@ interface Props {
 
 const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [activePage, setActivePage] = useState<SettingPage>('loss_limit');
-  const [lockConfirmed, setLockConfirmed] = useState(false);
   const [locking, setLocking] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
@@ -77,7 +76,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [lossLimitEnabled, setLossLimitEnabled] = useState(false);
   const [lossLimitAmount, setLossLimitAmount] = useState('');
   const [lossLimitAction, setLossLimitAction] = useState('block');
-  const [trailingEnabled, setTrailingEnabled] = useState(false);
 
   // Profit Target
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
@@ -116,7 +114,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (limits.lossLimitEnabled !== undefined) setLossLimitEnabled(limits.lossLimitEnabled);
       if (limits.lossLimitAmount !== undefined) setLossLimitAmount(String(limits.lossLimitAmount));
       if (limits.lossLimitAction) setLossLimitAction(limits.lossLimitAction);
-      if (limits.trailingEnabled !== undefined) setTrailingEnabled(limits.trailingEnabled);
       if (limits.profitTargetEnabled !== undefined) setProfitTargetEnabled(limits.profitTargetEnabled);
       if (limits.profitTargetAmount !== undefined) setProfitTargetAmount(String(limits.profitTargetAmount));
       if (limits.profitTargetAction) setProfitTargetAction(limits.profitTargetAction);
@@ -150,7 +147,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     lossLimitEnabled,
     lossLimitAmount: Number(lossLimitAmount) || 0,
     lossLimitAction,
-    trailingEnabled,
     profitTargetEnabled,
     profitTargetAmount: Number(profitTargetAmount) || 0,
     profitTargetAction,
@@ -278,16 +274,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   <option value="block">Block Trading</option>
                   <option value="warn">Warn Only</option>
                 </select>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={trailingEnabled}
-                  onChange={(e) => setTrailingEnabled(e.target.checked)}
-                  disabled={isLocked}
-                  className="accent-cyan-400"
-                />
-                <span className="text-xs text-white/50">Enable trailing (locks in gains)</span>
               </div>
             </div>
             <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
@@ -550,16 +536,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
 
         {!isLocked && (
           <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <label className="flex items-center gap-2 mb-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={lockConfirmed}
-                onChange={(e) => setLockConfirmed(e.target.checked)}
-                className="accent-cyan-400"
-              />
-              <span className="text-[0.62rem] text-white/40">I confirm lock</span>
-            </label>
-            <button className={lockBtn} disabled={!lockConfirmed || locking} onClick={handleLock}>
+            <button className={lockBtn} disabled={locking} onClick={handleLock}>
               {locking ? 'Locking...' : 'Lock Settings'}
             </button>
           </div>
