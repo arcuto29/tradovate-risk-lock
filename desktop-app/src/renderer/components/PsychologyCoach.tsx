@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const [enabled, setEnabled] = useState(true);
-  const [maxTradesPerDay, setMaxTradesPerDay] = useState(10);
   const [cooldownSeconds, setCooldownSeconds] = useState(120);
-  const [maxDailyLoss, setMaxDailyLoss] = useState(500);
   const [escalatingCooldown, setEscalatingCooldown] = useState(true);
   const [lossStreakEnabled, setLossStreakEnabled] = useState(true);
   const [profitLockEnabled, setProfitLockEnabled] = useState(true);
@@ -18,8 +16,8 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
       try {
         const c = await window.electronAPI.getCoachConfig();
         if (c) {
-          setEnabled(c.enabled !== false); setMaxTradesPerDay(c.maxTradesPerDay || 10);
-          setCooldownSeconds(c.cooldownSeconds || 120); setMaxDailyLoss(c.maxDailyLoss || 500);
+          setEnabled(c.enabled !== false);
+          setCooldownSeconds(c.cooldownSeconds || 120);
           setEscalatingCooldown(c.escalatingCooldown !== false); setLossStreakEnabled(c.lossStreakEnabled !== false);
           setProfitLockEnabled(c.profitLockEnabled !== false); setProfitLockThreshold(c.profitLockThreshold || 500);
           setDrawdownFromHigh(c.drawdownFromHigh || 200); setScalingLockEnabled(c.scalingLockEnabled !== false);
@@ -29,7 +27,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
   }, []);
 
   const handleSave = async () => {
-    await window.electronAPI.updateCoachConfig({ enabled, maxTradesPerDay, cooldownSeconds, maxDailyLoss, escalatingCooldown, lossStreakEnabled, profitLockEnabled, profitLockThreshold, drawdownFromHigh, scalingLockEnabled });
+    await window.electronAPI.updateCoachConfig({ enabled, cooldownSeconds, escalatingCooldown, lossStreakEnabled, profitLockEnabled, profitLockThreshold, drawdownFromHigh, scalingLockEnabled });
     setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
@@ -51,28 +49,16 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
       {enabled && (
         <>
           <div className="glass rounded-xl p-6 mb-4">
-            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Trade Limit</p>
-            <p className="text-xs text-white/25 mb-3">Max trades per day</p>
-            <input type="number" min="1" max="50" value={maxTradesPerDay} onChange={(e) => setMaxTradesPerDay(parseInt(e.target.value) || 10)} className={numInput} />
-          </div>
-
-          <div className="glass rounded-xl p-6 mb-4">
-            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Cooldown</p>
-            <p className="text-xs text-white/25 mb-3">Seconds after loss</p>
+            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Cooldown After Loss</p>
+            <p className="text-xs text-white/25 mb-3">Seconds before you can trade again</p>
             <input type="number" min="30" max="600" step="30" value={cooldownSeconds} onChange={(e) => setCooldownSeconds(parseInt(e.target.value) || 120)} className={numInput} />
             <p className="text-[0.65rem] text-white/15 mt-2 font-mono">{Math.floor(cooldownSeconds / 60)}m {cooldownSeconds % 60}s</p>
             <div className="mt-4">
               <label className={check}>
                 <input type="checkbox" checked={escalatingCooldown} onChange={(e) => setEscalatingCooldown(e.target.checked)} className="w-4 h-4 accent-cyan-400 mt-0.5" />
-                <span className="text-sm text-white/35">Escalating (doubles each loss)</span>
+                <span className="text-sm text-white/35">Escalating (doubles each consecutive loss)</span>
               </label>
             </div>
-          </div>
-
-          <div className="glass rounded-xl p-6 mb-4">
-            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Daily Loss Cutoff</p>
-            <p className="text-xs text-white/25 mb-3">Block trading at ($)</p>
-            <input type="number" min="50" max="10000" step="50" value={maxDailyLoss} onChange={(e) => setMaxDailyLoss(parseInt(e.target.value) || 500)} className={numInput} />
           </div>
 
           <div className="glass rounded-xl p-6 mb-4">
@@ -96,11 +82,11 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
             {profitLockEnabled && (
               <div className="space-y-3 mt-4">
                 <div>
-                  <p className="text-xs text-white/25 mb-2">Target ($)</p>
+                  <p className="text-xs text-white/25 mb-2">Profit target — lock out after ($)</p>
                   <input type="number" min="0" max="10000" step="50" value={profitLockThreshold} onChange={(e) => setProfitLockThreshold(parseInt(e.target.value) || 0)} className={numInput} />
                 </div>
                 <div>
-                  <p className="text-xs text-white/25 mb-2">Drawdown from high ($)</p>
+                  <p className="text-xs text-white/25 mb-2">Drawdown from high — lock out after giving back ($)</p>
                   <input type="number" min="50" max="5000" step="50" value={drawdownFromHigh} onChange={(e) => setDrawdownFromHigh(parseInt(e.target.value) || 200)} className={numInput} />
                 </div>
               </div>

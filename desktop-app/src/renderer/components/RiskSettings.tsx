@@ -68,7 +68,6 @@ interface Props {
 
 const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [activePage, setActivePage] = useState<SettingPage>('loss_limit');
-  const [lockConfirmed, setLockConfirmed] = useState(false);
   const [locking, setLocking] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
@@ -77,7 +76,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [lossLimitEnabled, setLossLimitEnabled] = useState(false);
   const [lossLimitAmount, setLossLimitAmount] = useState('');
   const [lossLimitAction, setLossLimitAction] = useState('block');
-  const [trailingEnabled, setTrailingEnabled] = useState(false);
 
   // Profit Target
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
@@ -87,7 +85,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   // Max Trades
   const [maxTradesEnabled, setMaxTradesEnabled] = useState(false);
   const [maxTradesPerDay, setMaxTradesPerDay] = useState('');
-  const [maxTradesPerWeek, setMaxTradesPerWeek] = useState('');
 
   // Blocked Symbols
   const [blockedSymbolsEnabled, setBlockedSymbolsEnabled] = useState(false);
@@ -116,13 +113,11 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (limits.lossLimitEnabled !== undefined) setLossLimitEnabled(limits.lossLimitEnabled);
       if (limits.lossLimitAmount !== undefined) setLossLimitAmount(String(limits.lossLimitAmount));
       if (limits.lossLimitAction) setLossLimitAction(limits.lossLimitAction);
-      if (limits.trailingEnabled !== undefined) setTrailingEnabled(limits.trailingEnabled);
       if (limits.profitTargetEnabled !== undefined) setProfitTargetEnabled(limits.profitTargetEnabled);
       if (limits.profitTargetAmount !== undefined) setProfitTargetAmount(String(limits.profitTargetAmount));
       if (limits.profitTargetAction) setProfitTargetAction(limits.profitTargetAction);
       if (limits.maxTradesEnabled !== undefined) setMaxTradesEnabled(limits.maxTradesEnabled);
       if (limits.maxTradesPerDay !== undefined) setMaxTradesPerDay(String(limits.maxTradesPerDay));
-      if (limits.maxTradesPerWeek !== undefined) setMaxTradesPerWeek(String(limits.maxTradesPerWeek));
       if (limits.blockedSymbolsEnabled !== undefined) setBlockedSymbolsEnabled(limits.blockedSymbolsEnabled);
       if (limits.blockedSymbols) setBlockedSymbols(limits.blockedSymbols);
       if (limits.maxContractsEnabled !== undefined) setMaxContractsEnabled(limits.maxContractsEnabled);
@@ -141,7 +136,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (settings.profitTargetAmount !== undefined) setProfitTargetAmount(String(settings.profitTargetAmount));
       if (settings.maxTradesPerDay !== undefined) setMaxTradesPerDay(String(settings.maxTradesPerDay));
       if (settings.blockedSymbols) setBlockedSymbols(settings.blockedSymbols);
-      if (settings.contractLimits) setContractLimits(settings.contractLimits);
     });
     return () => cleanup?.();
   }, []);
@@ -150,13 +144,11 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     lossLimitEnabled,
     lossLimitAmount: Number(lossLimitAmount) || 0,
     lossLimitAction,
-    trailingEnabled,
     profitTargetEnabled,
     profitTargetAmount: Number(profitTargetAmount) || 0,
     profitTargetAction,
     maxTradesEnabled,
     maxTradesPerDay: Number(maxTradesPerDay) || 0,
-    maxTradesPerWeek: Number(maxTradesPerWeek) || 0,
     blockedSymbolsEnabled,
     blockedSymbols,
     maxContractsEnabled,
@@ -279,16 +271,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   <option value="warn">Warn Only</option>
                 </select>
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={trailingEnabled}
-                  onChange={(e) => setTrailingEnabled(e.target.checked)}
-                  disabled={isLocked}
-                  className="accent-cyan-400"
-                />
-                <span className="text-xs text-white/50">Enable trailing (locks in gains)</span>
-              </div>
             </div>
             <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
               Save
@@ -334,7 +316,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <h2 className={sectionTitle}>Max Trades</h2>
             <p className={description}>
-              Limit the number of trades you can take per day or per week. Helps prevent overtrading and revenge trading.
+              Limit the number of trades you can take per day. Helps prevent overtrading and revenge trading.
             </p>
             <div className="space-y-4">
               <div>
@@ -345,17 +327,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   value={maxTradesPerDay}
                   onChange={(e) => setMaxTradesPerDay(e.target.value)}
                   placeholder="e.g. 5"
-                  disabled={isLocked}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Per Week</label>
-                <input
-                  type="number"
-                  className={inputClass}
-                  value={maxTradesPerWeek}
-                  onChange={(e) => setMaxTradesPerWeek(e.target.value)}
-                  placeholder="e.g. 20"
                   disabled={isLocked}
                 />
               </div>
@@ -550,16 +521,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
 
         {!isLocked && (
           <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <label className="flex items-center gap-2 mb-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={lockConfirmed}
-                onChange={(e) => setLockConfirmed(e.target.checked)}
-                className="accent-cyan-400"
-              />
-              <span className="text-[0.62rem] text-white/40">I confirm lock</span>
-            </label>
-            <button className={lockBtn} disabled={!lockConfirmed || locking} onClick={handleLock}>
+            <button className={lockBtn} disabled={locking} onClick={handleLock}>
               {locking ? 'Locking...' : 'Lock Settings'}
             </button>
           </div>
