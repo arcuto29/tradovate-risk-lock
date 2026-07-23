@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 const MESSAGES = [
   "You set these rules for a reason. Whatever you're about to do — you already know it's wrong.",
-  "You made this decision while calm. Right now you're not calm. Trust the version of you that was thinking clearly.",
-  "One emotional trade can undo a week of discipline. Is it worth it?",
-  "The market will be here tomorrow. Will your account?",
-  "You're not thinking straight right now. Close everything and walk away.",
-  "Every blown account started with 'just one more trade.' Don't be that person.",
+  "If you want trading to work long-term, don't do this. Close everything and walk away.",
   "This feeling will pass in 10 minutes. Your losses won't come back.",
-  "You disabled your protection. That means you know what you're about to do is wrong.",
+  "Every blown account started with 'just one more trade.' You're better than that.",
 ];
 
 export const BypassWarning: React.FC = () => {
