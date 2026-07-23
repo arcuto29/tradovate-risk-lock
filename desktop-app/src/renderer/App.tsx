@@ -7,6 +7,7 @@ import { AppSettingsPanel } from './components/AppSettingsPanel';
 import { SessionHours } from './components/SessionHours';
 import { PositionLimits } from './components/PositionLimits';
 import { PsychologyCoach } from './components/PsychologyCoach';
+import { UpdateBanner } from './components/UpdateBanner';
 
 type Page = 'main' | 'session' | 'position' | 'coach' | 'log' | 'settings';
 
@@ -56,6 +57,9 @@ export const App: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
+      {/* Update Banner */}
+      <UpdateBanner />
+
       {/* Nebula + Stars Background */}
       <div className="nebula-bg" />
       <div className="stars" />

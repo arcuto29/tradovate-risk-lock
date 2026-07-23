@@ -18,6 +18,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "electron-store": "^8.2.0",
+    "electron-updater": "^6.8.9",
     "luxon": "^3.4.4",
     "node-schedule": "^2.1.1",
     "sql.js": "^1.10.0",
@@ -47,6 +48,11 @@
   "build": {
     "appId": "com.tradovate-risk-lock.app",
     "productName": "Trading Guardian",
+    "publish": {
+      "provider": "github",
+      "owner": "arcuto29",
+      "repo": "tradovate-risk-lock"
+    },
     "directories": {
       "output": "release"
     },

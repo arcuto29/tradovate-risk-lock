@@ -20,4 +20,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onTradovateSettingsSynced: (callback: (settings: any) => void) => {
     ipcRenderer.on('tradovate-settings-synced', (_event, settings) => callback(settings));
   },
+  // Auto-updater
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  onUpdateStatus: (callback: (status: any) => void) => {
+    ipcRenderer.on('update-status', (_event, status) => callback(status));
+  },
 });
