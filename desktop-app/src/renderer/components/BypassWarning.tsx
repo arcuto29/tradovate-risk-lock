@@ -10,20 +10,43 @@ const MESSAGES = [
 export const BypassWarning: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
+  const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
+  const [canDismiss, setCanDismiss] = useState(false);
 
   useEffect(() => {
     if ((window as any).electronAPI?.onExtensionDisconnected) {
       (window as any).electronAPI.onExtensionDisconnected(() => {
         setMessage(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
+        setCountdown(300);
+        setCanDismiss(false);
         setVisible(true);
       });
     }
   }, []);
 
+  // Countdown timer
+  useEffect(() => {
+    if (!visible || canDismiss) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setCanDismiss(true);
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [visible, canDismiss]);
+
   if (!visible) return null;
 
+  const minutes = Math.floor(countdown / 60);
+  const seconds = countdown % 60;
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center p-12">
+    <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-12">
       {/* Pulsing red dot */}
       <div className="w-4 h-4 rounded-full bg-red-500 mb-10 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.8),0_0_40px_rgba(239,68,68,0.4)]" />
 
@@ -33,24 +56,40 @@ export const BypassWarning: React.FC = () => {
       </h1>
 
       {/* Message */}
-      <p className="text-lg text-white/60 text-center max-w-lg leading-relaxed mb-12">
+      <p className="text-lg text-white/60 text-center max-w-lg leading-relaxed mb-8">
         {message}
       </p>
+
+      {/* Countdown */}
+      {!canDismiss && (
+        <div className="mb-8">
+          <p className="text-sm text-white/30 text-center mb-2">You can't dismiss this for</p>
+          <p className="text-3xl font-mono font-bold text-red-400 text-center">
+            {minutes}:{seconds.toString().padStart(2, '0')}
+          </p>
+        </div>
+      )}
 
       {/* Trading platforms killed notice */}
       <p className="text-sm text-red-400/80 text-center mb-12">
         Your trading platforms have been closed.
       </p>
 
-      {/* Dismiss */}
+      {/* Dismiss — only works after countdown */}
       <button
         onClick={() => {
+          if (!canDismiss) return;
           setVisible(false);
           (window as any).electronAPI?.exitFullscreen?.();
         }}
-        className="px-8 py-4 border border-white/10 text-white/30 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:border-white/20 hover:text-white/50 transition-all"
+        disabled={!canDismiss}
+        className={`px-8 py-4 border text-xs font-semibold uppercase tracking-[2px] rounded-lg transition-all ${
+          canDismiss
+            ? 'border-white/10 text-white/30 hover:border-white/20 hover:text-white/50 cursor-pointer'
+            : 'border-white/5 text-white/10 cursor-not-allowed'
+        }`}
       >
-        I understand
+        {canDismiss ? 'I understand' : 'Wait...'}
       </button>
     </div>
   );

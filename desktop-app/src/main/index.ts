@@ -248,12 +248,16 @@ app.whenReady().then(async () => {
         mainWindow.focus();
         mainWindow.setFullScreen(true);
         mainWindow.setAlwaysOnTop(true);
+        mainWindow.setClosable(false);
+        mainWindow.setMinimizable(false);
         mainWindow.webContents.send('extension-disconnected');
-        // Release fullscreen after 30 seconds
+        // Release after 5 minutes
         setTimeout(() => {
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
-        }, 30000);
+          mainWindow?.setClosable(true);
+          mainWindow?.setMinimizable(true);
+        }, 300000);
       }
 
       // 5-minute kill loop: keep killing trading apps every 3 seconds
