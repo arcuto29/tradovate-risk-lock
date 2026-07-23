@@ -56,6 +56,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
   };
 
   const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15";
+  const selectClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white";
 
   return (
     <div className="max-w-lg">
@@ -103,7 +104,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
           </div>
           <div>
             <label className="block text-xs font-medium text-white/35 mb-2">Timezone</label>
-            <select value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} className={inputClass + " appearance-none cursor-pointer"}>
+            <select value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} className={selectClass}>
               {TIMEZONES.map((tz) => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
             </select>
           </div>
@@ -113,7 +114,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
       {/* Platform */}
       <div className="glass rounded-xl p-6 mb-4">
         <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Platform</p>
-        <select value={platform} onChange={(e) => setPlatform(e.target.value as any)} className={inputClass + " appearance-none cursor-pointer"}>
+        <select value={platform} onChange={(e) => setPlatform(e.target.value as any)} className={selectClass}>
           <option value="web">Web Browser</option>
           <option value="pwa">Progressive Web App</option>
           <option value="desktop">Desktop</option>

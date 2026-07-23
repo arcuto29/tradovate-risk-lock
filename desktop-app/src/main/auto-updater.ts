@@ -10,7 +10,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow): void {
     sendToRenderer(mainWindow, 'update-status', { status: 'checking' });
   });
 
-  autoUpdater.on('update-available', (info) => {
+  autoUpdater.on('update-available', (info: any) => {
     sendToRenderer(mainWindow, 'update-status', { status: 'available', version: info.version });
   });
 
@@ -18,15 +18,15 @@ export function setupAutoUpdater(mainWindow: BrowserWindow): void {
     sendToRenderer(mainWindow, 'update-status', { status: 'up-to-date' });
   });
 
-  autoUpdater.on('download-progress', (progress) => {
+  autoUpdater.on('download-progress', (progress: any) => {
     sendToRenderer(mainWindow, 'update-status', { status: 'downloading', percent: Math.round(progress.percent) });
   });
 
-  autoUpdater.on('update-downloaded', (info) => {
+  autoUpdater.on('update-downloaded', (info: any) => {
     sendToRenderer(mainWindow, 'update-status', { status: 'ready', version: info.version });
   });
 
-  autoUpdater.on('error', (err) => {
+  autoUpdater.on('error', (err: any) => {
     sendToRenderer(mainWindow, 'update-status', { status: 'error', message: err.message });
   });
 
