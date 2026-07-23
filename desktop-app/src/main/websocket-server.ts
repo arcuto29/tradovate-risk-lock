@@ -25,7 +25,14 @@ export class WebSocketServer {
       try { this.handleMessage(ws, JSON.parse(data.toString())); }
       catch { ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' })); }
     });
-    ws.on('close', () => this.clients.delete(ws));
+    ws.on('close', () => {
+      this.clients.delete(ws);
+      // If extension disconnects while locked — potential bypass attempt
+      if (this.lockManager.isLocked() && this.clients.size === 0) {
+        this.db.logActivity('extension_disconnected', 'Extension disconnected while locked — killing trading apps');
+        if (this.onExtensionDisconnected) this.onExtensionDisconnected();
+      }
+    });
     ws.on('error', () => this.clients.delete(ws));
     ws.send(JSON.stringify({ type: 'connected', locked: this.lockManager.isLocked(), token: this.authToken }));
 
@@ -101,6 +108,7 @@ export class WebSocketServer {
   }
 
   onTradovateSettingsRead: ((settings: any) => void) | null = null;
+  onExtensionDisconnected: (() => void) | null = null;
 
   private getSessionState(): any {
     const settings = this.db.getSettings();
