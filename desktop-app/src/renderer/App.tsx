@@ -79,10 +79,10 @@ export const App: React.FC = () => {
 
       {/* Header */}
       <header className="relative z-10 px-8 pt-6 glass-strong">
-        <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-5 animate-breathe">
+        <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-5 animate-breathe text-center">
           Trading Guardian
         </p>
-        <nav className="flex border-b border-cyan-400/10">
+        <nav className="flex justify-center border-b border-cyan-400/10">
           {NAV_ITEMS.map(({ page, label, lockedLabel }) => (
             <button
               key={page}
@@ -105,7 +105,7 @@ export const App: React.FC = () => {
 
       {/* Main */}
       <main className="relative z-10 flex-1 px-8 py-10 overflow-y-auto">
-        <div className="animate-reveal" key={currentPage}>
+        <div className="animate-reveal max-w-2xl mx-auto" key={currentPage}>
           {currentPage === 'main' && (
             lockState?.isLocked
               ? <>
