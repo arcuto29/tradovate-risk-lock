@@ -8,6 +8,7 @@
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var positionLimits = { limits: [], defaultMax: 2 };
+  var blockedSymbols = [];
 
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
@@ -17,6 +18,9 @@
     }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
+    }
+    if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
+      blockedSymbols = event.data.symbols || [];
     }
   });
 
@@ -44,6 +48,24 @@
       // Skip checks for order modifications (moving SL/TP, closing positions)
       if (isOrderModifyUrl(url)) {
         return origFetch.apply(this, arguments);
+      }
+
+      // Blocked symbol check
+      var body = null;
+      if (opts && opts.body && typeof opts.body === 'string') {
+        try { body = JSON.parse(opts.body); } catch(e) {}
+      }
+
+      if (body) {
+        var symbol = (body.symbol || body.instrument || '').toUpperCase();
+        if (symbol && blockedSymbols.length > 0) {
+          for (var i = 0; i < blockedSymbols.length; i++) {
+            if (symbol.includes(blockedSymbols[i].toUpperCase())) {
+              window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol ' + symbol + ' is blocked' }, '*');
+              return Promise.reject(new Error('Blocked: Symbol is blocked'));
+            }
+          }
+        }
       }
 
       if (sessionBlocked) {

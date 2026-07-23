@@ -82,9 +82,12 @@ export class WebSocketServer {
 
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
-    let limitsData = { limits: [], defaultMax: 2 };
+    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [] };
     try {
-      if (settings.position_limits) limitsData = JSON.parse(settings.position_limits);
+      if (settings.position_limits) {
+        const parsed = JSON.parse(settings.position_limits);
+        limitsData = { ...limitsData, ...parsed };
+      }
     } catch {}
     const msg = JSON.stringify({ type: 'position_limits', ...limitsData });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });

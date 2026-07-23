@@ -13,6 +13,7 @@
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var positionLimits = { limits: [], defaultMax: 2 };
+  var blockedSymbols = [];
   var coachEnabled = true;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
@@ -49,6 +50,9 @@
     }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
+    }
+    if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
+      blockedSymbols = event.data.symbols || [];
     }
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       coachEnabled = event.data.enabled !== false;
@@ -121,6 +125,17 @@
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
+  function isBlockedSymbol(body) {
+    if (!body || blockedSymbols.length === 0) return false;
+    var symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+    if (!symbol) return false;
+    for (var i = 0; i < blockedSymbols.length; i++) {
+      var blocked = blockedSymbols[i].toUpperCase();
+      if (blocked && symbol.includes(blocked)) return true;
+    }
+    return false;
+  }
+
   function getMaxForSymbol(symbol) {
     if (!symbol) return positionLimits.defaultMax || 2;
     var upper = symbol.toUpperCase();
@@ -208,6 +223,14 @@
         return origFetch.apply(this, arguments);
       }
 
+      // Blocked symbol check
+      if (body && isBlockedSymbol(body)) {
+        var blockedSym = (body.symbolId || body.symbol || body.instrument || '');
+        console.log('[TradingGuardian] BLOCKED: Symbol blocked -', blockedSym);
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol ' + blockedSym + ' is blocked' }, '*');
+        return Promise.reject(new Error('Blocked: Symbol is blocked'));
+      }
+
       // Session block (still blocks everything including modifications when outside hours)
       if (sessionBlocked) {
         console.log('[TradingGuardian] BLOCKED: Outside trading hours');
@@ -253,6 +276,12 @@
       // Skip coach/size checks for order modifications (moving SL/TP)
       if (isModifyOrCancel(this._tgUrl, parsed)) {
         return origSend.apply(this, arguments);
+      }
+
+      // Blocked symbol
+      if (parsed && isBlockedSymbol(parsed)) {
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol is blocked' }, '*');
+        return;
       }
 
       if (sessionBlocked) {
