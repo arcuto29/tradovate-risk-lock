@@ -97,6 +97,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_bypass', details: msg.details }));
       sendResponse({ success: true });
       break;
+    case 'TILT_UPDATE':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'tilt_update', score: msg.score, level: msg.level, blocked: msg.blocked }));
+      sendResponse({ success: true });
+      break;
     case 'REPORT_SETTINGS_ACCESS':
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_settings_access', url: msg.url }));
       sendResponse({ success: true });

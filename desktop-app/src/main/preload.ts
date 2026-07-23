@@ -26,4 +26,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateStatus: (callback: (status: any) => void) => {
     ipcRenderer.on('update-status', (_event, status) => callback(status));
   },
+  // Tilt meter
+  onTiltUpdate: (callback: (data: any) => void) => {
+    ipcRenderer.on('tilt-update', (_event, data) => callback(data));
+  },
 });

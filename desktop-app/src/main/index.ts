@@ -211,6 +211,13 @@ app.whenReady().then(async () => {
     }
   };
 
+  // Tilt meter: forward updates from extension to renderer
+  wsServer.onTiltUpdate = (data) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('tilt-update', data);
+    }
+  };
+
   // Anti-bypass: if extension disconnects while locked, kill trading apps
   wsServer.onExtensionDisconnected = () => {
     if (lockManager.isLocked()) {

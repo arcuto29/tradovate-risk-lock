@@ -160,6 +160,21 @@
     if (tiltEnabled) recalculate();
   }, 5000);
 
+  // Broadcast tilt score to desktop app via bridge
+  setInterval(function() {
+    if (!tiltEnabled) return;
+    var level = 'green';
+    if (tiltScore >= 61) level = 'red';
+    else if (tiltScore >= 31) level = 'yellow';
+
+    window.postMessage({
+      type: 'TRL_TILT_UPDATE',
+      score: tiltScore,
+      level: level,
+      blocked: tiltScore >= 61
+    }, '*');
+  }, 2000);
+
   // Broadcast initial state
   broadcast();
 

@@ -72,6 +72,10 @@
       showBlock(event.data.reason, event.data.message);
       chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}` });
     }
+
+    if (event.data && event.data.type === 'TRL_TILT_UPDATE') {
+      chrome.runtime.sendMessage({ type: 'TILT_UPDATE', score: event.data.score, level: event.data.level, blocked: event.data.blocked });
+    }
   });
 
   // ─── Overlays ──────────────────────────────────────────────────────────────
