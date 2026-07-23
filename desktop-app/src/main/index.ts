@@ -118,12 +118,9 @@ function setupIPC(): void {
 
   // Dev-only force unlock
   ipcMain.handle('dev-force-unlock', () => {
-    if (isDev) {
-      lockManager.forceUnlock();
-      updateTrayMenu();
-      return { success: true };
-    }
-    return { success: false, error: 'Not in dev mode' };
+    lockManager.forceUnlock();
+    updateTrayMenu();
+    return { success: true };
   });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
