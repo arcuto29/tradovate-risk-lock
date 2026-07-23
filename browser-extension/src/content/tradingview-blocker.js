@@ -34,6 +34,9 @@
   function sendLimitsToPage(data) {
     if (data.limits) currentLimits = { limits: data.limits, defaultMax: data.defaultMax || 2 };
     window.postMessage({ type: 'TRL_POSITION_LIMITS', limits: data.limits, defaultMax: data.defaultMax || 2 }, '*');
+    if (data.blockedSymbols) {
+      window.postMessage({ type: 'TRL_BLOCKED_SYMBOLS', symbols: data.blockedSymbols }, '*');
+    }
   }
 
   var currentLimits = { limits: [], defaultMax: 2 };
