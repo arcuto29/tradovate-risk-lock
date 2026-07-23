@@ -8,6 +8,7 @@ import { SessionHours } from './components/SessionHours';
 import RiskSettings from './components/RiskSettings';
 import { PsychologyCoach } from './components/PsychologyCoach';
 import { UpdateBanner } from './components/UpdateBanner';
+import { TiltMeter } from './components/TiltMeter';
 
 type Page = 'main' | 'session' | 'coach' | 'log' | 'settings';
 
@@ -94,7 +95,7 @@ export const App: React.FC = () => {
         <div className="animate-reveal" key={currentPage}>
           {currentPage === 'main' && (
             lockState?.isLocked
-              ? <LockStatus lockState={lockState} onRefresh={refreshState} />
+              ? <><TiltMeter /><LockStatus lockState={lockState} onRefresh={refreshState} /></>
               : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}

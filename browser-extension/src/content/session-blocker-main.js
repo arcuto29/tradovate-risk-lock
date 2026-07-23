@@ -245,6 +245,13 @@
         return Promise.reject(new Error('Blocked: Position size exceeds limit'));
       }
 
+      // Tilt meter check
+      if (window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
+        console.log('[TradingGuardian] TILT BLOCKED: Score', window.__tiltMeter.getScore());
+        window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'TILTING', message: 'Your tilt meter is red. You are making emotional decisions. Step away and reset.' }, '*');
+        return Promise.reject(new Error('Blocked: Tilt meter red'));
+      }
+
       // Psychology coach
       var coachResult = checkCoach(body);
       if (coachResult) {
@@ -258,6 +265,11 @@
           window.postMessage({ type: 'TRL_COACH_WARN', reason: coachResult.reason, message: coachResult.message }, '*');
         }
       }
+
+      // Order passed all checks — notify tilt meter
+      var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
+      window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize }, '*');
+    }
     }
 
     return origFetch.apply(this, arguments);
