@@ -131,6 +131,8 @@ function setupIPC(): void {
   // Exit fullscreen
   ipcMain.handle('exit-fullscreen', () => {
     bypassWarningActive = false;
+    const { globalShortcut } = require('electron');
+    globalShortcut.unregisterAll();
     if (mainWindow) {
       mainWindow.setKiosk(false);
       mainWindow.setFullScreen(false);
@@ -367,6 +369,26 @@ app.whenReady().then(async () => {
         mainWindow.setResizable(false);
         mainWindow.webContents.send('extension-disconnected');
 
+        // Block Windows key by registering global shortcuts
+        const { globalShortcut } = require('electron');
+        globalShortcut.register('Super', () => {}); // Block Win key
+        globalShortcut.register('Super+S', () => {}); // Block Win+S (search)
+        globalShortcut.register('Super+E', () => {}); // Block Win+E (explorer)
+        globalShortcut.register('Super+R', () => {}); // Block Win+R (run)
+        globalShortcut.register('Super+D', () => {}); // Block Win+D (desktop)
+        globalShortcut.register('Super+Tab', () => {}); // Block Win+Tab (task view)
+        globalShortcut.register('Alt+Tab', () => {}); // Block Alt+Tab
+
+        // If they somehow switch away, immediately re-focus
+        const refocusInterval = setInterval(() => {
+          if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
+          if (mainWindow && !mainWindow.isFocused()) {
+            mainWindow.focus();
+            mainWindow.setKiosk(true);
+            mainWindow.setAlwaysOnTop(true, 'screen-saver');
+          }
+        }, 500);
+
         // Block keyboard shortcuts that could escape
         mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
           if (!bypassWarningActive) return;
@@ -397,11 +419,14 @@ app.whenReady().then(async () => {
               closable: false,
               minimizable: false,
               fullscreen: true,
+              skipTaskbar: true,
               backgroundColor: '#000000',
               webPreferences: { nodeIntegration: false },
             });
             blocker.loadURL('data:text/html,<html><body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;"><p style="color:rgba(255,255,255,0.3);font-family:system-ui;font-size:24px;text-align:center;">Protection Disabled<br><br><span style="font-size:14px;color:rgba(255,255,255,0.15);">Return to main screen</span></p></body></html>');
             blocker.setAlwaysOnTop(true, 'screen-saver');
+            blocker.setKiosk(true);
+            blocker.on('close', (e: any) => { if (bypassWarningActive) e.preventDefault(); });
             blockerWindows.push(blocker);
           });
         }
@@ -409,6 +434,8 @@ app.whenReady().then(async () => {
         // Release after 5 minutes
         setTimeout(() => {
           bypassWarningActive = false;
+          const { globalShortcut } = require('electron');
+          globalShortcut.unregisterAll();
           mainWindow?.setKiosk(false);
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
