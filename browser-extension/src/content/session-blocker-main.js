@@ -18,7 +18,7 @@
   var coachEnabled = false;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
-  var maxDailyLoss = 500;
+  var maxDailyLoss = 0;
   var trades = [];
   var lastLossTime = 0;
   var cooldownActive = false;
@@ -52,6 +52,10 @@
     }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
+      // Read loss limit from Risk Settings (single source of truth)
+      if (event.data.lossLimitAmount && event.data.lossLimitAmount > 0) {
+        maxDailyLoss = event.data.lossLimitAmount;
+      }
     }
     if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
       blockedSymbols = event.data.symbols || [];
@@ -434,7 +438,7 @@
           totalDailyPnL = currentPnl;
           
           // Check daily loss limit
-          if (coachEnabled && Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
+          if (coachEnabled && maxDailyLoss > 0 && Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
             dailyLossBlocked = true;
             console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
             window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
@@ -472,7 +476,7 @@
                     cooldownUntil = Date.now() + (cooldownSeconds * 1000);
                   }
                   totalDailyPnL += pnl;
-                  if (coachEnabled && totalDailyPnL <= -maxDailyLoss) {
+                  if (coachEnabled && maxDailyLoss > 0 && totalDailyPnL <= -maxDailyLoss) {
                     dailyLossBlocked = true;
                     window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority.' }, '*');
                   }
