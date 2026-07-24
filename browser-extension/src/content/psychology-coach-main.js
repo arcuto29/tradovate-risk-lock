@@ -12,7 +12,7 @@
 (function() {
   'use strict';
 
-  var coachEnabled = true;
+  var coachEnabled = false;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
   var maxDailyLoss = 500;
