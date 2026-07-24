@@ -33,12 +33,12 @@
   var currentMaxSize = 0; // Current max (reduces after losses)
   var highWaterMark = 0; // Highest P&L reached today
   var profitLockThreshold = 0; // Lock out after reaching this profit
-  var drawdownFromHigh = 200; // Lock if P&L drops this much from high
+  var drawdownFromHigh = 0; // Lock if P&L drops this much from high (0 = disabled)
   var profitLocked = false;
-  var scalingLockEnabled = true; // One-way ratchet: can only reduce, never increase
-  var lossStreakEnabled = true; // Auto-reduce size after consecutive losses
-  var profitLockEnabled = true; // Lock out after hitting profit target or drawdown from high
-  var escalatingCooldown = true; // Cooldown gets longer after each loss
+  var scalingLockEnabled = false; // One-way ratchet: can only reduce, never increase
+  var lossStreakEnabled = false; // Auto-reduce size after consecutive losses
+  var profitLockEnabled = false; // Lock out after hitting profit target or drawdown from high
+  var escalatingCooldown = false; // Cooldown gets longer after each loss
 
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
@@ -64,13 +64,13 @@
       coachEnabled = event.data.enabled !== false;
       maxTradesPerDay = event.data.maxTradesPerDay || 10;
       cooldownSeconds = event.data.cooldownSeconds || 120;
-      maxDailyLoss = event.data.maxDailyLoss || 500;
-      if (event.data.profitLockThreshold) profitLockThreshold = event.data.profitLockThreshold;
-      if (event.data.drawdownFromHigh) drawdownFromHigh = event.data.drawdownFromHigh;
-      scalingLockEnabled = event.data.scalingLockEnabled !== false;
-      lossStreakEnabled = event.data.lossStreakEnabled !== false;
-      profitLockEnabled = event.data.profitLockEnabled !== false;
-      escalatingCooldown = event.data.escalatingCooldown !== false;
+      // Don't override maxDailyLoss here — Risk Settings is the source of truth
+      if (event.data.profitLockThreshold !== undefined) profitLockThreshold = event.data.profitLockThreshold;
+      if (event.data.drawdownFromHigh !== undefined) drawdownFromHigh = event.data.drawdownFromHigh;
+      scalingLockEnabled = event.data.scalingLockEnabled === true;
+      lossStreakEnabled = event.data.lossStreakEnabled === true;
+      profitLockEnabled = event.data.profitLockEnabled === true;
+      escalatingCooldown = event.data.escalatingCooldown === true;
       // Set original max size at start
       if (!originalMaxSize) { originalMaxSize = positionLimits.defaultMax || 2; currentMaxSize = positionLimits.defaultMax || 2; }
     }
@@ -135,34 +135,6 @@
 
   function isPostOrPut(method) {
     return method === 'POST' || method === 'PUT';
-  }
-
-  // ─── Position tracking ───────────────────────────────────────────────────
-  var openPositions = {}; // { symbol: totalSize }
-
-  function getOpenSize(symbol) {
-    if (!symbol) return 0;
-    var upper = symbol.toUpperCase();
-    var total = 0;
-    for (var key in openPositions) {
-      if (key.includes(upper) || upper.includes(key)) {
-        total += openPositions[key];
-      }
-    }
-    return total;
-  }
-
-  function addPosition(symbol, size) {
-    if (!symbol || !size) return;
-    var upper = symbol.toUpperCase();
-    // Find matching key
-    for (var key in openPositions) {
-      if (key.includes(upper) || upper.includes(key)) {
-        openPositions[key] += size;
-        return;
-      }
-    }
-    openPositions[upper] = size;
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
@@ -312,10 +284,8 @@
         }
       }
 
-      // Order passed all checks — notify tilt meter + track position
+      // Order passed all checks — notify tilt meter
       var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
-      var orderSymbol = body ? (body.symbolId || body.symbol || body.instrument || '') : '';
-      if (orderSize > 0 && orderSymbol) addPosition(orderSymbol, orderSize);
       window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize }, '*');
     }
 

@@ -15,7 +15,7 @@
   var coachEnabled = false;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
-  var maxDailyLoss = 500;
+  var maxDailyLoss = 0; // 0 = disabled, reads from Risk Settings
   var trades = [];
   var lastLossTime = 0;
   var cooldownActive = false;
@@ -29,18 +29,26 @@
       coachEnabled = event.data.enabled !== false;
       maxTradesPerDay = event.data.maxTradesPerDay || 10;
       cooldownSeconds = event.data.cooldownSeconds || 120;
-      maxDailyLoss = event.data.maxDailyLoss || 500;
+      // Don't set maxDailyLoss from coach — Risk Settings is source of truth
+    }
+    if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
+      // Read loss limit from Risk Settings
+      if (event.data.lossLimitAmount && event.data.lossLimitAmount > 0) {
+        maxDailyLoss = event.data.lossLimitAmount;
+      }
     }
     if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
-        lastLossTime = Date.now();
-        cooldownActive = true;
-        cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+        if (coachEnabled) {
+          lastLossTime = Date.now();
+          cooldownActive = true;
+          cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+        }
         totalPnL -= Math.abs(event.data.pnl || 0);
       } else if (event.data.result === 'win') {
         totalPnL += Math.abs(event.data.pnl || 0);
       }
-      if (totalPnL <= -maxDailyLoss) dailyLossBlocked = true;
+      if (coachEnabled && maxDailyLoss > 0 && totalPnL <= -maxDailyLoss) dailyLossBlocked = true;
     }
   });
 
@@ -83,11 +91,16 @@
     if (!url) return false;
     var lower = url.toLowerCase();
     if (lower.includes('/order/modify') || lower.includes('/order/cancel') || lower.includes('/order/update')) return true;
+    if (lower.includes('/order/editstoploss') || lower.includes('/order/edittakeprofit') || lower.includes('/order/edit')) return true;
     if (lower.includes('/trading/modify') || lower.includes('/trading/cancel') || lower.includes('/trading/close')) return true;
     if (body && body.orderId) {
       var hasSize = body.qty || body.quantity || body.positionSize || body.amount || body.size;
       if (hasSize) return false;
       return true;
+    }
+    if (body && (body.stopPrice !== undefined || body.limitPrice !== undefined || body.triggerPrice !== undefined)) {
+      var hasNewQty = body.positionSize || body.qty || body.quantity;
+      if (!hasNewQty) return true;
     }
     return false;
   }
@@ -115,7 +128,7 @@
         return origFetch.apply(this, arguments);
       }
 
-      // Check tilt meter first (highest priority behavioral block)
+      // Check tilt meter first
       if (window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
         window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'TILTING', message: 'Tilt meter is red. Step away.' }, '*');
         return Promise.reject(new Error('Blocked: Tilting'));
@@ -136,5 +149,5 @@
     return origFetch.apply(this, arguments);
   };
 
-  console.log('[TradingGuardian-Coach] Loaded on Tradovate. Clean separation active.');
+  console.log('[TradingGuardian-Coach] Loaded on Tradovate. Clean.');
 })();
