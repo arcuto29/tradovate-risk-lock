@@ -131,16 +131,11 @@ function setupIPC(): void {
   // Exit fullscreen
   ipcMain.handle('exit-fullscreen', () => {
     bypassWarningActive = false;
-    const { globalShortcut } = require('electron');
-    globalShortcut.unregisterAll();
     if (mainWindow) {
-      mainWindow.setKiosk(false);
       mainWindow.setFullScreen(false);
       mainWindow.setAlwaysOnTop(false);
       mainWindow.setClosable(true);
       mainWindow.setMinimizable(true);
-      mainWindow.setMovable(true);
-      mainWindow.setResizable(true);
     }
     return { success: true };
   });
@@ -355,63 +350,34 @@ app.whenReady().then(async () => {
     const { exec } = require('child_process');
     exec('taskkill /F /IM Tradesea.exe /T', () => {});
     exec('taskkill /F /IM TopstepX.exe /T', () => {});
-      // Go fullscreen KIOSK mode (hides taskbar completely)
+
+      // Go fullscreen warning (simplified — no kiosk, no keyboard hooks)
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();
-        mainWindow.setMenu(null); // Remove menu bar completely
-        mainWindow.setMenuBarVisibility(false);
-        mainWindow.setKiosk(true);
+        mainWindow.setFullScreen(true);
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.setClosable(false);
         mainWindow.setMinimizable(false);
-        mainWindow.setMovable(false);
-        mainWindow.setResizable(false);
         mainWindow.webContents.send('extension-disconnected');
 
-        // Block Windows key by registering global shortcuts
-        const { globalShortcut } = require('electron');
-        try { globalShortcut.register('Super', () => {}); } catch {}
-        try { globalShortcut.register('Super+S', () => {}); } catch {}
-        try { globalShortcut.register('Super+E', () => {}); } catch {}
-        try { globalShortcut.register('Super+R', () => {}); } catch {}
-        try { globalShortcut.register('Super+D', () => {}); } catch {}
-        try { globalShortcut.register('Super+Tab', () => {}); } catch {}
-        try { globalShortcut.register('Alt+Tab', () => {}); } catch {}
-
-        // If they somehow switch away, immediately re-focus
+        // If they switch away, re-focus every 2 seconds
         const refocusInterval = setInterval(() => {
           if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
           if (mainWindow && !mainWindow.isFocused()) {
             mainWindow.focus();
-            mainWindow.setKiosk(true);
             mainWindow.setAlwaysOnTop(true, 'screen-saver');
           }
-        }, 500);
-
-        // Block keyboard shortcuts that could escape
-        mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
-          if (!bypassWarningActive) return;
-          // Block F5, Ctrl+R (reload), Ctrl+Shift+I (devtools), Ctrl+W, Alt+F4
-          if (input.key === 'F5') event.preventDefault();
-          if (input.control && input.key === 'r') event.preventDefault();
-          if (input.control && input.shift && input.key === 'I') event.preventDefault();
-          if (input.control && input.key === 'w') event.preventDefault();
-          if (input.alt && input.key === 'F4') event.preventDefault();
-        });
+        }, 2000);
 
         // Release after 5 minutes
         setTimeout(() => {
           bypassWarningActive = false;
-          const { globalShortcut } = require('electron');
-          globalShortcut.unregisterAll();
-          mainWindow?.setKiosk(false);
+          clearInterval(refocusInterval);
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
           mainWindow?.setClosable(true);
           mainWindow?.setMinimizable(true);
-          mainWindow?.setMovable(true);
-          mainWindow?.setResizable(true);
         }, 300000);
       }
 
@@ -421,7 +387,6 @@ app.whenReady().then(async () => {
         killCount++;
         exec('taskkill /F /IM Tradesea.exe /T', () => {});
         exec('taskkill /F /IM TopstepX.exe /T', () => {});
-        // Stop after 5 minutes (100 iterations * 3 seconds)
         if (killCount >= 100) clearInterval(killLoop);
       }, 3000);
   };
