@@ -18,12 +18,12 @@ export const ActivityLog: React.FC = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map((entry) => (
-            <div key={entry.id} className="glass rounded-lg p-4 hover:border-glow-cyan transition-all">
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="font-mono text-[0.6rem] font-semibold tracking-wide uppercase text-cyan-400/60 border border-cyan-400/15 px-2 py-0.5 rounded">{entry.type}</span>
-                <span className="font-mono text-[0.6rem] text-white/20">{new Date(entry.timestamp + 'Z').toLocaleString()}</span>
+            <div key={entry.id} className="glass rounded-lg p-4 hover:border-glow-cyan transition-all overflow-hidden">
+              <div className="flex justify-between items-baseline mb-2 gap-2">
+                <span className="font-mono text-[0.6rem] font-semibold tracking-wide uppercase text-cyan-400/60 border border-cyan-400/15 px-2 py-0.5 rounded shrink-0">{entry.type}</span>
+                <span className="font-mono text-[0.6rem] text-white/20 shrink-0">{new Date(entry.timestamp + 'Z').toLocaleString()}</span>
               </div>
-              <p className="text-sm text-white/40 leading-relaxed">{entry.details}</p>
+              <p className="text-sm text-white/40 leading-relaxed break-words overflow-hidden">{entry.details}</p>
             </div>
           ))}
         </div>
