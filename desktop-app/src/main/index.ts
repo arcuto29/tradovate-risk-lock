@@ -131,6 +131,8 @@ function setupIPC(): void {
   // Exit fullscreen
   ipcMain.handle('exit-fullscreen', () => {
     bypassWarningActive = false;
+    const { globalShortcut } = require('electron');
+    globalShortcut.unregisterAll();
     if (mainWindow) {
       mainWindow.setKiosk(false);
       mainWindow.setFullScreen(false);
@@ -367,6 +369,16 @@ app.whenReady().then(async () => {
         mainWindow.setResizable(false);
         mainWindow.webContents.send('extension-disconnected');
 
+        // Block Windows key by registering global shortcuts
+        const { globalShortcut } = require('electron');
+        globalShortcut.register('Super', () => {}); // Block Win key
+        globalShortcut.register('Super+S', () => {}); // Block Win+S (search)
+        globalShortcut.register('Super+E', () => {}); // Block Win+E (explorer)
+        globalShortcut.register('Super+R', () => {}); // Block Win+R (run)
+        globalShortcut.register('Super+D', () => {}); // Block Win+D (desktop)
+        globalShortcut.register('Super+Tab', () => {}); // Block Win+Tab (task view)
+        globalShortcut.register('Alt+Tab', () => {}); // Block Alt+Tab
+
         // Block keyboard shortcuts that could escape
         mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
           if (!bypassWarningActive) return;
@@ -412,6 +424,8 @@ app.whenReady().then(async () => {
         // Release after 5 minutes
         setTimeout(() => {
           bypassWarningActive = false;
+          const { globalShortcut } = require('electron');
+          globalShortcut.unregisterAll();
           mainWindow?.setKiosk(false);
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
