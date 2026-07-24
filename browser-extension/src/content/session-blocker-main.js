@@ -265,7 +265,6 @@
       var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
       window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize }, '*');
     }
-    }
 
     return origFetch.apply(this, arguments);
   };

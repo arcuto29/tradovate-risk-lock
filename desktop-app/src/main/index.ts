@@ -350,31 +350,33 @@ app.whenReady().then(async () => {
         mainWindow.setMinimizable(false);
         mainWindow.webContents.send('extension-disconnected');
 
-        // Create blocker windows on all other monitors
+        // Create blocker windows on other monitors (only if multiple displays)
         const { screen, BrowserWindow: BW } = require('electron');
         const displays = screen.getAllDisplays();
         const primaryDisplay = screen.getPrimaryDisplay();
         const blockerWindows: any[] = [];
 
-        displays.forEach((display: any) => {
-          if (display.id === primaryDisplay.id) return; // Skip primary (main window covers it)
-          const blocker = new BW({
-            x: display.bounds.x,
-            y: display.bounds.y,
-            width: display.bounds.width,
-            height: display.bounds.height,
-            frame: false,
-            alwaysOnTop: true,
-            closable: false,
-            minimizable: false,
-            fullscreen: true,
-            backgroundColor: '#000000',
-            webPreferences: { nodeIntegration: false },
+        if (displays.length > 1) {
+          displays.forEach((display: any) => {
+            if (display.id === primaryDisplay.id) return;
+            const blocker = new BW({
+              x: display.bounds.x,
+              y: display.bounds.y,
+              width: display.bounds.width,
+              height: display.bounds.height,
+              frame: false,
+              alwaysOnTop: true,
+              closable: false,
+              minimizable: false,
+              fullscreen: true,
+              backgroundColor: '#000000',
+              webPreferences: { nodeIntegration: false },
+            });
+            blocker.loadURL('data:text/html,<html><body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;"><p style="color:rgba(255,255,255,0.3);font-family:system-ui;font-size:24px;text-align:center;">Protection Disabled<br><br><span style="font-size:14px;color:rgba(255,255,255,0.15);">Return to main screen</span></p></body></html>');
+            blocker.setAlwaysOnTop(true, 'screen-saver');
+            blockerWindows.push(blocker);
           });
-          blocker.loadURL('data:text/html,<html><body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;"><p style="color:rgba(255,255,255,0.3);font-family:system-ui;font-size:24px;text-align:center;">Protection Disabled<br><br><span style="font-size:14px;color:rgba(255,255,255,0.15);">Return to main screen</span></p></body></html>');
-          blocker.setAlwaysOnTop(true, 'screen-saver');
-          blockerWindows.push(blocker);
-        });
+        }
 
         // Release after 5 minutes
         setTimeout(() => {
