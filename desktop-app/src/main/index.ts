@@ -371,13 +371,13 @@ app.whenReady().then(async () => {
 
         // Block Windows key by registering global shortcuts
         const { globalShortcut } = require('electron');
-        globalShortcut.register('Super', () => {}); // Block Win key
-        globalShortcut.register('Super+S', () => {}); // Block Win+S (search)
-        globalShortcut.register('Super+E', () => {}); // Block Win+E (explorer)
-        globalShortcut.register('Super+R', () => {}); // Block Win+R (run)
-        globalShortcut.register('Super+D', () => {}); // Block Win+D (desktop)
-        globalShortcut.register('Super+Tab', () => {}); // Block Win+Tab (task view)
-        globalShortcut.register('Alt+Tab', () => {}); // Block Alt+Tab
+        try { globalShortcut.register('Super', () => {}); } catch {}
+        try { globalShortcut.register('Super+S', () => {}); } catch {}
+        try { globalShortcut.register('Super+E', () => {}); } catch {}
+        try { globalShortcut.register('Super+R', () => {}); } catch {}
+        try { globalShortcut.register('Super+D', () => {}); } catch {}
+        try { globalShortcut.register('Super+Tab', () => {}); } catch {}
+        try { globalShortcut.register('Alt+Tab', () => {}); } catch {}
 
         // If they somehow switch away, immediately re-focus
         const refocusInterval = setInterval(() => {
