@@ -37,6 +37,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Exit fullscreen
   exitFullscreen: () => ipcRenderer.invoke('exit-fullscreen'),
+  // Shutdown PC
+  shutdownPC: () => ipcRenderer.invoke('shutdown-pc'),
   // Dev force unlock
   devForceUnlock: () => ipcRenderer.invoke('dev-force-unlock'),
 });

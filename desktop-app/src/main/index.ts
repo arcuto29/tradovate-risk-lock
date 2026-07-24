@@ -140,6 +140,13 @@ function setupIPC(): void {
     }
     return { success: true };
   });
+
+  // Shutdown PC
+  ipcMain.handle('shutdown-pc', () => {
+    const { exec } = require('child_process');
+    exec('shutdown /s /t 3 /c "Trading Guardian: Stepping away from charts."', () => {});
+    return { success: true };
+  });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
