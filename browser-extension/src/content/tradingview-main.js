@@ -39,6 +39,18 @@
   }
 
   var origFetch = window.fetch;
+  var openPositions = {}; // Track open position per symbol
+
+  function getOpenSize(symbol) {
+    if (!symbol) return 0;
+    var s = symbol.toUpperCase();
+    var total = 0;
+    for (var key in openPositions) {
+      if (key.includes(s) || s.includes(key)) total += openPositions[key];
+    }
+    return total;
+  }
+
   window.fetch = function() {
     var url = typeof arguments[0] === 'string' ? arguments[0] : (arguments[0] && arguments[0].url ? arguments[0].url : '');
     var opts = typeof arguments[0] === 'string' ? arguments[1] : arguments[0];
@@ -82,9 +94,15 @@
         var qty = body.qty || body.quantity || body.amount || body.size || 0;
         var symbol = body.symbol || body.instrument || '';
         var max = getMaxForSymbol(symbol);
-        if (qty > max) {
-          window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + qty + ' exceeds max ' + max + ' for ' + symbol }, '*');
+        var currentOpen = getOpenSize(symbol);
+        if ((currentOpen + qty) > max) {
+          window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + (currentOpen + qty) + ' exceeds max ' + max + ' for ' + symbol }, '*');
           return Promise.reject(new Error('Blocked: Position size exceeds limit'));
+        }
+        // Track the position
+        if (qty > 0 && symbol) {
+          var upper = symbol.toUpperCase();
+          openPositions[upper] = (openPositions[upper] || 0) + qty;
         }
       }
     }
