@@ -38,8 +38,15 @@ export class WebSocketServer {
 
     // Send position limits on connection
     const settings = this.db.getSettings();
-    let limitsData = { limits: [], defaultMax: 2 };
-    try { if (settings.position_limits) limitsData = JSON.parse(settings.position_limits); } catch {}
+    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [] };
+    try {
+      if (settings.position_limits) {
+        const parsed = JSON.parse(settings.position_limits);
+        limitsData.limits = parsed.contractLimits || parsed.limits || [];
+        limitsData.defaultMax = parsed.defaultMax || 2;
+        limitsData.blockedSymbols = parsed.blockedSymbols || [];
+      }
+    } catch {}
     ws.send(JSON.stringify({ type: 'position_limits', ...limitsData }));
   }
 
@@ -96,7 +103,10 @@ export class WebSocketServer {
     try {
       if (settings.position_limits) {
         const parsed = JSON.parse(settings.position_limits);
-        limitsData = { ...limitsData, ...parsed };
+        // Map contractLimits to limits for extension compatibility
+        limitsData.limits = parsed.contractLimits || parsed.limits || [];
+        limitsData.defaultMax = parsed.defaultMax || 2;
+        limitsData.blockedSymbols = parsed.blockedSymbols || [];
       }
     } catch {}
     const msg = JSON.stringify({ type: 'position_limits', ...limitsData });
