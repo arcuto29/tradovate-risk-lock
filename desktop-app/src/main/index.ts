@@ -397,11 +397,14 @@ app.whenReady().then(async () => {
               closable: false,
               minimizable: false,
               fullscreen: true,
+              skipTaskbar: true,
               backgroundColor: '#000000',
               webPreferences: { nodeIntegration: false },
             });
             blocker.loadURL('data:text/html,<html><body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;"><p style="color:rgba(255,255,255,0.3);font-family:system-ui;font-size:24px;text-align:center;">Protection Disabled<br><br><span style="font-size:14px;color:rgba(255,255,255,0.15);">Return to main screen</span></p></body></html>');
             blocker.setAlwaysOnTop(true, 'screen-saver');
+            blocker.setKiosk(true);
+            blocker.on('close', (e: any) => { if (bypassWarningActive) e.preventDefault(); });
             blockerWindows.push(blocker);
           });
         }
