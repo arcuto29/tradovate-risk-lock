@@ -14,7 +14,7 @@
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var positionLimits = { limits: [], defaultMax: 2 };
   var blockedSymbols = [];
-  var coachEnabled = true;
+  var coachEnabled = false;
   var maxTradesPerDay = 10;
   var cooldownSeconds = 120;
   var maxDailyLoss = 500;
