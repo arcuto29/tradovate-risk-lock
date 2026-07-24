@@ -10,8 +10,9 @@ import { PsychologyCoach } from './components/PsychologyCoach';
 import { UpdateBanner } from './components/UpdateBanner';
 import { TiltMeter } from './components/TiltMeter';
 import { BypassWarning } from './components/BypassWarning';
+import { DisciplineScore } from './components/DisciplineScore';
 
-type Page = 'main' | 'session' | 'coach' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
 
 declare global {
   interface Window { electronAPI: any; }
@@ -21,6 +22,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string }[] = [
   { page: 'main', label: 'Risk Settings', lockedLabel: 'Status' },
   { page: 'session', label: 'Session' },
   { page: 'coach', label: 'Coach' },
+  { page: 'discipline', label: 'Score' },
   { page: 'log', label: 'Log' },
   { page: 'settings', label: 'Settings' },
 ];
@@ -121,11 +123,18 @@ export const App: React.FC = () => {
                   >
                     Dev Unlock
                   </button>
+                  <button
+                    onClick={() => (window as any).electronAPI?.exitFullscreen?.()}
+                    className="mt-2 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                  >
+                    Dev Exit Fullscreen
+                  </button>
                 </>
               : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
           {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
+          {currentPage === 'discipline' && <DisciplineScore />}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
         </div>

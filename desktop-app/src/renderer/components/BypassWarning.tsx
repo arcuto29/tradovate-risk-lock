@@ -5,6 +5,7 @@ const MESSAGES = [
   "If you want trading to work long term, don't do this. Close everything and walk away.",
   "This feeling will pass in 10 minutes. Your losses won't come back.",
   "Go touch grass. Get off charts and do something else. The market will always be here tomorrow.",
+  "Get off the charts and hit the gym. Come back tomorrow with a clear head.",
 ];
 
 export const BypassWarning: React.FC = () => {
@@ -90,6 +91,17 @@ export const BypassWarning: React.FC = () => {
         }`}
       >
         {canDismiss ? 'I understand' : 'Wait...'}
+      </button>
+
+      {/* Dev exit for screenshots */}
+      <button
+        onClick={() => {
+          setVisible(false);
+          (window as any).electronAPI?.exitFullscreen?.();
+        }}
+        className="mt-4 px-4 py-2 text-[0.5rem] text-white/10 border border-white/[0.03] rounded hover:text-white/20 transition-all"
+      >
+        Dev Exit
       </button>
     </div>
   );
