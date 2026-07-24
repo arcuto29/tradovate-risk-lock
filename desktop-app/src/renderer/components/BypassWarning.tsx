@@ -91,6 +91,17 @@ export const BypassWarning: React.FC = () => {
       >
         {canDismiss ? 'I understand' : 'Wait...'}
       </button>
+
+      {/* Dev exit for screenshots */}
+      <button
+        onClick={() => {
+          setVisible(false);
+          (window as any).electronAPI?.exitFullscreen?.();
+        }}
+        className="mt-4 px-4 py-2 text-[0.5rem] text-white/10 border border-white/[0.03] rounded hover:text-white/20 transition-all"
+      >
+        Dev Exit
+      </button>
     </div>
   );
 };

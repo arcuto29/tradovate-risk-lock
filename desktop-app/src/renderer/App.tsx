@@ -121,6 +121,12 @@ export const App: React.FC = () => {
                   >
                     Dev Unlock
                   </button>
+                  <button
+                    onClick={() => (window as any).electronAPI?.exitFullscreen?.()}
+                    className="mt-2 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                  >
+                    Dev Exit Fullscreen
+                  </button>
                 </>
               : <RiskSettings isLocked={false} onLocked={refreshState} />
           )}
