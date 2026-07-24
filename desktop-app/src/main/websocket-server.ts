@@ -97,6 +97,11 @@ export class WebSocketServer {
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 
+  broadcastFullDayBlock(): void {
+    const msg = JSON.stringify({ type: 'full_day_block' });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
     let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [] };

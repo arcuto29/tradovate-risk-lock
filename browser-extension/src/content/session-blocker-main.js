@@ -12,6 +12,7 @@
   'use strict';
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
+  var fullDayBlocked = false; // Pre-market check blocked for the day
   var positionLimits = { limits: [], defaultMax: 2 };
   var blockedSymbols = [];
   var coachEnabled = false;
@@ -45,6 +46,9 @@
     if (event.data && event.data.type === 'TRL_SESSION_STATE') {
       sessionBlocked = event.data.blocked;
       if (event.data.positionLimits) positionLimits = event.data.positionLimits;
+    }
+    if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
+      fullDayBlocked = true;
     }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
@@ -217,6 +221,13 @@
         return origFetch.apply(this, arguments);
       }
 
+      // FULL DAY BLOCK (Pre-Market Check admitted to revenge trading)
+      if (fullDayBlocked) {
+        console.log('[TradingGuardian] BLOCKED: Full day block active (Pre-Market Check)');
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked for today. You admitted to revenge trading.' }, '*');
+        return Promise.reject(new Error('Blocked: Full day block'));
+      }
+
       // Blocked symbol check
       if (body && isBlockedSymbol(body)) {
         var blockedSym = (body.symbolId || body.symbol || body.instrument || '');
@@ -281,6 +292,12 @@
       // Skip coach/size checks for order modifications (moving SL/TP)
       if (isModifyOrCancel(this._tgUrl, parsed)) {
         return origSend.apply(this, arguments);
+      }
+
+      // FULL DAY BLOCK
+      if (fullDayBlocked) {
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked for today.' }, '*');
+        return;
       }
 
       // Blocked symbol

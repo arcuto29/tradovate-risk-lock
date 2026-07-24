@@ -27,6 +27,8 @@ export const PreMarketCheck: React.FC<Props> = ({ onComplete }) => {
     if (answer) {
       setBlocked(true);
       setBlockMessage("You just admitted you're trading to make back losses. That's revenge trading. Come back tomorrow.");
+      // Tell extension to block ALL orders for today
+      (window as any).electronAPI?.fullDayBlock?.();
       return;
     }
     setStep(2);

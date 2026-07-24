@@ -25,6 +25,7 @@ function handleMessage(msg) {
   if (msg.type === 'session_state_changed') { sessionState = { blocked: msg.blocked, sessionHours: msg.sessionHours, enabled: msg.enabled }; broadcastSession(); }
   if (msg.type === 'coach_config') { chrome.storage.local.set({ coach_config: msg }); broadcastCoach(msg); }
   if (msg.type === 'position_limits') { chrome.storage.local.set({ position_limits: msg }); broadcastPositionLimits(msg); }
+  if (msg.type === 'full_day_block') { chrome.storage.local.set({ full_day_blocked: true }); broadcastFullBlock(); }
   if (msg.type === 'pong') { lockState.locked = msg.locked; }
   chrome.storage.local.set({ [STORAGE_KEYS.LOCK_STATE]: lockState });
 }
@@ -73,6 +74,15 @@ function broadcastPositionLimits(limitsData) {
   urls.forEach(pattern => {
     chrome.tabs.query({ url: pattern }, (tabs) => {
       tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'POSITION_LIMITS_UPDATE', limits: limitsData.limits, defaultMax: limitsData.defaultMax }).catch(() => {}));
+    });
+  });
+}
+
+function broadcastFullBlock() {
+  const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+  urls.forEach(pattern => {
+    chrome.tabs.query({ url: pattern }, (tabs) => {
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'FULL_DAY_BLOCK' }).catch(() => {}));
     });
   });
 }
