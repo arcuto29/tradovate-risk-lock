@@ -73,7 +73,7 @@ function broadcastPositionLimits(limitsData) {
   const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
   urls.forEach(pattern => {
     chrome.tabs.query({ url: pattern }, (tabs) => {
-      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'POSITION_LIMITS_UPDATE', limits: limitsData.limits, defaultMax: limitsData.defaultMax }).catch(() => {}));
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'POSITION_LIMITS_UPDATE', limits: limitsData.limits, defaultMax: limitsData.defaultMax, blockedSymbols: limitsData.blockedSymbols || [] }).catch(() => {}));
     });
   });
 }
