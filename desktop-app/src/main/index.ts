@@ -379,6 +379,16 @@ app.whenReady().then(async () => {
         globalShortcut.register('Super+Tab', () => {}); // Block Win+Tab (task view)
         globalShortcut.register('Alt+Tab', () => {}); // Block Alt+Tab
 
+        // If they somehow switch away, immediately re-focus
+        const refocusInterval = setInterval(() => {
+          if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
+          if (mainWindow && !mainWindow.isFocused()) {
+            mainWindow.focus();
+            mainWindow.setKiosk(true);
+            mainWindow.setAlwaysOnTop(true, 'screen-saver');
+          }
+        }, 500);
+
         // Block keyboard shortcuts that could escape
         mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
           if (!bypassWarningActive) return;
