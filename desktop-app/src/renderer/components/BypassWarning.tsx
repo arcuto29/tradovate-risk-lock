@@ -93,6 +93,16 @@ export const BypassWarning: React.FC = () => {
         {canDismiss ? 'I understand' : 'Wait...'}
       </button>
 
+      {/* Shutdown PC button */}
+      <button
+        onClick={() => {
+          (window as any).electronAPI?.shutdownPC?.();
+        }}
+        className="mt-6 px-6 py-3 border border-red-500/20 text-red-400/60 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:border-red-500/40 hover:text-red-400 transition-all"
+      >
+        Shutdown Computer
+      </button>
+
       {/* Dev exit for screenshots */}
       <button
         onClick={() => {
