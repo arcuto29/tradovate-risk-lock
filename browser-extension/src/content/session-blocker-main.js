@@ -76,7 +76,6 @@
           ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
           : cooldownSeconds;
         cooldownUntil = Date.now() + (escalatedCooldown * 1000);
-        warningShown = false;
         
         // LOSS STREAK AUTO-TIGHTEN
         if (lossStreakEnabled && consecutiveLosses >= 2) {
@@ -374,7 +373,6 @@
             ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
             : cooldownSeconds;
           cooldownUntil = Date.now() + (escalatedCooldown * 1000);
-          warningShown = false;
           totalDailyPnL = currentPnl;
           
           // Check daily loss limit
@@ -413,7 +411,6 @@
                   lastLossTime = Date.now();
                   cooldownActive = true;
                   cooldownUntil = Date.now() + (cooldownSeconds * 1000);
-                  warningShown = false;
                   totalDailyPnL += pnl;
                   if (totalDailyPnL <= -maxDailyLoss) {
                     dailyLossBlocked = true;
