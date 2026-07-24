@@ -11,6 +11,7 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { TiltMeter } from './components/TiltMeter';
 import { BypassWarning } from './components/BypassWarning';
 import { DisciplineScore } from './components/DisciplineScore';
+import { PreMarketCheck } from './components/PreMarketCheck';
 
 type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
 
@@ -31,6 +32,8 @@ export const App: React.FC = () => {
   const [lockState, setLockState] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('main');
   const [loading, setLoading] = useState(true);
+  const [preMarketPassed, setPreMarketPassed] = useState(false);
+  const [limitsTightened, setLimitsTightened] = useState(false);
 
   const refreshState = useCallback(async () => {
     try {
@@ -130,7 +133,16 @@ export const App: React.FC = () => {
                     Dev Exit Fullscreen
                   </button>
                 </>
-              : <RiskSettings isLocked={false} onLocked={refreshState} />
+              : !preMarketPassed
+                ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); }} />
+                : <>
+                    {limitsTightened && (
+                      <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-amber-400/20 text-amber-300/80 text-xs font-medium">
+                        You're not in the right headspace. Limits tightened for today.
+                      </div>
+                    )}
+                    <RiskSettings isLocked={false} onLocked={refreshState} />
+                  </>
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
           {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
