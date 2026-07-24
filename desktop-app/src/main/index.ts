@@ -25,7 +25,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 800, height: 850, minWidth: 600, minHeight: 600,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
-    title: 'Tradovate Risk Settings Lock', autoHideMenuBar: true,
+    title: 'Tradovate Risk Settings Lock', autoHideMenuBar: true, menuBarVisible: false,
   });
   mainWindow.setMenu(null);
   if (isDev) { mainWindow.loadURL('http://localhost:5173'); }
