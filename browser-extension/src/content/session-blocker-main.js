@@ -73,16 +73,18 @@
     if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
         consecutiveLosses++;
-        lastLossTime = Date.now();
-        cooldownActive = true;
-        // ESCALATING COOLDOWN: 2min → 4min → 8min → 16min max
-        var escalatedCooldown = escalatingCooldown 
-          ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
-          : cooldownSeconds;
-        cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+        if (coachEnabled) {
+          lastLossTime = Date.now();
+          cooldownActive = true;
+          // ESCALATING COOLDOWN: 2min → 4min → 8min → 16min max
+          var escalatedCooldown = escalatingCooldown 
+            ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
+            : cooldownSeconds;
+          cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+        }
         
         // LOSS STREAK AUTO-TIGHTEN
-        if (lossStreakEnabled && consecutiveLosses >= 2) {
+        if (coachEnabled && lossStreakEnabled && consecutiveLosses >= 2) {
           currentMaxSize = consecutiveLosses >= 3 ? 1 : Math.max(1, Math.ceil(originalMaxSize / 2));
           console.log('[TradingGuardian] Loss streak ' + consecutiveLosses + ' - Max size: ' + currentMaxSize);
           window.postMessage({ type: 'TRL_COACH_WARN', reason: 'SIZE REDUCED', message: 'After ' + consecutiveLosses + ' consecutive losses, your max size is now ' + currentMaxSize + ' contract(s). Protecting your capital.' }, '*');
