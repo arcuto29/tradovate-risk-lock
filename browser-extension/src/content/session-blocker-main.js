@@ -99,7 +99,7 @@
   var ORDER_URLS = ['userapi.topstepx.com/Order', '/Order', '/api/Order', 'order/place'];
   var SAFE_URLS = ['/Order?accountId', '/order/list', '/order/item', '/orders/history'];
   // URLs that indicate modifying/canceling an existing order (NOT new orders)
-  var MODIFY_URLS = ['/Order/modify', '/Order/cancel', '/Order/update', '/order/modify', '/order/cancel', '/order/update'];
+  var MODIFY_URLS = ['/Order/modify', '/Order/cancel', '/Order/update', '/order/modify', '/order/cancel', '/order/update', '/Order/editStopLoss', '/Order/editTakeProfit', '/Order/editStop', '/Order/editTarget', '/Order/edit'];
 
   function isOrderUrl(url) {
     if (!url) return false;
