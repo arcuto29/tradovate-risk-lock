@@ -111,6 +111,13 @@ function applyStartupSetting(enabled: boolean): void {
 
 function setupIPC(): void {
   ipcMain.handle('get-lock-state', () => lockManager.getState());
+
+  // Full day block (Pre-Market Check)
+  ipcMain.handle('full-day-block', () => {
+    wsServer.broadcastFullDayBlock();
+    db.logActivity('full_day_block', 'Pre-Market Check: user admitted to revenge trading — blocked for the day');
+    return { success: true };
+  });
   ipcMain.handle('lock-settings', (_e, settings) => {
     const result = lockManager.lock(settings);
     if (result.success) updateTrayMenu();

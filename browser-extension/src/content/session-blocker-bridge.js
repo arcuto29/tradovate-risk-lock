@@ -23,6 +23,7 @@
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
+    if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }
   });
 
   function sendStateToPage() {
