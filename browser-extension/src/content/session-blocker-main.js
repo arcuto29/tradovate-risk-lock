@@ -118,11 +118,45 @@
       if (hasSize) return false; // Has size = could be a new order, don't skip
       return true; // Has orderId but no size = definitely modifying existing
     }
+    // If body only has price changes (stopPrice, limitPrice, triggerPrice) with an existing order reference
+    if (body && (body.stopPrice !== undefined || body.limitPrice !== undefined || body.triggerPrice !== undefined)) {
+      // Has price fields but check if it also has a new position — if no new qty it's a drag
+      var hasNewQty = body.positionSize || body.qty || body.quantity;
+      if (!hasNewQty) return true; // Only price change = SL/TP drag
+    }
     return false; // When in doubt, don't skip — let coach fire
   }
 
   function isPostOrPut(method) {
     return method === 'POST' || method === 'PUT';
+  }
+
+  // ─── Position tracking ───────────────────────────────────────────────────
+  var openPositions = {}; // { symbol: totalSize }
+
+  function getOpenSize(symbol) {
+    if (!symbol) return 0;
+    var upper = symbol.toUpperCase();
+    var total = 0;
+    for (var key in openPositions) {
+      if (key.includes(upper) || upper.includes(key)) {
+        total += openPositions[key];
+      }
+    }
+    return total;
+  }
+
+  function addPosition(symbol, size) {
+    if (!symbol || !size) return;
+    var upper = symbol.toUpperCase();
+    // Find matching key
+    for (var key in openPositions) {
+      if (key.includes(upper) || upper.includes(key)) {
+        openPositions[key] += size;
+        return;
+      }
+    }
+    openPositions[upper] = size;
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
@@ -160,8 +194,10 @@
     if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
       max = currentMaxSize;
     }
-    
-    return size > max;
+
+    // Check total position (existing + this new order)
+    var currentOpen = getOpenSize(symbol);
+    return (currentOpen + size) > max;
   }
 
   // ─── Psychology coach check ────────────────────────────────────────────────
@@ -271,8 +307,10 @@
         }
       }
 
-      // Order passed all checks — notify tilt meter
+      // Order passed all checks — notify tilt meter + track position
       var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
+      var orderSymbol = body ? (body.symbolId || body.symbol || body.instrument || '') : '';
+      if (orderSize > 0 && orderSymbol) addPosition(orderSymbol, orderSize);
       window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize }, '*');
     }
 
