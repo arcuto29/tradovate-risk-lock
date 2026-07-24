@@ -27,9 +27,9 @@ export class WebSocketServer {
     });
     ws.on('close', () => {
       this.clients.delete(ws);
-      // If extension disconnects while locked — potential bypass attempt
+      // Only trigger if locked AND no other clients connected
       if (this.lockManager.isLocked() && this.clients.size === 0) {
-        this.db.logActivity('extension_disconnected', 'Extension disconnected while locked — killing trading apps');
+        this.db.logActivity('extension_disconnected', 'Extension disconnected while locked');
         if (this.onExtensionDisconnected) this.onExtensionDisconnected();
       }
     });
