@@ -17,6 +17,7 @@ let lockManager: LockManager;
 let wsServer: WebSocketServer;
 let tamperGuard: TamperGuard;
 let processBlocker: ProcessBlocker;
+let bypassWarningActive = false;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -30,6 +31,10 @@ function createWindow(): void {
   else { mainWindow.loadFile(path.join(__dirname, '../renderer/index.html')); }
 
   mainWindow.on('close', (event) => {
+    if (bypassWarningActive) {
+      event.preventDefault(); // Cannot close during bypass warning — trapped
+      return;
+    }
     if (lockManager.isLocked()) {
       event.preventDefault();
       mainWindow?.hide();
@@ -125,9 +130,12 @@ function setupIPC(): void {
 
   // Exit fullscreen
   ipcMain.handle('exit-fullscreen', () => {
+    bypassWarningActive = false;
     if (mainWindow) {
       mainWindow.setFullScreen(false);
       mainWindow.setAlwaysOnTop(false);
+      mainWindow.setClosable(true);
+      mainWindow.setMinimizable(true);
     }
     return { success: true };
   });
@@ -336,6 +344,7 @@ app.whenReady().then(async () => {
   wsServer.onExtensionDisconnected = () => {
     if (!lockManager.isLocked()) return; // Do nothing if not locked
     
+    bypassWarningActive = true;
     db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
     // Kill trading platforms
     const { exec } = require('child_process');
@@ -381,6 +390,7 @@ app.whenReady().then(async () => {
 
         // Release after 5 minutes
         setTimeout(() => {
+          bypassWarningActive = false;
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
           mainWindow?.setClosable(true);
