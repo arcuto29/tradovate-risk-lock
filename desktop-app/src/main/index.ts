@@ -132,6 +132,7 @@ function setupIPC(): void {
   ipcMain.handle('exit-fullscreen', () => {
     bypassWarningActive = false;
     if (mainWindow) {
+      mainWindow.setKiosk(false);
       mainWindow.setFullScreen(false);
       mainWindow.setAlwaysOnTop(false);
       mainWindow.setClosable(true);
@@ -350,12 +351,12 @@ app.whenReady().then(async () => {
     const { exec } = require('child_process');
     exec('taskkill /F /IM Tradesea.exe /T', () => {});
     exec('taskkill /F /IM TopstepX.exe /T', () => {});
-      // Go fullscreen and show warning on ALL monitors
+      // Go fullscreen KIOSK mode (hides taskbar completely)
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();
-        mainWindow.setFullScreen(true);
-        mainWindow.setAlwaysOnTop(true);
+        mainWindow.setKiosk(true);
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.setClosable(false);
         mainWindow.setMinimizable(false);
         mainWindow.webContents.send('extension-disconnected');
@@ -391,6 +392,7 @@ app.whenReady().then(async () => {
         // Release after 5 minutes
         setTimeout(() => {
           bypassWarningActive = false;
+          mainWindow?.setKiosk(false);
           mainWindow?.setFullScreen(false);
           mainWindow?.setAlwaysOnTop(false);
           mainWindow?.setClosable(true);
