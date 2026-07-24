@@ -118,6 +118,12 @@
       if (hasSize) return false; // Has size = could be a new order, don't skip
       return true; // Has orderId but no size = definitely modifying existing
     }
+    // If body only has price changes (stopPrice, limitPrice, triggerPrice) with an existing order reference
+    if (body && (body.stopPrice !== undefined || body.limitPrice !== undefined || body.triggerPrice !== undefined)) {
+      // Has price fields but check if it also has a new position — if no new qty it's a drag
+      var hasNewQty = body.positionSize || body.qty || body.quantity;
+      if (!hasNewQty) return true; // Only price change = SL/TP drag
+    }
     return false; // When in doubt, don't skip — let coach fire
   }
 
