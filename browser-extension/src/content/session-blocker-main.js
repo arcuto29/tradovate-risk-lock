@@ -194,10 +194,9 @@
     if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
       max = currentMaxSize;
     }
-
-    // Check total position (existing + this new order)
-    var currentOpen = getOpenSize(symbol);
-    return (currentOpen + size) > max;
+    
+    // Only block if single order exceeds max (not cumulative)
+    return size > max;
   }
 
   // ─── Psychology coach check ────────────────────────────────────────────────
@@ -422,16 +421,18 @@
           var lossAmount = lastKnownPnL - currentPnl;
           console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
           
-          lastLossTime = Date.now();
-          cooldownActive = true;
-          var escalatedCooldown = escalatingCooldown 
-            ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
-            : cooldownSeconds;
-          cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+          if (coachEnabled) {
+            lastLossTime = Date.now();
+            cooldownActive = true;
+            var escalatedCooldown = escalatingCooldown 
+              ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
+              : cooldownSeconds;
+            cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+          }
           totalDailyPnL = currentPnl;
           
           // Check daily loss limit
-          if (Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
+          if (coachEnabled && Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
             dailyLossBlocked = true;
             console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
             window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
@@ -463,11 +464,13 @@
                 var pnl = data.realizedPnl || data.pnl || data.profit || 0;
                 if (pnl < 0) {
                   console.log('[TradingGuardian] Loss from API: $' + pnl);
-                  lastLossTime = Date.now();
-                  cooldownActive = true;
-                  cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+                  if (coachEnabled) {
+                    lastLossTime = Date.now();
+                    cooldownActive = true;
+                    cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+                  }
                   totalDailyPnL += pnl;
-                  if (totalDailyPnL <= -maxDailyLoss) {
+                  if (coachEnabled && totalDailyPnL <= -maxDailyLoss) {
                     dailyLossBlocked = true;
                     window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss. Protecting your capital is the priority.' }, '*');
                   }
