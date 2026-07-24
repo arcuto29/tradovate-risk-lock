@@ -38,13 +38,14 @@ export class WebSocketServer {
 
     // Send position limits on connection
     const settings = this.db.getSettings();
-    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [] };
+    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };
     try {
       if (settings.position_limits) {
         const parsed = JSON.parse(settings.position_limits);
         limitsData.limits = parsed.contractLimits || parsed.limits || [];
         limitsData.defaultMax = parsed.defaultMax || 2;
         limitsData.blockedSymbols = parsed.blockedSymbols || [];
+        limitsData.lossLimitAmount = parsed.lossLimitAmount || 0;
       }
     } catch {}
     ws.send(JSON.stringify({ type: 'position_limits', ...limitsData }));
@@ -104,7 +105,7 @@ export class WebSocketServer {
 
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
-    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [] };
+    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };
     try {
       if (settings.position_limits) {
         const parsed = JSON.parse(settings.position_limits);
@@ -112,6 +113,7 @@ export class WebSocketServer {
         limitsData.limits = parsed.contractLimits || parsed.limits || [];
         limitsData.defaultMax = parsed.defaultMax || 2;
         limitsData.blockedSymbols = parsed.blockedSymbols || [];
+        limitsData.lossLimitAmount = parsed.lossLimitAmount || 0;
       }
     } catch {}
     const msg = JSON.stringify({ type: 'position_limits', ...limitsData });
