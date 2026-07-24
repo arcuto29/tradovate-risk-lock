@@ -135,6 +135,104 @@ function setupIPC(): void {
   ipcMain.handle('set-trusted-password', (_e, password) => lockManager.setTrustedPassword(password));
   ipcMain.handle('remove-trusted-password', (_e, password) => lockManager.removeTrustedPassword(password));
   ipcMain.handle('get-activity-log', (_e, limit) => db.getActivityLog(limit));
+
+  // Discipline Score
+  ipcMain.handle('get-discipline-score', () => {
+    const log = db.getActivityLog(500);
+    const today = new Date().toISOString().split('T')[0];
+    const scores: { [date: string]: { score: number; violations: string[] } } = {};
+
+    // Process each log entry into daily scores
+    log.forEach((entry: any) => {
+      const date = entry.timestamp?.split('T')[0] || today;
+      if (!scores[date]) scores[date] = { score: 100, violations: [] };
+
+      switch (entry.type) {
+        case 'bypass_attempt':
+          scores[date].score -= 15;
+          scores[date].violations.push('Bypass attempt: ' + (entry.details || '').substring(0, 50));
+          break;
+        case 'extension_disconnected':
+          scores[date].score -= 25;
+          scores[date].violations.push('Extension disabled while locked');
+          break;
+        case 'session_blocked':
+          scores[date].score -= 10;
+          scores[date].violations.push('Tried to trade outside session hours');
+          break;
+        case 'size_blocked':
+          scores[date].score -= 10;
+          scores[date].violations.push('Exceeded position size limit');
+          break;
+        case 'app_close_attempt':
+          scores[date].score -= 5;
+          scores[date].violations.push('Tried to close app while locked');
+          break;
+        case 'unlock_failed':
+          scores[date].score -= 10;
+          scores[date].violations.push('Failed unlock attempt');
+          break;
+      }
+
+      // Floor at 0
+      if (scores[date].score < 0) scores[date].score = 0;
+    });
+
+    // Make sure today exists
+    if (!scores[today]) scores[today] = { score: 100, violations: [] };
+
+    // Calculate weekly average
+    const last7Days: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      last7Days.push(scores[key]?.score ?? 100);
+    }
+    const weeklyAvg = Math.round(last7Days.reduce((a, b) => a + b, 0) / last7Days.length);
+
+    // Calculate monthly average
+    const last30Days: number[] = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      last30Days.push(scores[key]?.score ?? 100);
+    }
+    const monthlyAvg = Math.round(last30Days.reduce((a, b) => a + b, 0) / last30Days.length);
+
+    // Calculate streak (consecutive days with score >= 80)
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      if ((scores[key]?.score ?? 100) >= 80) streak++;
+      else break;
+    }
+
+    // Build history
+    const history: { date: string; score: number; violations: string[] }[] = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      if (scores[key]) {
+        history.push({ date: key, ...scores[key] });
+      } else {
+        history.push({ date: key, score: 100, violations: [] });
+      }
+    }
+
+    return {
+      todayScore: scores[today].score,
+      violations: scores[today].violations,
+      weeklyAvg,
+      monthlyAvg,
+      streak,
+      history,
+    };
+  });
   ipcMain.handle('get-settings', () => lockManager.getSettings());
   ipcMain.handle('update-settings', (_e, settings) => {
     const result = lockManager.updateSettings(settings);

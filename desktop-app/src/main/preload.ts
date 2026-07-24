@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setTrustedPassword: (password: string) => ipcRenderer.invoke('set-trusted-password', password),
   removeTrustedPassword: (password: string) => ipcRenderer.invoke('remove-trusted-password', password),
   getActivityLog: (limit?: number) => ipcRenderer.invoke('get-activity-log', limit),
+  getDisciplineScore: () => ipcRenderer.invoke('get-discipline-score'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   updateSettings: (settings: any) => ipcRenderer.invoke('update-settings', settings),
   getBypassAttempts: () => ipcRenderer.invoke('get-bypass-attempts'),
