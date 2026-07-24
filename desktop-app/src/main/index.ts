@@ -334,12 +334,13 @@ app.whenReady().then(async () => {
 
   // Anti-bypass: if extension disconnects while locked, warn the user
   wsServer.onExtensionDisconnected = () => {
-    if (lockManager.isLocked()) {
-      db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
-      // Kill trading platforms
-      const { exec } = require('child_process');
-      exec('taskkill /F /IM Tradesea.exe /T', () => {});
-      exec('taskkill /F /IM TopstepX.exe /T', () => {});
+    if (!lockManager.isLocked()) return; // Do nothing if not locked
+    
+    db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
+    // Kill trading platforms
+    const { exec } = require('child_process');
+    exec('taskkill /F /IM Tradesea.exe /T', () => {});
+    exec('taskkill /F /IM TopstepX.exe /T', () => {});
       // Go fullscreen and show warning on ALL monitors
       if (mainWindow) {
         mainWindow.show();
@@ -388,21 +389,15 @@ app.whenReady().then(async () => {
         }, 300000);
       }
 
-      // 5-minute kill loop: keep killing trading apps every 3 seconds
+      // 5-minute kill loop: keep killing trading desktop apps every 3 seconds
       let killCount = 0;
       const killLoop = setInterval(() => {
         killCount++;
         exec('taskkill /F /IM Tradesea.exe /T', () => {});
         exec('taskkill /F /IM TopstepX.exe /T', () => {});
-        // Also try to close browser tabs with trading URLs via window titles
-        exec('taskkill /F /FI "WINDOWTITLE eq *TopstepX*" /T', () => {});
-        exec('taskkill /F /FI "WINDOWTITLE eq *Tradovate*" /T', () => {});
-        exec('taskkill /F /FI "WINDOWTITLE eq *Tradesea*" /T', () => {});
-        exec('taskkill /F /FI "WINDOWTITLE eq *TradingView*" /T', () => {});
         // Stop after 5 minutes (100 iterations * 3 seconds)
         if (killCount >= 100) clearInterval(killLoop);
       }, 3000);
-    }
   };
 
   tamperGuard = new TamperGuard(lockManager, db);
