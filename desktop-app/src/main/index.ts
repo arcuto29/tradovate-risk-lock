@@ -137,6 +137,8 @@ function setupIPC(): void {
       mainWindow.setAlwaysOnTop(false);
       mainWindow.setClosable(true);
       mainWindow.setMinimizable(true);
+      mainWindow.setMovable(true);
+      mainWindow.setResizable(true);
     }
     return { success: true };
   });
@@ -355,11 +357,26 @@ app.whenReady().then(async () => {
       if (mainWindow) {
         mainWindow.show();
         mainWindow.focus();
+        mainWindow.setMenu(null); // Remove menu bar completely
+        mainWindow.setMenuBarVisibility(false);
         mainWindow.setKiosk(true);
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.setClosable(false);
         mainWindow.setMinimizable(false);
+        mainWindow.setMovable(false);
+        mainWindow.setResizable(false);
         mainWindow.webContents.send('extension-disconnected');
+
+        // Block keyboard shortcuts that could escape
+        mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
+          if (!bypassWarningActive) return;
+          // Block F5, Ctrl+R (reload), Ctrl+Shift+I (devtools), Ctrl+W, Alt+F4
+          if (input.key === 'F5') event.preventDefault();
+          if (input.control && input.key === 'r') event.preventDefault();
+          if (input.control && input.shift && input.key === 'I') event.preventDefault();
+          if (input.control && input.key === 'w') event.preventDefault();
+          if (input.alt && input.key === 'F4') event.preventDefault();
+        });
 
         // Create blocker windows on other monitors (only if multiple displays)
         const { screen, BrowserWindow: BW } = require('electron');
@@ -397,6 +414,8 @@ app.whenReady().then(async () => {
           mainWindow?.setAlwaysOnTop(false);
           mainWindow?.setClosable(true);
           mainWindow?.setMinimizable(true);
+          mainWindow?.setMovable(true);
+          mainWindow?.setResizable(true);
           blockerWindows.forEach((w: any) => { try { w.close(); } catch {} });
         }, 300000);
       }
