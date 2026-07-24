@@ -75,12 +75,10 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   // Loss Limit
   const [lossLimitEnabled, setLossLimitEnabled] = useState(false);
   const [lossLimitAmount, setLossLimitAmount] = useState('');
-  const [lossLimitAction, setLossLimitAction] = useState('block');
 
   // Profit Target
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
   const [profitTargetAmount, setProfitTargetAmount] = useState('');
-  const [profitTargetAction, setProfitTargetAction] = useState('block');
 
   // Max Trades
   const [maxTradesEnabled, setMaxTradesEnabled] = useState(false);
@@ -112,10 +110,8 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (!limits) return;
       if (limits.lossLimitEnabled !== undefined) setLossLimitEnabled(limits.lossLimitEnabled);
       if (limits.lossLimitAmount !== undefined) setLossLimitAmount(String(limits.lossLimitAmount));
-      if (limits.lossLimitAction) setLossLimitAction(limits.lossLimitAction);
       if (limits.profitTargetEnabled !== undefined) setProfitTargetEnabled(limits.profitTargetEnabled);
       if (limits.profitTargetAmount !== undefined) setProfitTargetAmount(String(limits.profitTargetAmount));
-      if (limits.profitTargetAction) setProfitTargetAction(limits.profitTargetAction);
       if (limits.maxTradesEnabled !== undefined) setMaxTradesEnabled(limits.maxTradesEnabled);
       if (limits.maxTradesPerDay !== undefined) setMaxTradesPerDay(String(limits.maxTradesPerDay));
       if (limits.blockedSymbolsEnabled !== undefined) setBlockedSymbolsEnabled(limits.blockedSymbolsEnabled);
@@ -143,10 +139,8 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const buildPayload = () => ({
     lossLimitEnabled,
     lossLimitAmount: Number(lossLimitAmount) || 0,
-    lossLimitAction,
     profitTargetEnabled,
     profitTargetAmount: Number(profitTargetAmount) || 0,
-    profitTargetAction,
     maxTradesEnabled,
     maxTradesPerDay: Number(maxTradesPerDay) || 0,
     blockedSymbolsEnabled,
@@ -259,7 +253,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <h2 className={sectionTitle}>Personal Daily Loss Limit</h2>
             <p className={description}>
-              Set a maximum dollar amount you are willing to lose per day. When this limit is reached, trading will be blocked or you will be warned depending on the action selected.
+              Set a maximum dollar amount you are willing to lose per day. When this limit is reached, trading will be blocked until reset.
             </p>
             <div className="space-y-4">
               <div>
@@ -273,13 +267,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   disabled={isLocked}
                 />
               </div>
-              <div>
-                <label className={labelClass}>Action</label>
-                <select className={selectClass} value={lossLimitAction} onChange={(e) => setLossLimitAction(e.target.value)} disabled={isLocked}>
-                  <option value="block">Block Trading</option>
-                  <option value="warn">Warn Only</option>
-                </select>
-              </div>
             </div>
             <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
               Save
@@ -292,7 +279,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <h2 className={sectionTitle}>Personal Daily Profit Target</h2>
             <p className={description}>
-              Set a daily profit target. When reached, you can choose to stop trading for the day or simply receive a notification.
+              Set a daily profit target. When reached, trading will be blocked to protect your profits for the day.
             </p>
             <div className="space-y-4">
               <div>
@@ -305,13 +292,6 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                   placeholder="e.g. 1000"
                   disabled={isLocked}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>Action</label>
-                <select className={selectClass} value={profitTargetAction} onChange={(e) => setProfitTargetAction(e.target.value)} disabled={isLocked}>
-                  <option value="block">Block Trading</option>
-                  <option value="warn">Warn Only</option>
-                </select>
               </div>
             </div>
             <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
