@@ -5,6 +5,7 @@ const MESSAGES = [
   "If you want trading to work long term, don't do this. Close everything and walk away.",
   "This feeling will pass in 10 minutes. Your losses won't come back.",
   "Go touch grass. Get off charts and do something else. The market will always be here tomorrow.",
+  "Get off the charts and hit the gym. Come back tomorrow with a clear head.",
 ];
 
 export const BypassWarning: React.FC = () => {
