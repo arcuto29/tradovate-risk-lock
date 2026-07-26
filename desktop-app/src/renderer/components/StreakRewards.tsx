@@ -24,22 +24,22 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
           return (
             <div
               key={badge.days}
-              className="rounded-xl p-5 text-center transition-all border"
+              className={`rounded-xl p-5 text-center transition-all border hover-lift ${earned ? 'animate-glow-pulse' : ''}`}
               style={{
-                borderColor: earned ? badge.color + '60' : 'rgba(255,255,255,0.08)',
+                borderColor: earned ? badge.color + '60' : 'rgba(255,255,255,0.12)',
                 boxShadow: earned ? `0 0 20px ${badge.glow}` : 'none',
-                opacity: earned ? 1 : 0.5,
+                opacity: 1,
               }}
             >
               <div
                 className="text-4xl mx-auto mb-3"
-                style={{ color: earned ? badge.color : badge.color + '40' }}
+                style={{ color: badge.color }}
               >
                 &#x1F6E1;
               </div>
               <p
                 className="text-xs font-bold"
-                style={{ color: earned ? badge.color : badge.color + '60' }}
+                style={{ color: badge.color }}
               >
                 {badge.label}
               </p>

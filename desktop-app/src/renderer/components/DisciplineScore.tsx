@@ -72,9 +72,9 @@ export const DisciplineScore: React.FC = () => {
       </p>
 
       {/* Today's Score */}
-      <div className="glass rounded-xl p-8 mb-6 text-center">
+      <div className="glass rounded-xl p-8 mb-6 text-center animate-reveal hover-lift">
         <p className="text-[0.55rem] font-semibold tracking-[3px] uppercase text-white/25 mb-4">Today</p>
-        <div className={`inline-block rounded-full w-28 h-28 flex items-center justify-center ${getScoreGlow(todayScore)} border border-white/[0.06]`}>
+        <div className={`inline-block rounded-full w-28 h-28 flex items-center justify-center ${getScoreGlow(todayScore)} border border-white/[0.06] animate-glow-pulse`}>
           <div>
             <p className={`text-4xl font-black font-mono ${getScoreColor(todayScore)}`}>{todayScore}</p>
             <p className={`text-sm font-bold ${getScoreColor(todayScore)}`}>{getGrade(todayScore)}</p>
@@ -94,7 +94,7 @@ export const DisciplineScore: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="glass rounded-lg p-4 text-center">
+        <div className="glass rounded-lg p-4 text-center animate-scale-in stagger-1 hover-lift">
           <p className="text-[0.5rem] font-semibold tracking-[1.5px] uppercase text-white/20 mb-2">7 Day Avg</p>
           <p className={`text-xl font-bold font-mono ${getScoreColor(weeklyAvg)}`}>{weeklyAvg}</p>
         </div>
