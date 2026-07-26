@@ -368,7 +368,7 @@
   
   var lastKnownPnL = null;
   var pnlCheckInterval = setInterval(function() {
-    if (!coachEnabled) return;
+    // Always scan P&L even if coach is disabled - loss-reaction needs it
     
     // TopstepX specific: data-testid="realized-pnl-display-value-amount"
     var realizedPnl = document.querySelector('[data-testid="realized-pnl-display-value-amount"]');

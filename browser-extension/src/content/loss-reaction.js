@@ -8,22 +8,33 @@
   'use strict';
 
   var reactionEnabled = false;
+  var appConnected = false;
 
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       reactionEnabled = event.data.enabled === true;
+      appConnected = true;
+      console.log('[TradingGuardian] Loss Reaction - coach config received, enabled:', reactionEnabled);
+    }
+    if (event.data && event.data.type === 'TRL_SESSION_STATE') {
+      appConnected = true;
+    }
+    if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
+      appConnected = true;
     }
     if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
       reactionEnabled = false;
+      appConnected = false;
       var existing = document.getElementById('trl-reaction-overlay');
       if (existing) existing.remove();
     }
     if (event.data && event.data.type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
       if (reactionEnabled) showReactionOverlay();
     }
-    // Also trigger immediately when a loss is detected (not just on next trade attempt)
+    // Trigger immediately when a loss is detected
     if (event.data && event.data.type === 'TRL_TRADE_RESULT' && event.data.result === 'loss') {
+      console.log('[TradingGuardian] Loss Reaction - loss detected, reactionEnabled:', reactionEnabled);
       if (reactionEnabled) showReactionOverlay();
     }
   });
