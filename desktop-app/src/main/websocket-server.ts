@@ -58,7 +58,17 @@ export class WebSocketServer {
         ws.send(JSON.stringify({ type: 'lock_state', locked: state.isLocked, settings: state.isLocked ? { ...state.settings, resetTimeISO: state.resetTime, timeRemaining: state.timeRemaining } : null }));
         break;
       case 'report_bypass':
-        if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(message.details || 'Browser bypass attempt'); ws.send(JSON.stringify({ type: 'bypass_recorded' })); }
+        // Log the bypass with the correct type for discipline scoring
+        const details = message.details || 'Browser bypass attempt';
+        let logType = 'bypass_attempt';
+        if (details.includes('Oversize') || details.includes('size') || details.includes('Position size')) logType = 'size_blocked';
+        else if (details.includes('hours') || details.includes('SESSION')) logType = 'session_blocked';
+        else if (details.includes('COACH')) logType = 'coach_blocked';
+        else if (details.includes('symbol')) logType = 'symbol_blocked';
+        
+        this.db.logActivity(logType, details);
+        if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(details); }
+        ws.send(JSON.stringify({ type: 'bypass_recorded' }));
         break;
       case 'report_settings_access':
         if (this.lockManager.isLocked()) { this.db.logActivity('settings_access_blocked', `Extension: ${message.url || 'risk settings'}`); }

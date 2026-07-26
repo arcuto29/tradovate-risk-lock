@@ -215,6 +215,14 @@ function setupIPC(): void {
           scores[date].score -= 10;
           scores[date].violations.push('Exceeded position size limit');
           break;
+        case 'symbol_blocked':
+          scores[date].score -= 5;
+          scores[date].violations.push('Tried to trade a blocked symbol');
+          break;
+        case 'coach_blocked':
+          scores[date].score -= 5;
+          scores[date].violations.push('Tried to trade during cooldown');
+          break;
         case 'app_close_attempt':
           scores[date].score -= 5;
           scores[date].violations.push('Tried to close app while locked');
@@ -222,6 +230,10 @@ function setupIPC(): void {
         case 'unlock_failed':
           scores[date].score -= 10;
           scores[date].violations.push('Failed unlock attempt');
+          break;
+        case 'kill_switch':
+          scores[date].score -= 20;
+          scores[date].violations.push('Kill switch activated');
           break;
       }
 
