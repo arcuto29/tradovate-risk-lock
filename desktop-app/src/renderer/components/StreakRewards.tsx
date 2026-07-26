@@ -11,7 +11,7 @@ const BADGES = [
   { days: 14, label: 'Gold', color: '#FFD700', glow: 'rgba(255,215,0,0.5)' },
   { days: 30, label: 'Platinum', color: '#00E5FF', glow: 'rgba(0,229,255,0.5)' },
   { days: 60, label: 'Diamond', color: '#B388FF', glow: 'rgba(179,136,255,0.5)' },
-  { days: 90, label: 'Obsidian', color: '#FFFFFF', glow: 'rgba(255,255,255,0.4)' },
+  { days: 90, label: 'Obsidian', color: '#FF4500', glow: 'rgba(255,69,0,0.5)' },
 ];
 
 export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {

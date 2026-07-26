@@ -99,7 +99,7 @@ export const DailyReport: React.FC = () => {
       <div className="relative rounded-xl p-5 overflow-hidden card-premium animate-reveal">
         <div className="relative z-10 flex justify-between items-center">
           <span className="text-xs text-white/30 font-medium">Current Streak</span>
-          <span className="text-lg font-bold font-mono text-gradient">{report.streak} days</span>
+          <span className="text-lg font-bold font-mono text-cyan-400">{report.streak} days</span>
         </div>
         <p className="text-[0.6rem] text-white/15 mt-2 relative z-10">Consecutive days with score above 80</p>
       </div>
