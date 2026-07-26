@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true, trustedPersonEnabled: false });
   const [saved, setSaved] = useState(false);
-
-  // Trusted person
   const [tpPassword, setTpPassword] = useState('');
   const [tpConfirm, setTpConfirm] = useState('');
   const [tpRemovePassword, setTpRemovePassword] = useState('');
@@ -53,82 +51,129 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
     } else { setTpError(r.error || 'Failed'); }
   };
 
-  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 input-premium";
 
   return (
     <div className="max-w-lg">
-      <h2 className="text-4xl font-black tracking-tighter mb-3 text-glow-white">Settings</h2>
-      <p className="text-white/35 text-sm mb-8 leading-relaxed">App configuration.</p>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-2 animate-reveal">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center">
+          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))'}}>⚙</span>
+        </div>
+        <h2 className="text-3xl font-black tracking-tight text-white">Settings</h2>
+      </div>
+      <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">App configuration.</p>
 
       {isLocked && (
-        <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-amber-400/20 text-amber-300/80 text-xs font-medium">Some settings locked during session</div>
+        <div className="mb-6 px-5 py-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] animate-reveal flex items-center gap-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+          <span className="text-amber-300/80 text-xs font-medium">Some settings locked during active session</span>
+        </div>
       )}
 
-      <div className="glass rounded-xl p-6 mb-4">
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Cooldown</p>
-        <label className="block text-xs text-white/35 mb-2">Hours before early unlock</label>
-        <input type="number" min="1" max="48" value={settings.cooldownHours} onChange={(e) => setSettings({ ...settings, cooldownHours: parseInt(e.target.value) || 12 })} disabled={isLocked} className="w-20 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2.5 text-white font-mono text-sm font-semibold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-20" />
+
+      {/* Cooldown */}
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-4 animate-reveal stagger-1">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-cyan-400/60 text-sm">⏳</span>
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-cyan-400/60">Cooldown</p>
+          </div>
+          <label className="block text-xs text-white/30 mb-3">Hours before early unlock available</label>
+          <input type="number" min="1" max="48" value={settings.cooldownHours} onChange={(e) => setSettings({ ...settings, cooldownHours: parseInt(e.target.value) || 12 })} disabled={isLocked} className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-20 input-premium" />
+        </div>
       </div>
 
-      <div className="glass rounded-xl p-6 mb-4">
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Startup</p>
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={settings.startWithWindows} onChange={(e) => setSettings({ ...settings, startWithWindows: e.target.checked })} className="w-4 h-4 accent-cyan-400" />
-            <span className="text-sm text-white/40">Start with Windows</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={settings.minimizeToTray} onChange={(e) => setSettings({ ...settings, minimizeToTray: e.target.checked })} className="w-4 h-4 accent-cyan-400" />
-            <span className="text-sm text-white/40">Minimize to tray on close</span>
-          </label>
+      {/* Startup */}
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-4 animate-reveal stagger-2">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="text-purple-400/60 text-sm">🚀</span>
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Startup</p>
+          </div>
+          <div className="space-y-4">
+            <label className="flex items-center justify-between cursor-pointer group">
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Start with Windows</span>
+              <div className={`toggle-premium ${settings.startWithWindows ? 'active' : ''}`} onClick={() => setSettings({ ...settings, startWithWindows: !settings.startWithWindows })} />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer group">
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Minimize to tray on close</span>
+              <div className={`toggle-premium ${settings.minimizeToTray ? 'active' : ''}`} onClick={() => setSettings({ ...settings, minimizeToTray: !settings.minimizeToTray })} />
+            </label>
+          </div>
         </div>
       </div>
 
       {/* Trusted Person */}
-      <div className="glass rounded-xl p-6 mb-4">
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-2">Trusted Person</p>
-        <p className="text-xs text-white/25 mb-4">Someone else holds the unlock password. You can't early-unlock without them.</p>
-
-        {isLocked && (
-          <p className="text-xs text-amber-400/70">Cannot change while locked</p>
-        )}
-
-        {!isLocked && !settings.trustedPersonEnabled && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs text-white/35 mb-1.5">Password (min 6)</label>
-              <input type="password" value={tpPassword} onChange={(e) => setTpPassword(e.target.value)} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-xs text-white/35 mb-1.5">Confirm</label>
-              <input type="password" value={tpConfirm} onChange={(e) => setTpConfirm(e.target.value)} className={inputClass} />
-            </div>
-            <button onClick={handleSetTrusted} className="px-5 py-2.5 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-[0.62rem] font-semibold uppercase tracking-[1.5px] rounded-lg hover:bg-cyan-400/20 transition-all">Set Password</button>
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-4 animate-reveal stagger-3">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-emerald-400/60 text-sm">🤝</span>
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-emerald-400/60">Trusted Person</p>
           </div>
-        )}
+          <p className="text-xs text-white/20 mb-5">Someone else holds the unlock password.</p>
 
-        {!isLocked && settings.trustedPersonEnabled && (
-          <div className="space-y-3">
-            <p className="text-xs text-emerald-400/70 mb-2">Active — early unlock requires this password</p>
-            <div>
-              <label className="block text-xs text-white/35 mb-1.5">Enter password to remove</label>
-              <input type="password" value={tpRemovePassword} onChange={(e) => setTpRemovePassword(e.target.value)} className={inputClass} />
+          {isLocked && (
+            <p className="text-xs text-amber-400/60">Cannot change while locked</p>
+          )}
+
+          {!isLocked && !settings.trustedPersonEnabled && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Password (min 6)</label>
+                <input type="password" value={tpPassword} onChange={(e) => setTpPassword(e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Confirm</label>
+                <input type="password" value={tpConfirm} onChange={(e) => setTpConfirm(e.target.value)} className={inputClass} />
+              </div>
+              <button onClick={handleSetTrusted} className="px-6 py-3 btn-premium text-[0.6rem] uppercase tracking-[2px] rounded-xl press-scale">Set Password</button>
             </div>
-            <button onClick={handleRemoveTrusted} className="px-5 py-2.5 border border-red-400/30 text-red-300 text-[0.62rem] font-semibold uppercase tracking-[1.5px] rounded-lg hover:bg-red-400/10 transition-all">Remove</button>
-          </div>
-        )}
+          )}
 
-        {tpError && <p className="mt-3 text-xs text-red-400">{tpError}</p>}
-        {tpSuccess && <p className="mt-3 text-xs text-emerald-400">{tpSuccess}</p>}
+          {!isLocked && settings.trustedPersonEnabled && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+                <p className="text-xs text-emerald-400/70">Active</p>
+              </div>
+              <div>
+                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Enter password to remove</label>
+                <input type="password" value={tpRemovePassword} onChange={(e) => setTpRemovePassword(e.target.value)} className={inputClass} />
+              </div>
+              <button onClick={handleRemoveTrusted} className="px-6 py-3 border border-red-400/20 text-red-300 text-[0.6rem] font-bold uppercase tracking-[2px] rounded-xl hover:bg-red-400/10 transition-all press-scale">Remove</button>
+            </div>
+          )}
+
+          {tpError && <p className="mt-3 text-xs text-red-400 animate-reveal">{tpError}</p>}
+          {tpSuccess && <p className="mt-3 text-xs text-emerald-400 animate-reveal">{tpSuccess}</p>}
+        </div>
       </div>
 
-      <div className="glass rounded-xl p-6 mb-4">
-        <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-3">Extension</p>
-        <p className="text-xs text-white/25">WebSocket port 47392</p>
+      {/* Extension */}
+      <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-4 animate-reveal stagger-4">
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-white/30 text-sm">🔌</span>
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-white/30">Extension</p>
+          </div>
+          <p className="text-xs text-white/20">WebSocket port <span className="font-mono text-cyan-400/50">47392</span></p>
+        </div>
       </div>
 
-      {saved && <div className="mt-4 px-5 py-3.5 glass rounded-lg border border-emerald-400/20 text-glow-green text-xs font-medium">Saved</div>}
-      <button onClick={handleSave} className="mt-5 px-6 py-3 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:bg-cyan-400/20 hover:border-cyan-400/40 hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] transition-all btn-glow">Save</button>
+      {/* Save */}
+      {saved && (
+        <div className="mt-5 px-5 py-3.5 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] text-emerald-300 text-xs font-medium animate-reveal flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+          Settings saved
+        </div>
+      )}
+      <button onClick={handleSave} className="mt-6 px-8 py-3.5 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale animate-reveal">
+        Save
+      </button>
     </div>
   );
 };

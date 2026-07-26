@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 const FUTURES_SYMBOLS = [
-  // Index
   { symbol: 'NQ', label: 'NQ — Nasdaq 100' },
   { symbol: 'MNQ', label: 'MNQ — Micro Nasdaq 100' },
   { symbol: 'ES', label: 'ES — S&P 500' },
@@ -10,26 +9,22 @@ const FUTURES_SYMBOLS = [
   { symbol: 'MYM', label: 'MYM — Micro Dow Jones' },
   { symbol: 'RTY', label: 'RTY — Russell 2000' },
   { symbol: 'M2K', label: 'M2K — Micro Russell 2000' },
-  // Energy
   { symbol: 'CL', label: 'CL — Crude Oil' },
   { symbol: 'MCL', label: 'MCL — Micro Crude Oil' },
   { symbol: 'NG', label: 'NG — Natural Gas' },
   { symbol: 'MNG', label: 'MNG — Micro Natural Gas' },
   { symbol: 'HO', label: 'HO — Heating Oil' },
   { symbol: 'RB', label: 'RB — RBOB Gasoline' },
-  // Metals
   { symbol: 'GC', label: 'GC — Gold' },
   { symbol: 'MGC', label: 'MGC — Micro Gold' },
   { symbol: 'SI', label: 'SI — Silver' },
   { symbol: 'SIL', label: 'SIL — Micro Silver' },
   { symbol: 'HG', label: 'HG — Copper' },
   { symbol: 'PL', label: 'PL — Platinum' },
-  // Bonds
   { symbol: 'ZB', label: 'ZB — 30-Year Bond' },
   { symbol: 'ZN', label: 'ZN — 10-Year Note' },
   { symbol: 'ZF', label: 'ZF — 5-Year Note' },
   { symbol: 'ZT', label: 'ZT — 2-Year Note' },
-  // Agriculture
   { symbol: 'ZC', label: 'ZC — Corn' },
   { symbol: 'ZS', label: 'ZS — Soybeans' },
   { symbol: 'ZW', label: 'ZW — Wheat' },
@@ -41,7 +36,6 @@ const FUTURES_SYMBOLS = [
   { symbol: 'CC', label: 'CC — Cocoa' },
   { symbol: 'LE', label: 'LE — Live Cattle' },
   { symbol: 'HE', label: 'HE — Lean Hogs' },
-  // Currency
   { symbol: '6E', label: '6E — Euro' },
   { symbol: '6J', label: '6J — Japanese Yen' },
   { symbol: '6B', label: '6B — British Pound' },
@@ -49,7 +43,6 @@ const FUTURES_SYMBOLS = [
   { symbol: '6C', label: '6C — Canadian Dollar' },
   { symbol: '6S', label: '6S — Swiss Franc' },
   { symbol: '6N', label: '6N — New Zealand Dollar' },
-  // Volatility
   { symbol: 'VX', label: 'VX — VIX Futures' },
 ];
 
@@ -66,42 +59,28 @@ interface Props {
   onLocked: () => void;
 }
 
+
 const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [activePage, setActivePage] = useState<SettingPage>('loss_limit');
   const [locking, setLocking] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
-  // Loss Limit
   const [lossLimitEnabled, setLossLimitEnabled] = useState(false);
   const [lossLimitAmount, setLossLimitAmount] = useState('');
-
-  // Profit Target
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
   const [profitTargetAmount, setProfitTargetAmount] = useState('');
-
-  // Max Trades
   const [maxTradesEnabled, setMaxTradesEnabled] = useState(false);
   const [maxTradesPerDay, setMaxTradesPerDay] = useState('');
-
-  // Blocked Symbols
   const [blockedSymbolsEnabled, setBlockedSymbolsEnabled] = useState(false);
   const [blockedSymbols, setBlockedSymbols] = useState<string[]>([]);
-
-  // Max Contracts
   const [maxContractsEnabled, setMaxContractsEnabled] = useState(false);
   const [contractLimits, setContractLimits] = useState<ContractLimit[]>([]);
   const [defaultMax, setDefaultMax] = useState('');
-
-  // Lockout
   const [lockoutEnabled, setLockoutEnabled] = useState(false);
   const [resetTime, setResetTime] = useState('17:00');
   const [resetTimezone, setResetTimezone] = useState('America/New_York');
-
-  // Dropdown state for blocked symbols
   const [selectedBlockedSymbol, setSelectedBlockedSymbol] = useState('');
-
-  // Dropdown state for contract limits
   const [selectedContractSymbol, setSelectedContractSymbol] = useState('');
   const [selectedContractMax, setSelectedContractMax] = useState('');
 
@@ -135,6 +114,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     });
     return () => cleanup?.();
   }, []);
+
 
   const buildPayload = () => ({
     lossLimitEnabled,
@@ -222,256 +202,192 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     setContractLimits(contractLimits.map((c) => (c.symbol === symbol ? { ...c, maxSize: Number(value) || 0 } : c)));
   };
 
-  const inputClass =
-    'w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30';
-  const selectClass =
-    'w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white';
-  const sectionTitle = 'text-base font-bold text-white mb-2';
-  const description = 'text-xs text-white/30 mb-6 max-w-md leading-relaxed';
-  const labelClass = 'block text-[0.68rem] text-white/35 mb-1.5';
-  const saveBtn =
-    'mt-6 px-5 py-2.5 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-[0.62rem] font-semibold uppercase tracking-[1.5px] rounded-lg hover:bg-cyan-400/20 transition-all';
-  const lockBtn =
-    'w-full py-2.5 bg-cyan-400 text-black text-[0.62rem] font-bold uppercase tracking-[2px] rounded-lg hover:bg-cyan-300 transition-all disabled:opacity-10 btn-glow';
 
-  const sidebarPages: { key: SettingPage; label: string; enabled: boolean }[] = [
-    { key: 'loss_limit', label: 'Loss Limit', enabled: lossLimitEnabled },
-    { key: 'profit_target', label: 'Profit Target', enabled: profitTargetEnabled },
-    { key: 'max_trades', label: 'Max Trades', enabled: maxTradesEnabled },
-    { key: 'blocked_symbols', label: 'Blocked Symbols', enabled: blockedSymbolsEnabled },
-    { key: 'max_contracts', label: 'Max Contracts', enabled: maxContractsEnabled },
-    { key: 'lockout', label: 'Lockout', enabled: lockoutEnabled },
+  const inputClass =
+    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 input-premium';
+  const selectClass =
+    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white input-premium';
+
+  const sidebarPages: { key: SettingPage; label: string; enabled: boolean; icon: string }[] = [
+    { key: 'loss_limit', label: 'Loss Limit', enabled: lossLimitEnabled, icon: '↓' },
+    { key: 'profit_target', label: 'Profit Target', enabled: profitTargetEnabled, icon: '↑' },
+    { key: 'max_trades', label: 'Max Trades', enabled: maxTradesEnabled, icon: '#' },
+    { key: 'blocked_symbols', label: 'Blocked', enabled: blockedSymbolsEnabled, icon: '⊘' },
+    { key: 'max_contracts', label: 'Contracts', enabled: maxContractsEnabled, icon: '▣' },
+    { key: 'lockout', label: 'Lockout', enabled: lockoutEnabled, icon: '⏱' },
   ];
 
   const filteredBlockedSymbols = FUTURES_SYMBOLS.filter((f) => !blockedSymbols.includes(f.symbol));
   const filteredContractSymbols = FUTURES_SYMBOLS.filter((f) => !contractLimits.find((c) => c.symbol === f.symbol));
+
 
   const renderRightPanel = () => {
     switch (activePage) {
       case 'loss_limit':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Personal Daily Loss Limit</h2>
-            <p className={description}>
-              Set a maximum dollar amount you are willing to lose per day. When this limit is reached, trading will be blocked until reset.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className={labelClass}>Amount ($)</label>
-                <input
-                  type="number"
-                  className={inputClass}
-                  value={lossLimitAmount}
-                  onChange={(e) => setLossLimitAmount(e.target.value)}
-                  placeholder="e.g. 500"
-                  disabled={isLocked}
-                />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-sm">↓</div>
+              <h2 className="text-xl font-bold text-white">Daily Loss Limit</h2>
+            </div>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Maximum dollar amount you can lose per day. Trading blocked when hit.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10 space-y-4">
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Amount ($)</label>
+                  <input type="number" className={inputClass} value={lossLimitAmount} onChange={(e) => setLossLimitAmount(e.target.value)} placeholder="e.g. 500" disabled={isLocked} />
+                </div>
               </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
 
       case 'profit_target':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Personal Daily Profit Target</h2>
-            <p className={description}>
-              Set a daily profit target. When reached, trading will be blocked to protect your profits for the day.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className={labelClass}>Amount ($)</label>
-                <input
-                  type="number"
-                  className={inputClass}
-                  value={profitTargetAmount}
-                  onChange={(e) => setProfitTargetAmount(e.target.value)}
-                  placeholder="e.g. 1000"
-                  disabled={isLocked}
-                />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">↑</div>
+              <h2 className="text-xl font-bold text-white">Daily Profit Target</h2>
+            </div>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">When reached, trading blocked to protect profits.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10 space-y-4">
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Amount ($)</label>
+                  <input type="number" className={inputClass} value={profitTargetAmount} onChange={(e) => setProfitTargetAmount(e.target.value)} placeholder="e.g. 1000" disabled={isLocked} />
+                </div>
               </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
 
       case 'max_trades':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Max Trades</h2>
-            <p className={description}>
-              Limit the number of trades you can take per day. Helps prevent overtrading and revenge trading.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className={labelClass}>Per Day</label>
-                <input
-                  type="number"
-                  className={inputClass}
-                  value={maxTradesPerDay}
-                  onChange={(e) => setMaxTradesPerDay(e.target.value)}
-                  placeholder="e.g. 5"
-                  disabled={isLocked}
-                />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-sm">#</div>
+              <h2 className="text-xl font-bold text-white">Max Trades</h2>
+            </div>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Prevents overtrading and revenge trading.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10 space-y-4">
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Per Day</label>
+                  <input type="number" className={inputClass} value={maxTradesPerDay} onChange={(e) => setMaxTradesPerDay(e.target.value)} placeholder="e.g. 5" disabled={isLocked} />
+                </div>
               </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
+
 
       case 'blocked_symbols':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Blocked Symbols</h2>
-            <p className={description}>
-              Block specific futures symbols from being traded. Orders for these symbols will be rejected.
-            </p>
-            <div className="flex gap-2 mb-4">
-              <select
-                className={selectClass}
-                value={selectedBlockedSymbol}
-                onChange={(e) => setSelectedBlockedSymbol(e.target.value)}
-                disabled={isLocked}
-              >
-                <option value="">Select symbol...</option>
-                {filteredBlockedSymbols.map((f) => (
-                  <option key={f.symbol} value={f.symbol}>
-                    {f.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="px-4 py-2 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-semibold rounded-lg hover:bg-cyan-400/20 transition-all disabled:opacity-30"
-                onClick={addBlockedSymbol}
-                disabled={isLocked || !selectedBlockedSymbol}
-              >
-                Add
-              </button>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm">⊘</div>
+              <h2 className="text-xl font-bold text-white">Blocked Symbols</h2>
             </div>
-            <div className="space-y-2">
-              {blockedSymbols.map((symbol) => {
-                const found = FUTURES_SYMBOLS.find((f) => f.symbol === symbol);
-                return (
-                  <div key={symbol} className="flex items-center justify-between py-2.5 px-3 bg-white/[0.02] rounded-lg">
-                    <span className="text-sm text-white/70">{found?.label || symbol}</span>
-                    {!isLocked && (
-                      <button className="text-white/30 hover:text-red-400 transition-colors text-sm" onClick={() => removeBlockedSymbol(symbol)}>
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Orders for these symbols will be rejected.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10">
+                <div className="flex gap-2 mb-5">
+                  <select className={selectClass} value={selectedBlockedSymbol} onChange={(e) => setSelectedBlockedSymbol(e.target.value)} disabled={isLocked}>
+                    <option value="">Select symbol...</option>
+                    {filteredBlockedSymbols.map((f) => (<option key={f.symbol} value={f.symbol}>{f.label}</option>))}
+                  </select>
+                  <button className="px-5 py-2 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-bold rounded-xl hover:bg-cyan-400/20 hover:border-cyan-400/40 transition-all disabled:opacity-30 press-scale" onClick={addBlockedSymbol} disabled={isLocked || !selectedBlockedSymbol}>Add</button>
+                </div>
+                <div className="space-y-2">
+                  {blockedSymbols.map((symbol) => {
+                    const found = FUTURES_SYMBOLS.find((f) => f.symbol === symbol);
+                    return (
+                      <div key={symbol} className="flex items-center justify-between py-3 px-4 bg-white/[0.02] rounded-xl border border-white/[0.04] hover:border-amber-400/20 transition-all group">
+                        <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">{found?.label || symbol}</span>
+                        {!isLocked && (
+                          <button className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale" onClick={() => removeBlockedSymbol(symbol)}>✕</button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {blockedSymbols.length === 0 && <p className="text-xs text-white/15 text-center py-4">No symbols blocked</p>}
+                </div>
+              </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
+
 
       case 'max_contracts':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Max Contracts</h2>
-            <p className={description}>
-              Limit the maximum contract size per symbol. Prevents oversizing positions on specific instruments.
-            </p>
-            <div className="flex gap-2 mb-4">
-              <select
-                className={selectClass}
-                value={selectedContractSymbol}
-                onChange={(e) => setSelectedContractSymbol(e.target.value)}
-                disabled={isLocked}
-              >
-                <option value="">Select symbol...</option>
-                {filteredContractSymbols.map((f) => (
-                  <option key={f.symbol} value={f.symbol}>
-                    {f.label}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                className={inputClass + ' !w-24'}
-                value={selectedContractMax}
-                onChange={(e) => setSelectedContractMax(e.target.value)}
-                placeholder="Max"
-                disabled={isLocked}
-              />
-              <button
-                className="px-4 py-2 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-semibold rounded-lg hover:bg-cyan-400/20 transition-all disabled:opacity-30"
-                onClick={addContractLimit}
-                disabled={isLocked || !selectedContractSymbol || !selectedContractMax}
-              >
-                Add
-              </button>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-sm">▣</div>
+              <h2 className="text-xl font-bold text-white">Max Contracts</h2>
             </div>
-            <div className="space-y-2">
-              {contractLimits.map((cl) => (
-                <div key={cl.symbol} className="flex items-center justify-between py-2.5 px-3 bg-white/[0.02] rounded-lg">
-                  <span className="text-sm text-white/70">{cl.label}</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      className="w-16 bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-white text-sm text-center focus:border-cyan-400/50 focus:outline-none disabled:opacity-30"
-                      value={cl.maxSize}
-                      onChange={(e) => updateContractMax(cl.symbol, e.target.value)}
-                      disabled={isLocked}
-                    />
-                    {!isLocked && (
-                      <button className="text-white/30 hover:text-red-400 transition-colors text-sm" onClick={() => removeContractLimit(cl.symbol)}>
-                        ✕
-                      </button>
-                    )}
-                  </div>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Limit position size per symbol.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10">
+                <div className="flex gap-2 mb-5">
+                  <select className={selectClass} value={selectedContractSymbol} onChange={(e) => setSelectedContractSymbol(e.target.value)} disabled={isLocked}>
+                    <option value="">Select symbol...</option>
+                    {filteredContractSymbols.map((f) => (<option key={f.symbol} value={f.symbol}>{f.label}</option>))}
+                  </select>
+                  <input type="number" className={inputClass + ' !w-24'} value={selectedContractMax} onChange={(e) => setSelectedContractMax(e.target.value)} placeholder="Max" disabled={isLocked} />
+                  <button className="px-5 py-2 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-bold rounded-xl hover:bg-cyan-400/20 hover:border-cyan-400/40 transition-all disabled:opacity-30 press-scale" onClick={addContractLimit} disabled={isLocked || !selectedContractSymbol || !selectedContractMax}>Add</button>
                 </div>
-              ))}
+                <div className="space-y-2">
+                  {contractLimits.map((cl) => (
+                    <div key={cl.symbol} className="flex items-center justify-between py-3 px-4 bg-white/[0.02] rounded-xl border border-white/[0.04] hover:border-cyan-400/20 transition-all group">
+                      <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">{cl.label}</span>
+                      <div className="flex items-center gap-3">
+                        <input type="number" className="w-16 bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1.5 text-white text-sm text-center focus:border-cyan-400/50 focus:outline-none disabled:opacity-30 font-mono font-bold" value={cl.maxSize} onChange={(e) => updateContractMax(cl.symbol, e.target.value)} disabled={isLocked} />
+                        {!isLocked && (
+                          <button className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale" onClick={() => removeContractLimit(cl.symbol)}>✕</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {contractLimits.length === 0 && <p className="text-xs text-white/15 text-center py-4">No limits set</p>}
+                </div>
+              </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
+
 
       case 'lockout':
         return (
           <div className="animate-reveal">
-            <h2 className={sectionTitle}>Lockout Options</h2>
-            <p className={description}>
-              Configure when the daily reset occurs. After a lockout, trading will resume at the reset time in the selected timezone.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className={labelClass}>Reset Time</label>
-                <input
-                  type="time"
-                  className={inputClass}
-                  value={resetTime}
-                  onChange={(e) => setResetTime(e.target.value)}
-                  disabled={isLocked}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Timezone</label>
-                <select className={selectClass} value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} disabled={isLocked}>
-                  <option value="America/New_York">Eastern Time (ET)</option>
-                  <option value="America/Chicago">Central Time (CT)</option>
-                  <option value="America/Denver">Mountain Time (MT)</option>
-                  <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                  <option value="UTC">UTC</option>
-                </select>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-sm">⏱</div>
+              <h2 className="text-xl font-bold text-white">Lockout Options</h2>
+            </div>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">When trading resumes after a lockout.</p>
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium">
+              <div className="relative z-10 space-y-5">
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Reset Time</label>
+                  <input type="time" className={inputClass} value={resetTime} onChange={(e) => setResetTime(e.target.value)} disabled={isLocked} />
+                </div>
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Timezone</label>
+                  <select className={selectClass} value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} disabled={isLocked}>
+                    <option value="America/New_York">Eastern Time (ET)</option>
+                    <option value="America/Chicago">Central Time (CT)</option>
+                    <option value="America/Denver">Mountain Time (MT)</option>
+                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <button className={saveBtn} onClick={handleSave} disabled={isLocked}>
-              Save
-            </button>
+            <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );
 
@@ -480,48 +396,60 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     }
   };
 
+
   return (
     <div className="flex flex-row h-full">
       {/* Sidebar */}
-      <div className="w-52 flex flex-col border-r border-white/[0.04] p-4">
-        <div className="mb-4">
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Settings</h3>
-          <span className={`text-[0.6rem] font-semibold uppercase tracking-wider ${isLocked ? 'text-cyan-400' : 'text-white/25'}`}>
-            {isLocked ? 'LOCKED' : 'UNLOCKED'}
+      <div className="w-56 flex flex-col border-r border-white/[0.04] p-5">
+        <div className="mb-6">
+          <h3 className="text-[0.6rem] font-bold tracking-[3px] uppercase text-white/40 mb-2">Risk Controls</h3>
+          <span className={`inline-flex items-center gap-2 text-[0.6rem] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+            isLocked
+              ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+              : 'bg-white/[0.03] border border-white/[0.06] text-white/25'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-white/20'}`} />
+            {isLocked ? 'ACTIVE' : 'UNLOCKED'}
           </span>
         </div>
 
-        <div className="flex-1 space-y-0.5">
-          {sidebarPages.map((page) => (
+        <div className="flex-1 space-y-1">
+          {sidebarPages.map((page, i) => (
             <button
               key={page.key}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                activePage === page.key ? 'bg-cyan-400/[0.07] text-cyan-300' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-medium transition-all animate-slide-in ${
+                activePage === page.key
+                  ? 'bg-gradient-to-r from-cyan-500/[0.08] to-purple-500/[0.05] text-white border border-cyan-400/15 shadow-[0_0_15px_rgba(56,189,248,0.05)] sidebar-active'
+                  : 'text-white/35 hover:text-white/60 hover:bg-white/[0.02]'
               }`}
+              style={{ animationDelay: `${i * 0.05}s` }}
               onClick={() => setActivePage(page.key)}
             >
-              <span>{page.label}</span>
-              <span className={`text-[0.6rem] font-bold ${page.enabled ? 'text-cyan-400' : 'text-white/15'}`}>
-                {page.enabled ? 'ON' : 'OFF'}
-              </span>
+              <span className={`text-base ${activePage === page.key ? 'opacity-100' : 'opacity-40'}`}>{page.icon}</span>
+              <span className="flex-1 text-left">{page.label}</span>
+              <span className={`w-1.5 h-1.5 rounded-full transition-all ${
+                page.enabled
+                  ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]'
+                  : 'bg-white/10'
+              }`} />
             </button>
           ))}
         </div>
 
         {!isLocked && (
-          <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <button className={lockBtn} disabled={locking} onClick={handleLock}>
-              {locking ? 'Locking...' : 'Lock Settings'}
+          <div className="mt-5 pt-5 border-t border-white/[0.04]">
+            <button className="w-full py-3 btn-premium text-[0.6rem] font-bold uppercase tracking-[2.5px] rounded-xl press-scale" disabled={locking} onClick={handleLock}>
+              {locking ? 'Locking...' : 'Lock & Activate'}
             </button>
           </div>
         )}
 
-        {error && <p className="mt-2 text-[0.6rem] text-red-400">{error}</p>}
-        {saved && <p className="mt-2 text-[0.6rem] text-emerald-400">Saved</p>}
+        {error && <p className="mt-3 text-[0.6rem] text-red-400 animate-reveal">{error}</p>}
+        {saved && <p className="mt-3 text-[0.6rem] text-emerald-400 animate-reveal">Saved</p>}
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 p-6 overflow-y-auto">{renderRightPanel()}</div>
+      <div className="flex-1 p-8 overflow-y-auto">{renderRightPanel()}</div>
     </div>
   );
 };
