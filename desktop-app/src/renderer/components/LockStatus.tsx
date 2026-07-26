@@ -61,9 +61,12 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           <div className="absolute w-0.5 h-0.5 bg-cyan-400/15 rounded-full bottom-[20%] left-[40%] animate-float" style={{animationDelay: '1.5s'}} />
         </div>
 
-        {/* Shield icon */}
-        <div className="text-4xl mb-4 animate-float text-cyan-400/80" style={{filter: 'drop-shadow(0 0 12px rgba(56,189,248,0.5))'}}>
-          &#x1F6E1;
+        {/* Shield icon - solid/closed when locked */}
+        <div className="mb-4 animate-float flex justify-center">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(56,189,248,0.15)" stroke="rgba(56,189,248,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{filter: 'drop-shadow(0 0 12px rgba(56,189,248,0.5))'}}>
+            <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" />
+            <path d="M9 12l2 2 4-4" stroke="rgba(56,189,248,1)" strokeWidth="2" fill="none" />
+          </svg>
         </div>
         <h2 className="text-5xl font-black tracking-tighter leading-none mb-4 text-gradient">
           Locked
