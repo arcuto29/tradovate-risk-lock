@@ -65,7 +65,7 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
         <div className="text-4xl mb-4 animate-float text-cyan-400/80" style={{filter: 'drop-shadow(0 0 12px rgba(56,189,248,0.5))'}}>
           &#x1F6E1;
         </div>
-        <h2 className="text-5xl font-black tracking-tighter leading-none mb-4 text-white" style={{textShadow: '0 0 30px rgba(255,255,255,0.3), 0 0 60px rgba(56,189,248,0.15)'}}>
+        <h2 className="text-5xl font-black tracking-tighter leading-none mb-4 text-gradient">
           Locked
         </h2>
         <p className="text-white/30 text-sm leading-relaxed max-w-xs mx-auto">
