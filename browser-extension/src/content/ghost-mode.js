@@ -74,12 +74,26 @@
   }
 
   function showPnlElements() {
+    // Remove blur from ALL elements that might have been hidden
     var hidden = document.querySelectorAll('[data-ghost-hidden="true"]');
     hidden.forEach(function(el) {
       el.style.filter = '';
       el.style.userSelect = '';
       el.style.pointerEvents = '';
       el.removeAttribute('data-ghost-hidden');
+    });
+    // Also force-clear any element matching PNL selectors (in case attribute was lost)
+    PNL_SELECTORS.forEach(function(selector) {
+      try {
+        var elements = document.querySelectorAll(selector);
+        elements.forEach(function(el) {
+          if (el.style.filter === 'blur(12px)') {
+            el.style.filter = '';
+            el.style.userSelect = '';
+            el.style.pointerEvents = '';
+          }
+        });
+      } catch(e) {}
     });
   }
 
