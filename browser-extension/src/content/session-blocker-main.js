@@ -26,6 +26,7 @@
   var lastOrderTime = 0;
   var dailyLossBlocked = false;
   var totalDailyPnL = 0;
+  var lastLossDetectedTime = 0;
 
   // ─── NEW: Advanced Protection Features ─────────────────────────────────────
   var consecutiveLosses = 0;
@@ -408,35 +409,45 @@
         if (lastKnownPnL !== null && currentPnl < lastKnownPnL) {
           // P&L dropped = loss detected
           var lossAmount = lastKnownPnL - currentPnl;
-          console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+          var now = Date.now();
           
-          // Post trade result so loss-reaction.js can trigger
-          window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'loss', pnl: -lossAmount }, '*');
-          
-          if (coachEnabled) {
-            lastLossTime = Date.now();
-            cooldownActive = true;
-            var escalatedCooldown = escalatingCooldown 
-              ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
-              : cooldownSeconds;
-            cooldownUntil = Date.now() + (escalatedCooldown * 1000);
-          }
-          totalDailyPnL = currentPnl;
-          
-          // Check daily loss limit
-          if (coachEnabled && maxDailyLoss > 0 && Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
-            dailyLossBlocked = true;
-            console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
-            window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
-          }
+          // Only count as a real loss if:
+          // 1. Drop is at least $10 (ignore fees/spread ticks)
+          // 2. At least 30 seconds since last loss detection (separate trades)
+          if (lossAmount >= 10 && (now - lastLossDetectedTime) > 30000) {
+            lastLossDetectedTime = now;
+            console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+            
+            // Post trade result so loss-reaction.js can trigger
+            window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'loss', pnl: -lossAmount }, '*');
+            
+            if (coachEnabled) {
+              lastLossTime = Date.now();
+              cooldownActive = true;
+              var escalatedCooldown = escalatingCooldown 
+                ? cooldownSeconds * Math.pow(2, Math.min(consecutiveLosses - 1, 3))
+                : cooldownSeconds;
+              cooldownUntil = Date.now() + (escalatedCooldown * 1000);
+            }
+            totalDailyPnL = currentPnl;
+            
+            // Check daily loss limit
+            if (coachEnabled && maxDailyLoss > 0 && Math.abs(currentPnl) >= maxDailyLoss && currentPnl < 0) {
+              dailyLossBlocked = true;
+              console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
+              window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
+            }
           
           window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
         } else if (lastKnownPnL !== null && currentPnl > lastKnownPnL) {
           // P&L went up = win detected
           var winAmount = currentPnl - lastKnownPnL;
-          console.log('[TradingGuardian] Win detected: +$' + winAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
-          window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'win', pnl: winAmount }, '*');
-          consecutiveLosses = 0;
+          // Only count as real win if at least $10 (ignore small ticks)
+          if (winAmount >= 10) {
+            console.log('[TradingGuardian] Win detected: +$' + winAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+            window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'win', pnl: winAmount }, '*');
+            consecutiveLosses = 0;
+          }
         }
         
         lastKnownPnL = currentPnl;
