@@ -30,7 +30,7 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
                   : 'bg-white/[0.02] border border-white/[0.06]'
               }`}
             >
-              <span className={`text-4xl ${earned ? '' : 'grayscale opacity-40'}`}>{badge.icon}</span>
+              <span className={`text-4xl ${earned ? '' : 'opacity-30'}`}>{badge.icon}</span>
               <p className={`text-xs font-bold mt-3 ${earned ? badge.color : 'text-white/30'}`}>
                 {badge.label}
               </p>
