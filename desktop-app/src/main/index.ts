@@ -6,6 +6,7 @@ import { WebSocketServer } from './websocket-server';
 import { TamperGuard } from './tamper-guard';
 import { ProcessBlocker } from './process-blocker';
 import { setupAutoUpdater } from './auto-updater';
+import { isActivated, activate, generateLicenseKey, getLicenseInfo } from './license';
 
 // Set app user model ID so Windows can pin it to taskbar
 app.setAppUserModelId('com.tradovate-risk-lock.app');
@@ -111,6 +112,12 @@ function applyStartupSetting(enabled: boolean): void {
 
 function setupIPC(): void {
   ipcMain.handle('get-lock-state', () => lockManager.getState());
+
+  // License
+  ipcMain.handle('check-license', () => ({ activated: isActivated() }));
+  ipcMain.handle('activate-license', (_e, key) => activate(key));
+  ipcMain.handle('get-license-info', () => getLicenseInfo());
+  ipcMain.handle('generate-key', () => ({ key: generateLicenseKey() }));
 
   // Full day block (Pre-Market Check)
   ipcMain.handle('full-day-block', () => {
