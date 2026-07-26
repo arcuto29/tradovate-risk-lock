@@ -60,7 +60,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center">
           <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))'}}>⚙</span>
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-white">Settings</h2>
+        <h2 className="text-3xl font-black tracking-tight text-gradient">Settings</h2>
       </div>
       <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">App configuration.</p>
 

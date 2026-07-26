@@ -34,7 +34,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-cyan-500/10 border border-indigo-500/20 flex items-center justify-center">
           <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.5))'}}>⏰</span>
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-white">Session Hours</h2>
+        <h2 className="text-3xl font-black tracking-tight text-gradient">Session Hours</h2>
       </div>
       <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">Block orders outside your trading window.</p>
 
