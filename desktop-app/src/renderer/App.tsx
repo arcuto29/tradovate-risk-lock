@@ -14,6 +14,7 @@ import { DisciplineScore } from './components/DisciplineScore';
 import { PreMarketCheck } from './components/PreMarketCheck';
 import { KillSwitch } from './components/KillSwitch';
 import { DailyReport } from './components/DailyReport';
+import { StreakRewards } from './components/StreakRewards';
 
 type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
 
@@ -167,6 +168,7 @@ export const App: React.FC = () => {
           {currentPage === 'discipline' && (
             <>
               <DisciplineScore />
+              <StreakRewards streak={0} monthlyAvg={0} />
               <div className="mt-8"><DailyReport /></div>
             </>
           )}
