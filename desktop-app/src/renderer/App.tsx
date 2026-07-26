@@ -15,6 +15,7 @@ import { PreMarketCheck } from './components/PreMarketCheck';
 import { KillSwitch } from './components/KillSwitch';
 import { DailyReport } from './components/DailyReport';
 import { StreakRewards } from './components/StreakRewards';
+import { ActivationScreen } from './components/ActivationScreen';
 
 type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
 
@@ -37,9 +38,17 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [preMarketPassed, setPreMarketPassed] = useState(false);
   const [limitsTightened, setLimitsTightened] = useState(false);
+  const [activated, setActivated] = useState(true); // Assume activated until checked
 
   const refreshState = useCallback(async () => {
     try {
+      // Check license first
+      const license = await (window as any).electronAPI?.checkLicense?.();
+      if (license && !license.activated) {
+        setActivated(false);
+        setLoading(false);
+        return;
+      }
       const state = await window.electronAPI.getLockState();
       setLockState(state);
     } catch (e) {
@@ -75,6 +84,10 @@ export const App: React.FC = () => {
         <span className="text-cyan-300/60 text-sm font-mono animate-pulse-glow">Initializing...</span>
       </div>
     );
+  }
+
+  if (!activated) {
+    return <ActivationScreen onActivated={() => { setActivated(true); refreshState(); }} />;
   }
 
   return (

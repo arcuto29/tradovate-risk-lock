@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  // License
+  checkLicense: () => ipcRenderer.invoke('check-license'),
+  activateLicense: (key: string) => ipcRenderer.invoke('activate-license', key),
+  getLicenseInfo: () => ipcRenderer.invoke('get-license-info'),
+  generateKey: () => ipcRenderer.invoke('generate-key'),
+  // App
   getLockState: () => ipcRenderer.invoke('get-lock-state'),
   lockSettings: (settings: any) => ipcRenderer.invoke('lock-settings', settings),
   unlockSettings: (password?: string) => ipcRenderer.invoke('unlock-settings', password),
