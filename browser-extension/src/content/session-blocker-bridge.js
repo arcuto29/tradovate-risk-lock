@@ -71,7 +71,11 @@
     }
 
     if (event.data && event.data.type === 'TRL_COACH_BLOCK') {
-      showBlock(event.data.reason, event.data.message);
+      // Don't show regular overlay if loss reaction timer will handle it
+      var isCooldown = event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN';
+      if (!isCooldown) {
+        showBlock(event.data.reason, event.data.message);
+      }
       chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}` });
     }
 
