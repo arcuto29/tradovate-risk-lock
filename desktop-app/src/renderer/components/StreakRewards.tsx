@@ -28,7 +28,7 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
               style={{
                 borderColor: earned ? badge.color + '60' : 'rgba(255,255,255,0.08)',
                 boxShadow: earned ? `0 0 20px ${badge.glow}` : 'none',
-                opacity: earned ? 1 : 0.5,
+                opacity: earned ? 1 : 0.8,
               }}
             >
               <div
