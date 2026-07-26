@@ -211,4 +211,66 @@ export class DatabaseManager {
     this.db.run('UPDATE app_settings SET coach_config = ? WHERE id = 1', [configJson]);
     this.save();
   }
+
+  // Custom platforms for blocklist
+  initCustomPlatforms(): void {
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS custom_platforms (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        processes TEXT NOT NULL DEFAULT '[]',
+        domains TEXT NOT NULL DEFAULT '[]',
+        enabled INTEGER NOT NULL DEFAULT 1
+      );
+    `);
+    this.save();
+  }
+
+  getCustomPlatforms(): any[] {
+    try {
+      const results = this.db.exec('SELECT id, name, processes, domains, enabled FROM custom_platforms');
+      if (!results.length) return [];
+      return results[0].values.map((row: any) => ({
+        id: row[0],
+        name: row[1],
+        processes: JSON.parse(row[2] || '[]'),
+        domains: JSON.parse(row[3] || '[]'),
+        builtIn: false,
+        enabled: row[4] === 1,
+      }));
+    } catch { return []; }
+  }
+
+  addCustomPlatform(platform: { id: string; name: string; processes: string[]; domains: string[] }): void {
+    this.db.run(
+      'INSERT OR REPLACE INTO custom_platforms (id, name, processes, domains, enabled) VALUES (?, ?, ?, ?, 1)',
+      [platform.id, platform.name, JSON.stringify(platform.processes), JSON.stringify(platform.domains)]
+    );
+    this.save();
+  }
+
+  removeCustomPlatform(id: string): void {
+    this.db.run('DELETE FROM custom_platforms WHERE id = ?', [id]);
+    this.save();
+  }
+
+  updatePlatformEnabled(id: string, enabled: boolean): void {
+    // Try custom first, then store built-in overrides
+    this.db.run('UPDATE custom_platforms SET enabled = ? WHERE id = ?', [enabled ? 1 : 0, id]);
+    this.save();
+  }
+
+  // Store built-in platform enabled/disabled state
+  getBlocklistConfig(): string | null {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN blocklist_config TEXT'); } catch {}
+    const results = this.db.exec('SELECT blocklist_config FROM app_settings WHERE id = 1');
+    if (!results.length || !results[0].values.length) return null;
+    return results[0].values[0][0] as string | null;
+  }
+
+  saveBlocklistConfig(configJson: string): void {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN blocklist_config TEXT'); } catch {}
+    this.db.run('UPDATE app_settings SET blocklist_config = ? WHERE id = 1', [configJson]);
+    this.save();
+  }
 }

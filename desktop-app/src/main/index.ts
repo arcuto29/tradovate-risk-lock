@@ -5,6 +5,7 @@ import { LockManager } from './lock-manager';
 import { WebSocketServer } from './websocket-server';
 import { TamperGuard } from './tamper-guard';
 import { ProcessBlocker } from './process-blocker';
+import { PlatformBlocker } from './platform-blocker';
 import { setupAutoUpdater } from './auto-updater';
 import { isActivated, activate, generateLicenseKey, getLicenseInfo } from './license';
 
@@ -18,6 +19,7 @@ let lockManager: LockManager;
 let wsServer: WebSocketServer;
 let tamperGuard: TamperGuard;
 let processBlocker: ProcessBlocker;
+let platformBlocker: PlatformBlocker;
 let bypassWarningActive = false;
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -148,18 +150,25 @@ function setupIPC(): void {
   });
   ipcMain.handle('lock-settings', (_e, settings) => {
     const result = lockManager.lock(settings);
-    if (result.success) updateTrayMenu();
+    if (result.success) {
+      updateTrayMenu();
+      platformBlocker?.activate();
+    }
     return result;
   });
   ipcMain.handle('unlock-settings', (_e, password?) => {
     const result = lockManager.unlock(password);
-    if (result.success) updateTrayMenu();
+    if (result.success) {
+      updateTrayMenu();
+      platformBlocker?.deactivate();
+    }
     return result;
   });
 
   // Dev-only force unlock
   ipcMain.handle('dev-force-unlock', () => {
     lockManager.forceUnlock();
+    platformBlocker?.deactivate();
     updateTrayMenu();
     return { success: true };
   });
@@ -373,6 +382,38 @@ function setupIPC(): void {
     wsServer.broadcastCoachConfig(config);
     return { success: true };
   });
+
+  // ─── Platform Blocklist ─────────────────────────────────────────────────
+  ipcMain.handle('get-platforms', () => {
+    return platformBlocker.getPlatforms();
+  });
+
+  ipcMain.handle('add-custom-platform', (_e, platform: { name: string; processes: string; domain: string }) => {
+    const id = 'custom_' + Date.now();
+    const processes = platform.processes ? platform.processes.split(',').map(p => p.trim()).filter(Boolean) : [];
+    const domains = platform.domain ? [platform.domain.trim()] : [];
+    const newPlatform = { id, name: platform.name, processes, domains };
+    db.addCustomPlatform(newPlatform);
+    platformBlocker.loadCustomPlatforms(db.getCustomPlatforms());
+    db.logActivity('platform_added', `Added custom platform: ${platform.name}`);
+    return { success: true, id };
+  });
+
+  ipcMain.handle('remove-custom-platform', (_e, id: string) => {
+    db.removeCustomPlatform(id);
+    platformBlocker.loadCustomPlatforms(db.getCustomPlatforms());
+    return { success: true };
+  });
+
+  ipcMain.handle('update-platform-enabled', (_e, id: string, enabled: boolean) => {
+    platformBlocker.updatePlatformEnabled(id, enabled);
+    // Save built-in state
+    const platforms = platformBlocker.getPlatforms();
+    const config: Record<string, boolean> = {};
+    platforms.forEach(p => { config[p.id] = p.enabled; });
+    db.saveBlocklistConfig(JSON.stringify(config));
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {
@@ -460,6 +501,26 @@ app.whenReady().then(async () => {
   // Start process blocker (kills Tradesea/TopstepX outside trading hours)
   processBlocker = new ProcessBlocker(db);
   processBlocker.start();
+
+  // Platform blocker (kills apps + hosts file when locked)
+  platformBlocker = new PlatformBlocker();
+  db.initCustomPlatforms();
+  const customPlatforms = db.getCustomPlatforms();
+  platformBlocker.loadCustomPlatforms(customPlatforms);
+  // Restore built-in enabled/disabled state
+  const blocklistConfig = db.getBlocklistConfig();
+  if (blocklistConfig) {
+    try {
+      const config = JSON.parse(blocklistConfig);
+      Object.entries(config).forEach(([id, enabled]) => {
+        platformBlocker.updatePlatformEnabled(id, enabled as boolean);
+      });
+    } catch {}
+  }
+  // If currently locked, activate the blocker
+  if (lockManager.isLocked()) {
+    platformBlocker.activate();
+  }
 
   // Apply startup setting on launch
   const settings = lockManager.getSettings();

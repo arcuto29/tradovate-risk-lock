@@ -16,8 +16,9 @@ import { KillSwitch } from './components/KillSwitch';
 import { DailyReport } from './components/DailyReport';
 import { StreakRewards } from './components/StreakRewards';
 import { ActivationScreen } from './components/ActivationScreen';
+import { Blocklist } from './components/Blocklist';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'log' | 'settings';
 
 declare global {
   interface Window { electronAPI: any; }
@@ -28,6 +29,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'session', label: 'Session', icon: '◷' },
   { page: 'coach', label: 'Coach', icon: '◈' },
   { page: 'discipline', label: 'Score', icon: '◉' },
+  { page: 'blocklist', label: 'Blocklist', icon: '◻' },
   { page: 'log', label: 'Log', icon: '◫' },
   { page: 'settings', label: 'Settings', icon: '◎' },
 ];
@@ -198,6 +200,7 @@ export const App: React.FC = () => {
               <div className="mt-8"><DailyReport /></div>
             </>
           )}
+          {currentPage === 'blocklist' && <Blocklist isLocked={lockState?.isLocked} />}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
         </div>

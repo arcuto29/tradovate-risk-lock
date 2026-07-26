@@ -15,6 +15,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeTrustedPassword: (password: string) => ipcRenderer.invoke('remove-trusted-password', password),
   getActivityLog: (limit?: number) => ipcRenderer.invoke('get-activity-log', limit),
   getDisciplineScore: () => ipcRenderer.invoke('get-discipline-score'),
+  // Platform blocklist
+  getPlatforms: () => ipcRenderer.invoke('get-platforms'),
+  addCustomPlatform: (platform: any) => ipcRenderer.invoke('add-custom-platform', platform),
+  removeCustomPlatform: (id: string) => ipcRenderer.invoke('remove-custom-platform', id),
+  updatePlatformEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke('update-platform-enabled', id, enabled),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),
