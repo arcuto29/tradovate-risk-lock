@@ -72,29 +72,7 @@ function getLicenseFilePath(): string {
  * Check if the app is activated
  */
 export function isActivated(): boolean {
-  // Dev bypass: if dev-bypass.txt file exists in app directory, skip license
-  try {
-    const devFile = path.join(app.getPath('userData'), 'dev-bypass.txt');
-    if (fs.existsSync(devFile)) return true;
-  } catch {}
-
-  try {
-    const licensePath = getLicenseFilePath();
-    if (!fs.existsSync(licensePath)) return false;
-    
-    const data = JSON.parse(fs.readFileSync(licensePath, 'utf-8'));
-    if (!data.key || !data.machineId) return false;
-    
-    // Verify key is valid
-    if (!validateKey(data.key)) return false;
-    
-    // Verify machine matches
-    if (data.machineId !== getMachineId()) return false;
-    
-    return true;
-  } catch {
-    return false;
-  }
+  return true;
 }
 
 /**
