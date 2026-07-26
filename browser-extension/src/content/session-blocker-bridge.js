@@ -95,8 +95,14 @@
   // ─── Overlays ──────────────────────────────────────────────────────────────
   function showOverlay(reason) {
     if (document.getElementById('tradovate-risk-lock-overlay')) return;
-    const isSession = reason && reason.includes('hours');
-    const title = isSession ? 'SESSION<br>BLOCKED' : 'OVERSIZE<br>BLOCKED';
+    var title = 'ORDER<br>BLOCKED';
+    if (reason && reason.includes('hours')) title = 'SESSION<br>BLOCKED';
+    else if (reason && reason.includes('size')) title = 'OVERSIZE<br>BLOCKED';
+    else if (reason && reason.includes('blocked for today')) title = 'KILL SWITCH<br>ACTIVE';
+    else if (reason && reason.includes('revenge')) title = 'KILL SWITCH<br>ACTIVE';
+    else if (reason && reason.includes('DAILY LOSS')) title = 'DAILY LOSS<br>REACHED';
+    else if (reason && reason.includes('symbol')) title = 'SYMBOL<br>BLOCKED';
+    else if (reason && reason.includes('TRADE LIMIT')) title = 'MAX TRADES<br>REACHED';
     const quote = getRandomQuote();
     const o = document.createElement('div'); o.id = 'tradovate-risk-lock-overlay';
     o.innerHTML = `<div class="trl-overlay-content"><div class="trl-alert-badge">&#9679; GUARDIAN &bull; ALERT</div><h1>${title}</h1><p class="trl-message">${reason}</p><p class="trl-motivation">${quote}</p><button id="trl-dismiss-btn" class="trl-dismiss-btn">Dismiss</button><p class="trl-footer">This attempt has been recorded.</p></div>`;
