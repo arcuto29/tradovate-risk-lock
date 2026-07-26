@@ -9,43 +9,41 @@
 
   var consecutiveLosses = 0;
   var appConnected = false;
+  var overlayShown = false;
 
-  window.addEventListener('message', function(event) {
+  function handleMessage(event) {
     if (event.source !== window) return;
-    if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
+    if (!event.data) return;
+    
+    var type = event.data.type;
+    
+    if (type === 'TRL_COACH_CONFIG' || type === 'TRL_SESSION_STATE' || type === 'TRL_POSITION_LIMITS') {
       appConnected = true;
     }
-    if (event.data && event.data.type === 'TRL_SESSION_STATE') {
-      appConnected = true;
-    }
-    if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
-      appConnected = true;
-    }
-    if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
+    if (type === 'TRL_APP_DISCONNECTED') {
       appConnected = false;
       consecutiveLosses = 0;
       var existing = document.getElementById('trl-reaction-overlay');
       if (existing) existing.remove();
     }
-    if (event.data && event.data.type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
+    if (type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
       if (appConnected) showReactionOverlay();
     }
-    // Track consecutive losses
-    if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
+    if (type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
         consecutiveLosses++;
         console.log('[TradingGuardian] Loss Reaction - consecutive losses:', consecutiveLosses);
-        // 2+ losses in a row = breathing exercise
         if (consecutiveLosses >= 2 && appConnected) {
           showReactionOverlay();
         }
       } else if (event.data.result === 'win') {
-        // Win resets the counter
         consecutiveLosses = 0;
         console.log('[TradingGuardian] Loss Reaction - win detected, counter reset');
       }
     }
-  });
+  }
+
+  window.addEventListener('message', handleMessage);
 
   function showReactionOverlay() {
     if (document.getElementById('trl-reaction-overlay')) return;
