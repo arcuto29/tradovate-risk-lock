@@ -431,6 +431,12 @@
           }
           
           window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
+        } else if (lastKnownPnL !== null && currentPnl > lastKnownPnL) {
+          // P&L went up = win detected
+          var winAmount = currentPnl - lastKnownPnL;
+          console.log('[TradingGuardian] Win detected: +$' + winAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+          window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'win', pnl: winAmount }, '*');
+          consecutiveLosses = 0;
         }
         
         lastKnownPnL = currentPnl;

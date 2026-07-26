@@ -7,15 +7,12 @@
 (function() {
   'use strict';
 
-  var reactionEnabled = false;
-  var appConnected = false;
+  var consecutiveLosses = 0;
 
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
-      reactionEnabled = event.data.enabled === true;
       appConnected = true;
-      console.log('[TradingGuardian] Loss Reaction - coach config received, enabled:', reactionEnabled);
     }
     if (event.data && event.data.type === 'TRL_SESSION_STATE') {
       appConnected = true;
@@ -24,18 +21,28 @@
       appConnected = true;
     }
     if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
-      reactionEnabled = false;
       appConnected = false;
+      consecutiveLosses = 0;
       var existing = document.getElementById('trl-reaction-overlay');
       if (existing) existing.remove();
     }
     if (event.data && event.data.type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
-      if (reactionEnabled) showReactionOverlay();
+      if (appConnected) showReactionOverlay();
     }
-    // Trigger immediately when a loss is detected
-    if (event.data && event.data.type === 'TRL_TRADE_RESULT' && event.data.result === 'loss') {
-      console.log('[TradingGuardian] Loss Reaction - loss detected, reactionEnabled:', reactionEnabled);
-      if (reactionEnabled) showReactionOverlay();
+    // Track consecutive losses
+    if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
+      if (event.data.result === 'loss') {
+        consecutiveLosses++;
+        console.log('[TradingGuardian] Loss Reaction - consecutive losses:', consecutiveLosses);
+        // 2+ losses in a row = breathing exercise
+        if (consecutiveLosses >= 2 && appConnected) {
+          showReactionOverlay();
+        }
+      } else if (event.data.result === 'win') {
+        // Win resets the counter
+        consecutiveLosses = 0;
+        console.log('[TradingGuardian] Loss Reaction - win detected, counter reset');
+      }
     }
   });
 
