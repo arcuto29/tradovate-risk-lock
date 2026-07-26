@@ -8,6 +8,7 @@
   'use strict';
 
   var consecutiveLosses = 0;
+  var appConnected = false;
 
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
