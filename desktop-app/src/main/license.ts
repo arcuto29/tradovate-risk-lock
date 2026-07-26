@@ -72,9 +72,9 @@ function getLicenseFilePath(): string {
  * Check if the app is activated
  */
 export function isActivated(): boolean {
-  // Dev bypass: if .dev file exists in app directory, skip license
+  // Dev bypass: if dev-bypass.txt file exists in app directory, skip license
   try {
-    const devFile = path.join(app.getPath('userData'), '.dev');
+    const devFile = path.join(app.getPath('userData'), 'dev-bypass.txt');
     if (fs.existsSync(devFile)) return true;
   } catch {}
 
