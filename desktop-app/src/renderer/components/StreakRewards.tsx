@@ -41,7 +41,7 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
       </div>
       {streak >= 7 && (
         <p className="text-xs text-cyan-400/40 text-center mt-4">
-          {streak} day streak — keep going
+          {streak} day streak. Keep going.
         </p>
       )}
     </div>
