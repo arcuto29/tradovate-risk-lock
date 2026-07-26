@@ -6,12 +6,12 @@ interface Props {
 }
 
 const BADGES = [
-  { days: 3, label: 'Bronze', borderColor: 'border-amber-700/40', textColor: 'text-amber-600', glowColor: 'shadow-[0_0_12px_rgba(180,83,9,0.2)]', shieldColor: 'text-amber-700' },
-  { days: 7, label: 'Silver', borderColor: 'border-neutral-400/40', textColor: 'text-neutral-300', glowColor: 'shadow-[0_0_12px_rgba(163,163,163,0.2)]', shieldColor: 'text-neutral-400' },
-  { days: 14, label: 'Gold', borderColor: 'border-yellow-500/40', textColor: 'text-yellow-400', glowColor: 'shadow-[0_0_12px_rgba(234,179,8,0.3)]', shieldColor: 'text-yellow-500' },
-  { days: 30, label: 'Platinum', borderColor: 'border-cyan-400/40', textColor: 'text-cyan-300', glowColor: 'shadow-[0_0_15px_rgba(56,189,248,0.3)]', shieldColor: 'text-cyan-400' },
-  { days: 60, label: 'Diamond', borderColor: 'border-purple-400/40', textColor: 'text-purple-300', glowColor: 'shadow-[0_0_15px_rgba(168,85,247,0.3)]', shieldColor: 'text-purple-400' },
-  { days: 90, label: 'Obsidian', borderColor: 'border-white/30', textColor: 'text-white', glowColor: 'shadow-[0_0_20px_rgba(255,255,255,0.15)]', shieldColor: 'text-white' },
+  { days: 3, label: 'Bronze', color: '#CD7F32', glow: 'rgba(205,127,50,0.4)' },
+  { days: 7, label: 'Silver', color: '#C0C0C0', glow: 'rgba(192,192,192,0.4)' },
+  { days: 14, label: 'Gold', color: '#FFD700', glow: 'rgba(255,215,0,0.4)' },
+  { days: 30, label: 'Platinum', color: '#00E5FF', glow: 'rgba(0,229,255,0.4)' },
+  { days: 60, label: 'Diamond', color: '#B388FF', glow: 'rgba(179,136,255,0.4)' },
+  { days: 90, label: 'Obsidian', color: '#FFFFFF', glow: 'rgba(255,255,255,0.3)' },
 ];
 
 export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
@@ -24,17 +24,26 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
           return (
             <div
               key={badge.days}
-              className={`rounded-xl p-5 text-center transition-all border ${
-                earned
-                  ? `${badge.borderColor} ${badge.glowColor}`
-                  : 'border-white/[0.04] opacity-25'
-              }`}
+              className="rounded-xl p-5 text-center transition-all border"
+              style={{
+                borderColor: earned ? badge.color + '60' : 'rgba(255,255,255,0.08)',
+                boxShadow: earned ? `0 0 20px ${badge.glow}` : 'none',
+                opacity: earned ? 1 : 0.5,
+              }}
             >
-              <span className={`text-3xl ${earned ? badge.shieldColor : 'text-white/20'}`}>&#x1F6E1;</span>
-              <p className={`text-xs font-bold mt-3 ${earned ? badge.textColor : 'text-white/20'}`}>
+              <div
+                className="text-4xl mx-auto mb-3"
+                style={{ color: earned ? badge.color : badge.color + '40' }}
+              >
+                &#x1F6E1;
+              </div>
+              <p
+                className="text-xs font-bold"
+                style={{ color: earned ? badge.color : badge.color + '60' }}
+              >
                 {badge.label}
               </p>
-              <p className={`text-[0.55rem] mt-1 ${earned ? 'text-white/30' : 'text-white/10'}`}>{badge.days} days</p>
+              <p className="text-[0.55rem] mt-1 text-white/30">{badge.days} days</p>
             </div>
           );
         })}
