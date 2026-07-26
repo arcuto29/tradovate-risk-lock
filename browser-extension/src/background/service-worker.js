@@ -26,6 +26,7 @@ function handleMessage(msg) {
   if (msg.type === 'coach_config') { chrome.storage.local.set({ coach_config: msg }); broadcastCoach(msg); }
   if (msg.type === 'position_limits') { chrome.storage.local.set({ position_limits: msg }); broadcastPositionLimits(msg); }
   if (msg.type === 'full_day_block') { chrome.storage.local.set({ full_day_blocked: true }); broadcastFullBlock(); }
+  if (msg.type === 'ghost_mode') { chrome.storage.local.set({ ghost_mode: msg.enabled }); broadcastGhostMode(msg.enabled); }
   if (msg.type === 'pong') { lockState.locked = msg.locked; }
   chrome.storage.local.set({ [STORAGE_KEYS.LOCK_STATE]: lockState });
 }
@@ -83,6 +84,15 @@ function broadcastFullBlock() {
   urls.forEach(pattern => {
     chrome.tabs.query({ url: pattern }, (tabs) => {
       tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'FULL_DAY_BLOCK' }).catch(() => {}));
+    });
+  });
+}
+
+function broadcastGhostMode(enabled) {
+  const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+  urls.forEach(pattern => {
+    chrome.tabs.query({ url: pattern }, (tabs) => {
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'GHOST_MODE', enabled }).catch(() => {}));
     });
   });
 }
