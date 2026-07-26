@@ -23,13 +23,13 @@ declare global {
   interface Window { electronAPI: any; }
 }
 
-const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string }[] = [
-  { page: 'main', label: 'Risk Settings', lockedLabel: 'Status' },
-  { page: 'session', label: 'Session' },
-  { page: 'coach', label: 'Coach' },
-  { page: 'discipline', label: 'Score' },
-  { page: 'log', label: 'Log' },
-  { page: 'settings', label: 'Settings' },
+const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string }[] = [
+  { page: 'main', label: 'Risk', lockedLabel: 'Status', icon: '◆' },
+  { page: 'session', label: 'Session', icon: '◷' },
+  { page: 'coach', label: 'Coach', icon: '◈' },
+  { page: 'discipline', label: 'Score', icon: '◉' },
+  { page: 'log', label: 'Log', icon: '◫' },
+  { page: 'settings', label: 'Settings', icon: '◎' },
 ];
 
 export const App: React.FC = () => {
@@ -38,11 +38,10 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [preMarketPassed, setPreMarketPassed] = useState(false);
   const [limitsTightened, setLimitsTightened] = useState(false);
-  const [activated, setActivated] = useState(true); // Assume activated until checked
+  const [activated, setActivated] = useState(true);
 
   const refreshState = useCallback(async () => {
     try {
-      // Check license first
       const license = await (window as any).electronAPI?.checkLicense?.();
       if (license && !license.activated) {
         setActivated(false);
@@ -64,7 +63,6 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [refreshState]);
 
-  // Dev shortcut: Ctrl+Shift+F12 to force unlock
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'F12') {
@@ -81,7 +79,10 @@ export const App: React.FC = () => {
     return (
       <div className="h-screen bg-[#030108] flex items-center justify-center">
         <div className="nebula-bg" />
-        <span className="text-cyan-300/60 text-sm font-mono animate-pulse-glow">Initializing...</span>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
+          <span className="text-cyan-300/40 text-xs font-medium tracking-[3px] uppercase">Initializing</span>
+        </div>
       </div>
     );
   }
@@ -92,44 +93,54 @@ export const App: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
-      {/* Update Banner */}
       <UpdateBanner />
-
-      {/* Bypass Warning Overlay */}
       <BypassWarning />
-
-      {/* Nebula + Stars Background */}
       <div className="nebula-bg" />
       <div className="stars" />
 
+
       {/* Header */}
-      <header className="relative z-10 px-8 pt-6 glass-strong">
-        <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-5 animate-breathe text-center">
-          Trading Guardian
-        </p>
-        <nav className="flex justify-center border-b border-cyan-400/10">
-          {NAV_ITEMS.map(({ page, label, lockedLabel }) => (
+      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong">
+        {/* Brand */}
+        <div className="flex items-center justify-center mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400/20 to-purple-400/10 border border-cyan-400/20 flex items-center justify-center">
+              <span className="text-[0.6rem] text-cyan-400" style={{filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.6))'}}>&#x1F6E1;</span>
+            </div>
+            <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
+              Trading Guardian
+            </p>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex justify-center gap-1">
+          {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`
-                relative pb-3 mr-8 text-[0.78rem] font-medium transition-all duration-200
+                relative px-4 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200 group
                 ${currentPage === page
-                  ? 'text-cyan-300 text-glow-cyan font-semibold'
-                  : 'text-white/30 hover:text-white/60'}
+                  ? 'text-white bg-white/[0.04]'
+                  : 'text-white/25 hover:text-white/50 hover:bg-white/[0.02]'}
               `}
             >
-              {page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}
+              <span className="flex items-center gap-2">
+                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'text-cyan-400 opacity-100' : 'opacity-30'}`}>{icon}</span>
+                <span>{page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}</span>
+              </span>
               {currentPage === page && (
-                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-cyan-400 to-purple-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
               )}
             </button>
           ))}
         </nav>
       </header>
 
+
       {/* Main */}
-      <main className="relative z-10 flex-1 px-8 py-10 overflow-y-auto">
+      <main className="relative z-10 flex-1 px-8 py-8 overflow-y-auto">
         <div className="animate-reveal max-w-2xl mx-auto" key={currentPage}>
           {currentPage === 'main' && (
             lockState?.isLocked
@@ -139,28 +150,28 @@ export const App: React.FC = () => {
                   <div className="mt-6">
                     <KillSwitch onActivated={refreshState} />
                   </div>
-                  <div className="mt-4 glass rounded-xl p-5">
-                    <label className="flex items-center justify-between cursor-pointer">
+                  <div className="mt-4 relative rounded-xl p-5 overflow-hidden card-premium">
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
                         <span className="text-sm font-semibold text-white/60">Ghost Mode</span>
-                        <p className="text-[0.65rem] text-white/20 mt-0.5">Hide P&L until session ends</p>
+                        <p className="text-[0.6rem] text-white/20 mt-0.5">Hide P&L until session ends</p>
                       </div>
-                      <input
-                        type="checkbox"
-                        onChange={(e) => (window as any).electronAPI?.toggleGhostMode?.(e.target.checked)}
-                        className="w-4 h-4 accent-cyan-400"
-                      />
-                    </label>
+                      <div className="toggle-premium" onClick={(e) => {
+                        const el = e.currentTarget;
+                        el.classList.toggle('active');
+                        (window as any).electronAPI?.toggleGhostMode?.(el.classList.contains('active'));
+                      }} />
+                    </div>
                   </div>
                   <button
                     onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
-                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all"
                   >
                     Dev Unlock
                   </button>
                   <button
                     onClick={() => (window as any).electronAPI?.exitFullscreen?.()}
-                    className="mt-2 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
+                    className="mt-2 ml-2 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all"
                   >
                     Dev Exit Fullscreen
                   </button>
@@ -169,8 +180,9 @@ export const App: React.FC = () => {
                 ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); }} />
                 : <>
                     {limitsTightened && (
-                      <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-amber-400/20 text-amber-300/80 text-xs font-medium">
-                        You're not in the right headspace. Limits tightened for today.
+                      <div className="mb-6 px-5 py-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] text-amber-300/80 text-xs font-medium animate-reveal flex items-center gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                        Limits tightened for today. You're not in the right headspace.
                       </div>
                     )}
                     <RiskSettings isLocked={false} onLocked={refreshState} />
@@ -190,12 +202,13 @@ export const App: React.FC = () => {
         </div>
       </main>
 
+
       {/* Footer */}
-      <footer className="relative z-10 px-8 py-4 glass flex justify-between items-center">
-        <span className="text-[0.6rem] text-white/20">
+      <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center">
+        <span className="text-[0.55rem] text-white/15 italic">
           Behavioral barrier only
         </span>
-        <span className="text-[0.55rem] font-bold tracking-[4px] uppercase text-white/15">
+        <span className="text-[0.5rem] font-bold tracking-[4px] uppercase text-gradient opacity-40">
           Priisma
         </span>
       </footer>

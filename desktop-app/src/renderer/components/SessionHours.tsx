@@ -24,43 +24,74 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
     setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
-  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all";
-  const selectClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all input-premium";
+  const selectClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white input-premium";
 
   return (
     <div className="max-w-lg">
-      <h2 className="text-4xl font-black tracking-tighter mb-3 text-glow-white">Session Hours</h2>
-      <p className="text-white/35 text-sm mb-8 leading-relaxed">Block orders outside your trading window.</p>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-2 animate-reveal">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-cyan-500/10 border border-indigo-500/20 flex items-center justify-center">
+          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.5))'}}>⏰</span>
+        </div>
+        <h2 className="text-3xl font-black tracking-tight text-white">Session Hours</h2>
+      </div>
+      <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">Block orders outside your trading window.</p>
 
-      {currentlyBlocked && enabled && (
-        <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-red-400/20 text-glow-red text-xs font-medium">Orders blocked — outside hours</div>
-      )}
-      {!currentlyBlocked && enabled && (
-        <div className="mb-6 px-5 py-3.5 glass rounded-lg border border-emerald-400/20 text-glow-green text-xs font-medium">Trading allowed — inside window</div>
+      {/* Status Badge */}
+      {enabled && (
+        <div className={`mb-6 px-5 py-4 rounded-xl border animate-reveal flex items-center gap-3 ${
+          currentlyBlocked
+            ? 'border-red-400/20 bg-red-400/[0.04]'
+            : 'border-emerald-400/20 bg-emerald-400/[0.04]'
+        }`}>
+          <span className={`w-2 h-2 rounded-full animate-pulse ${
+            currentlyBlocked
+              ? 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]'
+              : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'
+          }`} />
+          <span className={`text-xs font-semibold ${currentlyBlocked ? 'text-red-300' : 'text-emerald-300'}`}>
+            {currentlyBlocked ? 'Orders blocked — outside trading hours' : 'Trading allowed — inside window'}
+          </span>
+        </div>
       )}
 
-      <div className="glass rounded-xl p-6 mb-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="w-4 h-4 accent-cyan-400" />
-          <span className="text-sm text-white/50">Block orders outside allowed hours</span>
-        </label>
+      {/* Enable Toggle */}
+      <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5 animate-reveal">
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className={`w-2 h-2 rounded-full transition-all ${enabled ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-white/15'}`} />
+            <span className="text-sm text-white/70 font-medium">Block orders outside allowed hours</span>
+          </div>
+          <div
+            className={`toggle-premium ${enabled ? 'active' : ''}`}
+            onClick={() => setEnabled(!enabled)}
+          />
+        </div>
       </div>
 
       {enabled && (
-        <>
-          <div className="glass rounded-xl p-6 mb-4">
-            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Window</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-white/35 mb-2">Start</label>
-                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inputClass} />
+        <div className="space-y-4">
+          {/* Time Window */}
+          <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-1">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/40 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-5">
+                <span className="text-indigo-400/60 text-sm">🕐</span>
+                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-indigo-400/60">Trading Window</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Start</label>
+                  <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">End</label>
+                  <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputClass} />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/35 mb-2">End</label>
-                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputClass} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/35 mb-2">Timezone</label>
+                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Timezone</label>
                 <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={selectClass}>
                   <option value="America/New_York">Eastern (ET)</option>
                   <option value="America/Chicago">Central (CT)</option>
@@ -71,16 +102,35 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             </div>
           </div>
 
-          <div className="glass rounded-xl p-6 mb-4">
-            <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-3">Protected Platforms</p>
-            <p className="text-xs text-white/30 leading-relaxed">Tradovate · Tradesea · TopstepX</p>
-            <p className="text-xs text-white/20 mt-1">Desktop apps auto-closed outside hours</p>
+          {/* Protected Platforms */}
+          <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-2">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-purple-400/60 text-sm">🔒</span>
+                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Protected Platforms</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {['Tradovate', 'Tradesea', 'TopstepX'].map((p) => (
+                  <span key={p} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs text-white/40 font-medium">{p}</span>
+                ))}
+              </div>
+              <p className="text-[0.65rem] text-white/15 mt-3">Desktop apps auto-closed outside hours</p>
+            </div>
           </div>
-        </>
+        </div>
       )}
 
-      {saved && <div className="mt-4 px-5 py-3.5 glass rounded-lg border border-emerald-400/20 text-glow-green text-xs font-medium">Saved</div>}
-      <button onClick={handleSave} className="mt-5 px-6 py-3 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:bg-cyan-400/20 hover:border-cyan-400/40 hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] transition-all btn-glow">Save</button>
+      {/* Save */}
+      {saved && (
+        <div className="mt-6 px-5 py-3.5 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] text-emerald-300 text-xs font-medium animate-reveal flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+          Session hours saved
+        </div>
+      )}
+      <button onClick={handleSave} className="mt-6 px-8 py-3.5 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale animate-reveal">
+        Save
+      </button>
     </div>
   );
 };
