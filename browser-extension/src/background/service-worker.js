@@ -11,12 +11,40 @@ function connectToDesktopApp() {
     ws = new WebSocket(WS_URL);
     ws.onopen = () => { chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: true }); ws.send(JSON.stringify({ type: 'check_lock' })); ws.send(JSON.stringify({ type: 'check_session' })); };
     ws.onmessage = (event) => { try { handleMessage(JSON.parse(event.data)); } catch {} };
-    ws.onclose = () => { ws = null; chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: false }); scheduleReconnect(); };
-    ws.onerror = () => { ws = null; scheduleReconnect(); };
+    ws.onclose = () => { ws = null; chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: false }); clearAllState(); scheduleReconnect(); };
+    ws.onerror = () => { ws = null; clearAllState(); scheduleReconnect(); };
   } catch { scheduleReconnect(); }
 }
 
 function scheduleReconnect() { if (reconnectTimer) return; reconnectTimer = setTimeout(() => { reconnectTimer = null; connectToDesktopApp(); }, WS_RECONNECT_INTERVAL); }
+
+// Clear all cached state and tell content scripts to disable when app disconnects
+function clearAllState() {
+  lockState = { locked: false, settings: null };
+  sessionState = { blocked: false, sessionHours: null, enabled: false };
+  chrome.storage.local.set({
+    [STORAGE_KEYS.CONNECTION_STATUS]: false,
+    [STORAGE_KEYS.LOCK_STATE]: lockState,
+    coach_config: { enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 },
+    position_limits: null,
+    full_day_blocked: false,
+    ghost_mode: false,
+  });
+  // Tell all content scripts the app is disconnected - disable everything
+  const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+  urls.forEach(pattern => {
+    chrome.tabs.query({ url: pattern }, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { type: 'APP_DISCONNECTED' }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { type: 'COACH_CONFIG_UPDATE', enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { type: 'SESSION_STATE_UPDATE', blocked: false, sessionHours: null }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { type: 'GHOST_MODE', enabled: false }).catch(() => {});
+      });
+    });
+  });
+  updateRules(false);
+  chrome.action.setBadgeText({ text: '' });
+}
 
 function handleMessage(msg) {
   if (msg.type === 'connected' || msg.type === 'lock_state') { lockState = { locked: msg.locked, settings: msg.settings || null }; updateRules(msg.locked); broadcastLock(); }
@@ -107,7 +135,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       break;
     case 'GET_COACH_CONFIG':
       chrome.storage.local.get('coach_config', (r) => {
-        sendResponse(r.coach_config || { enabled: true, maxTradesPerDay: 10, cooldownSeconds: 120, maxDailyLoss: 500 });
+        sendResponse(r.coach_config || { enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 });
       });
       return true; // Keep channel open for async response
     case 'GET_CONNECTION_STATUS':

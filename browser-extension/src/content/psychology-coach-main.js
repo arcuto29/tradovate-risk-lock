@@ -31,6 +31,14 @@
       cooldownSeconds = event.data.cooldownSeconds || 120;
       // Don't set maxDailyLoss from coach — Risk Settings is source of truth
     }
+    if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
+      // Desktop app not running — disable coach completely
+      coachEnabled = false;
+      cooldownActive = false;
+      dailyLossBlocked = false;
+      maxDailyLoss = 0;
+      console.log('[TradingGuardian-Coach] App disconnected — coach disabled');
+    }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       // Read loss limit from Risk Settings
       if (event.data.lossLimitAmount && event.data.lossLimitAmount > 0) {

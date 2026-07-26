@@ -21,6 +21,13 @@
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
+    if (msg.type === 'APP_DISCONNECTED') {
+      // App not running - disable all enforcement
+      sessionBlocked = false;
+      window.postMessage({ type: 'TRL_APP_DISCONNECTED' }, '*');
+      sendCoachToPage({ enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 });
+      sendStateToPage();
+    }
   });
 
   function sendStateToPage() {

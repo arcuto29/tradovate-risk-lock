@@ -50,6 +50,19 @@
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
       fullDayBlocked = true;
     }
+    if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
+      // Desktop app is not running — disable ALL enforcement
+      sessionBlocked = false;
+      fullDayBlocked = false;
+      coachEnabled = false;
+      cooldownActive = false;
+      dailyLossBlocked = false;
+      profitLocked = false;
+      blockedSymbols = [];
+      positionLimits = { limits: [], defaultMax: 0 };
+      maxDailyLoss = 0;
+      console.log('[TradingGuardian] App disconnected — all enforcement disabled');
+    }
     if (event.data && event.data.type === 'TRL_POSITION_LIMITS') {
       positionLimits = { limits: event.data.limits || [], defaultMax: event.data.defaultMax || 2 };
       // Read loss limit from Risk Settings (single source of truth)

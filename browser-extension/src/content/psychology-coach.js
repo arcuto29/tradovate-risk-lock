@@ -11,6 +11,10 @@
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'COACH_CONFIG_UPDATE') sendConfigToPage(msg);
+    if (msg.type === 'APP_DISCONNECTED') {
+      // App not running - disable coach
+      sendConfigToPage({ enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 });
+    }
   });
 
   function sendConfigToPage(config) {

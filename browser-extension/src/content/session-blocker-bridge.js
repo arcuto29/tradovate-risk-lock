@@ -25,6 +25,14 @@
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }
     if (msg.type === 'GHOST_MODE') { window.postMessage({ type: 'TRL_GHOST_MODE', enabled: msg.enabled }, '*'); }
+    if (msg.type === 'APP_DISCONNECTED') {
+      // App is not running - disable all enforcement
+      sessionBlocked = false;
+      window.postMessage({ type: 'TRL_APP_DISCONNECTED' }, '*');
+      window.postMessage({ type: 'TRL_COACH_CONFIG', enabled: false, maxTradesPerDay: 0, cooldownSeconds: 0, maxDailyLoss: 0 }, '*');
+      window.postMessage({ type: 'TRL_SESSION_STATE', blocked: false, sessionHours: null, positionLimits: { limits: [], defaultMax: 0 } }, '*');
+      window.postMessage({ type: 'TRL_GHOST_MODE', enabled: false }, '*');
+    }
   });
 
   function sendStateToPage() {
