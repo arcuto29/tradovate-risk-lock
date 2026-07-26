@@ -24,7 +24,7 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
           return (
             <div
               key={badge.days}
-              className="rounded-xl p-5 text-center transition-all border"
+              className={`rounded-xl p-5 text-center transition-all border hover-lift ${earned ? 'animate-glow-pulse' : ''}`}
               style={{
                 borderColor: earned ? badge.color + '60' : 'rgba(255,255,255,0.12)',
                 boxShadow: earned ? `0 0 20px ${badge.glow}` : 'none',

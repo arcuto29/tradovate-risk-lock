@@ -46,7 +46,7 @@ export const KillSwitch: React.FC<{ onActivated: () => void }> = ({ onActivated 
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="w-full glass rounded-xl p-5 text-center border border-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all group"
+      className="w-full glass rounded-xl p-5 text-center border border-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all group hover-lift press-scale"
     >
       <div className="flex items-center justify-center gap-3">
         <div className="w-2.5 h-2.5 rounded-full bg-red-500/50 group-hover:bg-red-500 transition-all" />
