@@ -24,6 +24,7 @@
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }
+    if (msg.type === 'GHOST_MODE') { window.postMessage({ type: 'TRL_GHOST_MODE', enabled: msg.enabled }, '*'); }
   });
 
   function sendStateToPage() {

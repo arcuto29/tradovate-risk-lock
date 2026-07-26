@@ -103,6 +103,11 @@ export class WebSocketServer {
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 
+  broadcastGhostMode(enabled: boolean): void {
+    const msg = JSON.stringify({ type: 'ghost_mode', enabled });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
     let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };

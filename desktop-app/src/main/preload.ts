@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActivityLog: (limit?: number) => ipcRenderer.invoke('get-activity-log', limit),
   getDisciplineScore: () => ipcRenderer.invoke('get-discipline-score'),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
+  killSwitch: () => ipcRenderer.invoke('kill-switch'),
+  toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   updateSettings: (settings: any) => ipcRenderer.invoke('update-settings', settings),
   getBypassAttempts: () => ipcRenderer.invoke('get-bypass-attempts'),

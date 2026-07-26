@@ -12,6 +12,8 @@ import { TiltMeter } from './components/TiltMeter';
 import { BypassWarning } from './components/BypassWarning';
 import { DisciplineScore } from './components/DisciplineScore';
 import { PreMarketCheck } from './components/PreMarketCheck';
+import { KillSwitch } from './components/KillSwitch';
+import { DailyReport } from './components/DailyReport';
 
 type Page = 'main' | 'session' | 'coach' | 'discipline' | 'log' | 'settings';
 
@@ -120,6 +122,22 @@ export const App: React.FC = () => {
               ? <>
                   <TiltMeter />
                   <LockStatus lockState={lockState} onRefresh={refreshState} />
+                  <div className="mt-6">
+                    <KillSwitch onActivated={refreshState} />
+                  </div>
+                  <div className="mt-4 glass rounded-xl p-5">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="text-sm font-semibold text-white/60">Ghost Mode</span>
+                        <p className="text-[0.65rem] text-white/20 mt-0.5">Hide P&L until session ends</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        onChange={(e) => (window as any).electronAPI?.toggleGhostMode?.(e.target.checked)}
+                        className="w-4 h-4 accent-cyan-400"
+                      />
+                    </label>
+                  </div>
                   <button
                     onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
                     className="mt-4 px-4 py-2 text-[0.6rem] text-white/20 border border-white/[0.05] rounded hover:text-white/40 hover:border-white/10 transition-all"
@@ -146,7 +164,12 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
           {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
-          {currentPage === 'discipline' && <DisciplineScore />}
+          {currentPage === 'discipline' && (
+            <>
+              <DisciplineScore />
+              <div className="mt-8"><DailyReport /></div>
+            </>
+          )}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
         </div>

@@ -118,6 +118,27 @@ function setupIPC(): void {
     db.logActivity('full_day_block', 'Pre-Market Check: user admitted to revenge trading — blocked for the day');
     return { success: true };
   });
+
+  // Kill Switch — immediate 24hr lockout
+  ipcMain.handle('kill-switch', () => {
+    wsServer.broadcastFullDayBlock();
+    db.logActivity('kill_switch', 'User activated kill switch — blocked for 24 hours');
+    if (!lockManager.isLocked()) {
+      const tomorrow = new Date();
+      tomorrow.setHours(tomorrow.getHours() + 24);
+      const hours = tomorrow.getHours().toString().padStart(2, '0');
+      const mins = tomorrow.getMinutes().toString().padStart(2, '0');
+      lockManager.lock({ dailyLossLimit: 0, dailyProfitTarget: 0, maxContracts: 0, resetTime: `${hours}:${mins}`, resetTimezone: 'America/New_York', platform: 'web' });
+    }
+    return { success: true };
+  });
+
+  // Ghost Mode
+  ipcMain.handle('toggle-ghost-mode', (_e, enabled) => {
+    wsServer.broadcastGhostMode(enabled);
+    db.logActivity('ghost_mode', enabled ? 'Ghost mode ON — P&L hidden' : 'Ghost mode OFF');
+    return { success: true };
+  });
   ipcMain.handle('lock-settings', (_e, settings) => {
     const result = lockManager.lock(settings);
     if (result.success) updateTrayMenu();
