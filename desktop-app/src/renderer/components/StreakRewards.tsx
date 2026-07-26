@@ -17,30 +17,30 @@ const BADGES = [
 export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
   return (
     <div className="glass rounded-xl p-6 mt-6">
-      <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-4">Badges</p>
-      <div className="grid grid-cols-3 gap-3">
+      <p className="text-[0.58rem] font-semibold tracking-[2.5px] uppercase text-cyan-400/50 mb-5">Badges</p>
+      <div className="grid grid-cols-3 gap-4">
         {BADGES.map((badge) => {
           const earned = streak >= badge.days;
           return (
             <div
               key={badge.days}
-              className={`rounded-lg p-3 text-center transition-all ${
+              className={`rounded-xl p-5 text-center transition-all ${
                 earned
-                  ? 'glass border border-cyan-400/20'
-                  : 'bg-white/[0.01] border border-white/[0.03] opacity-30'
+                  ? 'glass border border-cyan-400/30 shadow-[0_0_15px_rgba(56,189,248,0.1)]'
+                  : 'bg-white/[0.02] border border-white/[0.06]'
               }`}
             >
-              <span className="text-2xl">{badge.icon}</span>
-              <p className={`text-[0.6rem] font-bold mt-1.5 ${earned ? badge.color : 'text-white/20'}`}>
+              <span className={`text-4xl ${earned ? '' : 'grayscale opacity-40'}`}>{badge.icon}</span>
+              <p className={`text-xs font-bold mt-3 ${earned ? badge.color : 'text-white/30'}`}>
                 {badge.label}
               </p>
-              <p className="text-[0.5rem] text-white/15 mt-0.5">{badge.desc}</p>
+              <p className={`text-[0.6rem] mt-1 ${earned ? 'text-white/40' : 'text-white/15'}`}>{badge.desc}</p>
             </div>
           );
         })}
       </div>
       {streak >= 7 && (
-        <p className="text-xs text-cyan-400/40 text-center mt-4">
+        <p className="text-sm text-cyan-400/60 text-center mt-5 font-medium">
           {streak} day streak. Keep going.
         </p>
       )}
