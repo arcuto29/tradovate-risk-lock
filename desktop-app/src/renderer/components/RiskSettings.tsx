@@ -228,7 +228,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-sm">↓</div>
-              <h2 className="text-xl font-bold text-white">Daily Loss Limit</h2>
+              <h2 className="text-xl font-bold text-gradient">Daily Loss Limit</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Maximum dollar amount you can lose per day. Trading blocked when hit.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
@@ -248,7 +248,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">↑</div>
-              <h2 className="text-xl font-bold text-white">Daily Profit Target</h2>
+              <h2 className="text-xl font-bold text-gradient">Daily Profit Target</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">When reached, trading blocked to protect profits.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
@@ -268,7 +268,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-sm">#</div>
-              <h2 className="text-xl font-bold text-white">Max Trades</h2>
+              <h2 className="text-xl font-bold text-gradient">Max Trades</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Prevents overtrading and revenge trading.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
@@ -289,7 +289,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm">⊘</div>
-              <h2 className="text-xl font-bold text-white">Blocked Symbols</h2>
+              <h2 className="text-xl font-bold text-gradient">Blocked Symbols</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Orders for these symbols will be rejected.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
@@ -327,7 +327,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-sm">▣</div>
-              <h2 className="text-xl font-bold text-white">Max Contracts</h2>
+              <h2 className="text-xl font-bold text-gradient">Max Contracts</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Limit position size per symbol.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
@@ -366,7 +366,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-sm">⏱</div>
-              <h2 className="text-xl font-bold text-white">Lockout Options</h2>
+              <h2 className="text-xl font-bold text-gradient">Lockout Options</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">When trading resumes after a lockout.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">

@@ -51,7 +51,7 @@ export const PreMarketCheck: React.FC<Props> = ({ onComplete }) => {
             <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse" />
           </div>
         </div>
-        <h2 className="text-4xl font-black tracking-tight text-white mb-4">Blocked</h2>
+        <h2 className="text-4xl font-black tracking-tight text-red-400 mb-4" style={{textShadow: '0 0 20px rgba(248,113,113,0.5)'}}>Blocked</h2>
         <p className="text-white/40 text-sm leading-relaxed mb-8 max-w-xs mx-auto">{blockMessage}</p>
         <p className="text-[0.65rem] text-white/15 uppercase tracking-[2px]">Close the app and come back tomorrow</p>
       </div>
@@ -77,7 +77,7 @@ export const PreMarketCheck: React.FC<Props> = ({ onComplete }) => {
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
           <span className="text-xl" style={{filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.5))'}}>🧘</span>
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-white mb-2">Pre-Market Check</h2>
+        <h2 className="text-3xl font-black tracking-tight text-gradient mb-2">Pre-Market Check</h2>
         <p className="text-white/30 text-sm">Answer honestly. This is for you.</p>
       </div>
 

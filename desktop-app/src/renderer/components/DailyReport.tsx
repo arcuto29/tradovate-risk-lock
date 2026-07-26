@@ -35,7 +35,7 @@ export const DailyReport: React.FC = () => {
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20 flex items-center justify-center">
           <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.5))'}}>📋</span>
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-white">Daily Report</h2>
+        <h2 className="text-3xl font-black tracking-tight text-gradient">Daily Report</h2>
       </div>
       <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">End of day summary.</p>
 
