@@ -128,7 +128,7 @@ function setupIPC(): void {
       tomorrow.setHours(tomorrow.getHours() + 24);
       const hours = tomorrow.getHours().toString().padStart(2, '0');
       const mins = tomorrow.getMinutes().toString().padStart(2, '0');
-      lockManager.lock({ dailyLossLimit: 0, dailyProfitTarget: 0, maxContracts: 0, resetTime: `${hours}:${mins}`, resetTimezone: 'America/New_York', platform: 'web' });
+      lockManager.lock({ dailyLossLimit: 1, dailyProfitTarget: 0, maxContracts: 0, resetTime: `${hours}:${mins}`, resetTimezone: 'America/New_York', platform: 'web' });
     }
     return { success: true };
   });
