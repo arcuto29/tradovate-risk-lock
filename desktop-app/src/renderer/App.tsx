@@ -38,6 +38,7 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [preMarketPassed, setPreMarketPassed] = useState(false);
   const [limitsTightened, setLimitsTightened] = useState(false);
+  const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
 
   const refreshState = useCallback(async () => {
@@ -156,10 +157,10 @@ export const App: React.FC = () => {
                         <span className="text-sm font-semibold text-white/60">Ghost Mode</span>
                         <p className="text-[0.6rem] text-white/20 mt-0.5">Hide P&L until session ends</p>
                       </div>
-                      <div className="toggle-premium" onClick={(e) => {
-                        const el = e.currentTarget;
-                        el.classList.toggle('active');
-                        (window as any).electronAPI?.toggleGhostMode?.(el.classList.contains('active'));
+                      <div className={`toggle-premium ${ghostMode ? 'active' : ''}`} onClick={() => {
+                        const newState = !ghostMode;
+                        setGhostMode(newState);
+                        (window as any).electronAPI?.toggleGhostMode?.(newState);
                       }} />
                     </div>
                   </div>

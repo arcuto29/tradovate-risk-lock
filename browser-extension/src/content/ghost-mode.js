@@ -56,7 +56,11 @@
 
   function stopHiding() {
     if (hideInterval) { clearInterval(hideInterval); hideInterval = null; }
+    // Run multiple times to catch elements that re-render
     showPnlElements();
+    setTimeout(showPnlElements, 500);
+    setTimeout(showPnlElements, 1000);
+    setTimeout(showPnlElements, 2000);
   }
 
   function hidePnlElements() {
