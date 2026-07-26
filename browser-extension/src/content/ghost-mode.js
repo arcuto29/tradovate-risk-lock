@@ -3,6 +3,8 @@
  * Hides P&L display elements on trading platforms.
  * When active, trader cannot see their P&L until session ends.
  * Forces trading based on setups, not emotions from watching money move.
+ * 
+ * Listens via postMessage AND polls chrome.storage for state changes.
  */
 (function() {
   'use strict';
@@ -29,38 +31,50 @@
     '[class*="realizedPl"]',
     '[class*="daily-pl"]',
     // TradingView
-    '[class*="pnl"]',
     '[data-name="pnl"]',
     // Tradesea
     '[class*="balance"]',
     '[class*="equity"]',
   ];
 
+  // Listen for messages from bridge scripts
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
     if (event.data && event.data.type === 'TRL_GHOST_MODE') {
-      ghostModeActive = event.data.enabled;
-      if (ghostModeActive) {
-        startHiding();
-      } else {
-        stopHiding();
-      }
+      console.log('[TradingGuardian] Ghost Mode message received:', event.data.enabled);
+      setGhostMode(event.data.enabled);
+    }
+    if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
+      console.log('[TradingGuardian] App disconnected - disabling ghost mode');
+      setGhostMode(false);
     }
   });
 
+  function setGhostMode(enabled) {
+    if (enabled && !ghostModeActive) {
+      ghostModeActive = true;
+      startHiding();
+    } else if (!enabled && ghostModeActive) {
+      ghostModeActive = false;
+      stopHiding();
+    }
+  }
+
   function startHiding() {
+    console.log('[TradingGuardian] Ghost Mode ON - blurring P&L');
     hidePnlElements();
-    // Keep hiding every 2 seconds (in case new elements appear)
     hideInterval = setInterval(hidePnlElements, 2000);
   }
 
   function stopHiding() {
+    console.log('[TradingGuardian] Ghost Mode OFF - removing blur');
     if (hideInterval) { clearInterval(hideInterval); hideInterval = null; }
-    // Run multiple times to catch elements that re-render
-    showPnlElements();
-    setTimeout(showPnlElements, 500);
-    setTimeout(showPnlElements, 1000);
-    setTimeout(showPnlElements, 2000);
+    // Aggressively remove blur - run immediately and then several more times
+    forceRemoveAllBlur();
+    setTimeout(forceRemoveAllBlur, 300);
+    setTimeout(forceRemoveAllBlur, 700);
+    setTimeout(forceRemoveAllBlur, 1500);
+    setTimeout(forceRemoveAllBlur, 3000);
   }
 
   function hidePnlElements() {
@@ -68,37 +82,53 @@
       try {
         var elements = document.querySelectorAll(selector);
         elements.forEach(function(el) {
-          el.style.filter = 'blur(12px)';
-          el.style.userSelect = 'none';
-          el.style.pointerEvents = 'none';
+          el.style.setProperty('filter', 'blur(12px)', 'important');
+          el.style.setProperty('user-select', 'none', 'important');
+          el.style.setProperty('pointer-events', 'none', 'important');
           el.setAttribute('data-ghost-hidden', 'true');
         });
       } catch(e) {}
     });
   }
 
-  function showPnlElements() {
-    // Remove blur from ALL elements that might have been hidden
+  function forceRemoveAllBlur() {
+    // Method 1: Find by our attribute
     var hidden = document.querySelectorAll('[data-ghost-hidden="true"]');
     hidden.forEach(function(el) {
-      el.style.filter = '';
-      el.style.userSelect = '';
-      el.style.pointerEvents = '';
+      el.style.removeProperty('filter');
+      el.style.removeProperty('user-select');
+      el.style.removeProperty('pointer-events');
       el.removeAttribute('data-ghost-hidden');
     });
-    // Also force-clear any element matching PNL selectors (in case attribute was lost)
+
+    // Method 2: Find anything with blur(12px) on it
     PNL_SELECTORS.forEach(function(selector) {
       try {
         var elements = document.querySelectorAll(selector);
         elements.forEach(function(el) {
-          if (el.style.filter === 'blur(12px)') {
-            el.style.filter = '';
-            el.style.userSelect = '';
-            el.style.pointerEvents = '';
+          var filter = el.style.filter || window.getComputedStyle(el).filter;
+          if (filter && filter.includes('blur')) {
+            el.style.removeProperty('filter');
+            el.style.removeProperty('user-select');
+            el.style.removeProperty('pointer-events');
+            el.removeAttribute('data-ghost-hidden');
           }
         });
       } catch(e) {}
     });
+
+    // Method 3: Nuclear option - find ANY element on page with blur(12px)
+    try {
+      var allBlurred = document.querySelectorAll('[style*="blur"]');
+      allBlurred.forEach(function(el) {
+        if (el.style.filter && el.style.filter.includes('blur(12px)')) {
+          el.style.removeProperty('filter');
+          el.style.removeProperty('user-select');
+          el.style.removeProperty('pointer-events');
+          el.removeAttribute('data-ghost-hidden');
+        }
+      });
+    } catch(e) {}
   }
 
   console.log('[TradingGuardian] Ghost Mode loaded.');
