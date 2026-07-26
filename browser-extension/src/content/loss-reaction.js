@@ -22,6 +22,10 @@
     if (event.data && event.data.type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
       if (reactionEnabled) showReactionOverlay();
     }
+    // Also trigger immediately when a loss is detected (not just on next trade attempt)
+    if (event.data && event.data.type === 'TRL_TRADE_RESULT' && event.data.result === 'loss') {
+      if (reactionEnabled) showReactionOverlay();
+    }
   });
 
   function showReactionOverlay() {

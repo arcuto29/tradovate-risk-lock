@@ -410,6 +410,9 @@
           var lossAmount = lastKnownPnL - currentPnl;
           console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
           
+          // Post trade result so loss-reaction.js can trigger
+          window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'loss', pnl: -lossAmount }, '*');
+          
           if (coachEnabled) {
             lastLossTime = Date.now();
             cooldownActive = true;
