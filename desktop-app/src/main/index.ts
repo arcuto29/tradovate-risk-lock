@@ -444,8 +444,13 @@ app.whenReady().then(async () => {
     db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
     // Kill trading platforms
     const { exec } = require('child_process');
-    exec('taskkill /F /IM Tradesea.exe /T', () => {});
-    exec('taskkill /F /IM TopstepX.exe /T', () => {});
+    if (process.platform === 'win32') {
+      exec('taskkill /F /IM Tradesea.exe /T', () => {});
+      exec('taskkill /F /IM TopstepX.exe /T', () => {});
+    } else {
+      exec('pkill -f Tradesea', () => {});
+      exec('pkill -f TopstepX', () => {});
+    }
 
       // Go fullscreen warning (simplified — no kiosk, no keyboard hooks)
       if (mainWindow) {
@@ -481,8 +486,13 @@ app.whenReady().then(async () => {
       let killCount = 0;
       const killLoop = setInterval(() => {
         killCount++;
-        exec('taskkill /F /IM Tradesea.exe /T', () => {});
-        exec('taskkill /F /IM TopstepX.exe /T', () => {});
+        if (process.platform === 'win32') {
+          exec('taskkill /F /IM Tradesea.exe /T', () => {});
+          exec('taskkill /F /IM TopstepX.exe /T', () => {});
+        } else {
+          exec('pkill -f Tradesea', () => {});
+          exec('pkill -f TopstepX', () => {});
+        }
         if (killCount >= 100) clearInterval(killLoop);
       }, 3000);
   };

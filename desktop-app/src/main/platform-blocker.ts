@@ -1,38 +1,45 @@
 import { exec } from 'child_process';
 import fs from 'fs';
-import path from 'path';
+import os from 'os';
 
-const HOSTS_PATH = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
+const IS_MAC = process.platform === 'darwin';
+const IS_WIN = process.platform === 'win32';
+
+const HOSTS_PATH = IS_WIN
+  ? 'C:\\Windows\\System32\\drivers\\etc\\hosts'
+  : '/etc/hosts';
+
 const HOSTS_MARKER_START = '# --- TRADING GUARDIAN BLOCK START ---';
 const HOSTS_MARKER_END = '# --- TRADING GUARDIAN BLOCK END ---';
 
 export interface Platform {
   id: string;
   name: string;
-  processes: string[];   // e.g. ['TopstepX.exe']
-  domains: string[];     // e.g. ['topstepx.com']
+  processes: string[];       // Windows: ['TopstepX.exe'], Mac: ['TopstepX']
+  macProcesses: string[];   // macOS-specific process names
+  domains: string[];
   builtIn: boolean;
-  enabled: boolean;      // whether to block this platform
+  enabled: boolean;
 }
 
-// Built-in platforms that come with the app
+// Built-in platforms
 export const BUILT_IN_PLATFORMS: Platform[] = [
-  { id: 'topstepx', name: 'TopstepX', processes: ['TopstepX.exe'], domains: ['topstepx.com', 'www.topstepx.com', 'app.topstepx.com'], builtIn: true, enabled: true },
-  { id: 'tradovate', name: 'Tradovate', processes: ['Tradovate.exe'], domains: ['trader.tradovate.com', 'www.tradovate.com'], builtIn: true, enabled: true },
-  { id: 'tradesea', name: 'Tradesea', processes: ['Tradesea.exe'], domains: ['app.tradesea.ai', 'tradesea.ai'], builtIn: true, enabled: true },
-  { id: 'tradingview', name: 'TradingView', processes: [], domains: ['www.tradingview.com', 'tradingview.com'], builtIn: true, enabled: true },
-  { id: 'ninjatrader', name: 'NinjaTrader', processes: ['NinjaTrader.exe', 'NinjaTrader64.exe'], domains: ['ninjatrader.com'], builtIn: true, enabled: true },
-  { id: 'metatrader', name: 'MetaTrader', processes: ['terminal.exe', 'terminal64.exe', 'metatrader.exe'], domains: ['metatrader.com'], builtIn: true, enabled: true },
-  { id: 'thinkorswim', name: 'thinkorswim', processes: ['thinkorswim.exe'], domains: ['trade.thinkorswim.com'], builtIn: true, enabled: false },
-  { id: 'quantower', name: 'Quantower', processes: ['Quantower.exe'], domains: ['quantower.com'], builtIn: true, enabled: false },
-  { id: 'sierrachart', name: 'Sierra Chart', processes: ['SierraChart.exe'], domains: ['sierrachart.com'], builtIn: true, enabled: false },
-  { id: 'rithmic', name: 'Rithmic R|Trader', processes: ['RTrader.exe', 'RTraderPro.exe'], domains: ['rithmic.com'], builtIn: true, enabled: false },
-  { id: 'bookmap', name: 'Bookmap', processes: ['Bookmap.exe'], domains: ['bookmap.com'], builtIn: true, enabled: false },
-  { id: 'atas', name: 'ATAS', processes: ['ATAS.exe'], domains: ['atas.net'], builtIn: true, enabled: false },
-  { id: 'motivewave', name: 'MotiveWave', processes: ['MotiveWave.exe'], domains: ['motivewave.com'], builtIn: true, enabled: false },
-  { id: 'ctrader', name: 'cTrader', processes: ['cTrader.exe'], domains: ['ctrader.com'], builtIn: true, enabled: false },
-  { id: 'ibkr', name: 'Interactive Brokers TWS', processes: ['tws.exe', 'javaw.exe'], domains: ['interactivebrokers.com', 'ibkr.com'], builtIn: true, enabled: false },
-  { id: 'projectx', name: 'ProjectX', processes: ['ProjectX.exe'], domains: ['projectx.com'], builtIn: true, enabled: false },
+  { id: 'topstepx', name: 'TopstepX', processes: ['TopstepX.exe'], macProcesses: ['TopstepX'], domains: ['topstepx.com', 'www.topstepx.com', 'app.topstepx.com'], builtIn: true, enabled: true },
+  { id: 'tradovate', name: 'Tradovate', processes: ['Tradovate.exe'], macProcesses: ['Tradovate'], domains: ['trader.tradovate.com', 'www.tradovate.com'], builtIn: true, enabled: true },
+  { id: 'tradesea', name: 'Tradesea', processes: ['Tradesea.exe'], macProcesses: ['Tradesea'], domains: ['app.tradesea.ai', 'tradesea.ai'], builtIn: true, enabled: true },
+  { id: 'tradingview', name: 'TradingView', processes: [], macProcesses: [], domains: ['www.tradingview.com', 'tradingview.com'], builtIn: true, enabled: true },
+  { id: 'ninjatrader', name: 'NinjaTrader', processes: ['NinjaTrader.exe', 'NinjaTrader64.exe'], macProcesses: ['NinjaTrader'], domains: ['ninjatrader.com'], builtIn: true, enabled: true },
+  { id: 'metatrader', name: 'MetaTrader', processes: ['terminal.exe', 'terminal64.exe', 'metatrader.exe'], macProcesses: ['MetaTrader', 'MetaTrader 5'], domains: ['metatrader.com'], builtIn: true, enabled: true },
+  { id: 'thinkorswim', name: 'thinkorswim', processes: ['thinkorswim.exe'], macProcesses: ['thinkorswim'], domains: ['trade.thinkorswim.com'], builtIn: true, enabled: false },
+  { id: 'quantower', name: 'Quantower', processes: ['Quantower.exe'], macProcesses: ['Quantower'], domains: ['quantower.com'], builtIn: true, enabled: false },
+  { id: 'sierrachart', name: 'Sierra Chart', processes: ['SierraChart.exe'], macProcesses: ['Sierra Chart'], domains: ['sierrachart.com'], builtIn: true, enabled: false },
+  { id: 'rithmic', name: 'Rithmic R|Trader', processes: ['RTrader.exe', 'RTraderPro.exe'], macProcesses: ['RTrader'], domains: ['rithmic.com'], builtIn: true, enabled: false },
+  { id: 'bookmap', name: 'Bookmap', processes: ['Bookmap.exe'], macProcesses: ['Bookmap'], domains: ['bookmap.com'], builtIn: true, enabled: false },
+  { id: 'atas', name: 'ATAS', processes: ['ATAS.exe'], macProcesses: ['ATAS'], domains: ['atas.net'], builtIn: true, enabled: false },
+  { id: 'motivewave', name: 'MotiveWave', processes: ['MotiveWave.exe'], macProcesses: ['MotiveWave'], domains: ['motivewave.com'], builtIn: true, enabled: false },
+  { id: 'ctrader', name: 'cTrader', processes: ['cTrader.exe'], macProcesses: ['cTrader'], domains: ['ctrader.com'], builtIn: true, enabled: false },
+  { id: 'ibkr', name: 'Interactive Brokers TWS', processes: ['tws.exe', 'javaw.exe'], macProcesses: ['Trader Workstation', 'tws'], domains: ['interactivebrokers.com', 'ibkr.com'], builtIn: true, enabled: false },
+  { id: 'projectx', name: 'ProjectX', processes: ['ProjectX.exe'], macProcesses: ['ProjectX'], domains: ['projectx.com'], builtIn: true, enabled: false },
 ];
 
 export class PlatformBlocker {
@@ -45,7 +52,6 @@ export class PlatformBlocker {
   }
 
   loadCustomPlatforms(custom: Platform[]): void {
-    // Merge custom with built-in
     this.platforms = [...BUILT_IN_PLATFORMS, ...custom];
   }
 
@@ -66,13 +72,9 @@ export class PlatformBlocker {
     if (this.active) return;
     this.active = true;
 
-    // Block hosts file
     this.blockHosts();
-
-    // Kill processes immediately
     this.killProcesses();
 
-    // Keep killing every 5 seconds
     this.killInterval = setInterval(() => {
       this.killProcesses();
     }, 5000);
@@ -84,7 +86,6 @@ export class PlatformBlocker {
       clearInterval(this.killInterval);
       this.killInterval = null;
     }
-    // Unblock hosts file
     this.unblockHosts();
   }
 
@@ -94,28 +95,54 @@ export class PlatformBlocker {
 
   private killProcesses(): void {
     const enabled = this.getEnabledPlatforms();
-    enabled.forEach(platform => {
-      platform.processes.forEach(proc => {
-        exec(`taskkill /F /IM "${proc}" /T`, () => {});
-      });
-    });
 
-    // Also close browser tabs for blocked domains
-    this.closeBrowserTabs();
+    if (IS_WIN) {
+      // Windows: taskkill
+      enabled.forEach(platform => {
+        platform.processes.forEach(proc => {
+          exec(`taskkill /F /IM "${proc}" /T`, () => {});
+        });
+      });
+      this.closeBrowserTabsWindows();
+    } else if (IS_MAC) {
+      // macOS: pkill / killall
+      enabled.forEach(platform => {
+        platform.macProcesses.forEach(proc => {
+          exec(`pkill -f "${proc}"`, () => {});
+          exec(`killall "${proc}" 2>/dev/null`, () => {});
+        });
+      });
+      this.closeBrowserTabsMac();
+    }
   }
 
-  private closeBrowserTabs(): void {
-    // Close Chrome tabs matching blocked domains
+  private closeBrowserTabsWindows(): void {
     const enabled = this.getEnabledPlatforms();
     const domains = enabled.flatMap(p => p.domains);
     if (domains.length === 0) return;
 
-    // Use PowerShell to close browser tabs by window title
-    // This is a best-effort approach
     domains.forEach(domain => {
       const shortName = domain.replace('www.', '').replace('app.', '').split('.')[0];
-      // Close Chrome windows with matching title
       exec(`powershell -Command "Get-Process chrome -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -like '*${shortName}*'} | ForEach-Object { $_.CloseMainWindow() }"`, () => {});
+    });
+  }
+
+  private closeBrowserTabsMac(): void {
+    const enabled = this.getEnabledPlatforms();
+    const domains = enabled.flatMap(p => p.domains);
+    if (domains.length === 0) return;
+
+    // Close Safari tabs
+    domains.forEach(domain => {
+      exec(`osascript -e 'tell application "Safari" to close (every tab of every window whose URL contains "${domain}")'`, () => {});
+    });
+
+    // Close Chrome tabs
+    domains.forEach(domain => {
+      exec(`osascript -e 'tell application "Google Chrome" to set tabList to every tab of every window
+        repeat with t in tabList
+          if URL of t contains "${domain}" then close t
+        end repeat'`, () => {});
     });
   }
 
@@ -130,18 +157,28 @@ export class PlatformBlocker {
         hostsContent = fs.readFileSync(HOSTS_PATH, 'utf-8');
       }
 
-      // Remove existing block if any
       hostsContent = this.removeExistingBlock(hostsContent);
 
-      // Add new block
       const blockEntries = domains.map(d => `127.0.0.1 ${d}`).join('\n');
       const blockSection = `\n${HOSTS_MARKER_START}\n${blockEntries}\n${HOSTS_MARKER_END}\n`;
 
       hostsContent += blockSection;
-      fs.writeFileSync(HOSTS_PATH, hostsContent, 'utf-8');
+
+      if (IS_MAC) {
+        // macOS: need sudo to write hosts, use temp file + osascript for admin prompt
+        const tempPath = '/tmp/trading-guardian-hosts';
+        fs.writeFileSync(tempPath, hostsContent, 'utf-8');
+        exec(`osascript -e 'do shell script "cp ${tempPath} /etc/hosts" with administrator privileges'`, () => {
+          // Flush DNS cache on macOS
+          exec('dscacheutil -flushcache && sudo killall -HUP mDNSResponder', () => {});
+        });
+      } else {
+        fs.writeFileSync(HOSTS_PATH, hostsContent, 'utf-8');
+        // Flush DNS cache on Windows
+        exec('ipconfig /flushdns', () => {});
+      }
     } catch (e) {
-      // Hosts file requires admin - this might fail
-      console.log('[PlatformBlocker] Could not edit hosts file (need admin):', e);
+      console.log('[PlatformBlocker] Could not edit hosts file:', e);
     }
   }
 
@@ -150,9 +187,19 @@ export class PlatformBlocker {
       if (!fs.existsSync(HOSTS_PATH)) return;
       let hostsContent = fs.readFileSync(HOSTS_PATH, 'utf-8');
       hostsContent = this.removeExistingBlock(hostsContent);
-      fs.writeFileSync(HOSTS_PATH, hostsContent, 'utf-8');
+
+      if (IS_MAC) {
+        const tempPath = '/tmp/trading-guardian-hosts';
+        fs.writeFileSync(tempPath, hostsContent, 'utf-8');
+        exec(`osascript -e 'do shell script "cp ${tempPath} /etc/hosts" with administrator privileges'`, () => {
+          exec('dscacheutil -flushcache && sudo killall -HUP mDNSResponder', () => {});
+        });
+      } else {
+        fs.writeFileSync(HOSTS_PATH, hostsContent, 'utf-8');
+        exec('ipconfig /flushdns', () => {});
+      }
     } catch (e) {
-      console.log('[PlatformBlocker] Could not edit hosts file (need admin):', e);
+      console.log('[PlatformBlocker] Could not edit hosts file:', e);
     }
   }
 
