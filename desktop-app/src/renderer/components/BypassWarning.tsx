@@ -53,7 +53,7 @@ export const BypassWarning: React.FC = () => {
 
       {/* Warning title */}
       <h1 className="text-4xl font-black tracking-tighter text-white mb-8 text-center">
-        Protection Disabled
+        Platform Blocked
       </h1>
 
       {/* Message */}
@@ -64,7 +64,7 @@ export const BypassWarning: React.FC = () => {
       {/* Countdown */}
       {!canDismiss && (
         <div className="mb-8">
-          <p className="text-sm text-white/30 text-center mb-2">You can't dismiss this for</p>
+          <p className="text-sm text-white/30 text-center mb-2">This screen cannot be dismissed for</p>
           <p className="text-3xl font-mono font-bold text-red-400 text-center">
             {minutes}:{seconds.toString().padStart(2, '0')}
           </p>
@@ -73,7 +73,7 @@ export const BypassWarning: React.FC = () => {
 
       {/* Trading platforms killed notice */}
       <p className="text-sm text-red-400/80 text-center mb-12">
-        Your trading platforms have been closed.
+        This platform is blocked during your lockout. Trading platforms have been closed.
       </p>
 
       {/* Dismiss — only works after countdown */}
