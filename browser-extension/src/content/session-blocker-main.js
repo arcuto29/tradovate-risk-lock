@@ -178,6 +178,7 @@
   function isOversized(body) {
     if (!body) return false;
     var size = body.positionSize || body.qty || body.quantity || body.amount || body.size || 0;
+    size = Math.abs(size); // Handle negative values for sell/short orders
     if (!size || size <= 0) return false;
     var symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
     var max = getMaxForSymbol(symbol);
