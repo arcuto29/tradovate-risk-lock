@@ -120,12 +120,16 @@ export const App: React.FC = () => {
 
         {/* Nav */}
         <nav className="flex justify-center gap-1">
-          {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => (
+          {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => {
+            // Block nav if pre-market check not done and not locked
+            const navBlocked = !lockState?.isLocked && !preMarketPassed && page !== 'main';
+            return (
             <button
               key={page}
-              onClick={() => setCurrentPage(page)}
+              onClick={() => !navBlocked && setCurrentPage(page)}
               className={`
                 relative px-4 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200 group
+                ${navBlocked ? 'opacity-30 cursor-not-allowed' : ''}
                 ${currentPage === page
                   ? 'text-white bg-white/[0.04]'
                   : 'text-white/25 hover:text-white/50 hover:bg-white/[0.02]'}
@@ -139,7 +143,8 @@ export const App: React.FC = () => {
                 <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-cyan-400 to-purple-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
               )}
             </button>
-          ))}
+            );
+          })}
         </nav>
       </header>
 
