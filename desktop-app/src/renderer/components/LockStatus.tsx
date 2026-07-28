@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
 
 interface LockStatusProps {
   lockState: any;
@@ -6,6 +7,7 @@ interface LockStatusProps {
 }
 
 export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) => {
+  const { theme } = useTheme();
   const [showUnlockForm, setShowUnlockForm] = useState(false);
   const [unlockReason, setUnlockReason] = useState('');
   const [password, setPassword] = useState('');
@@ -61,14 +63,14 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           <div className="absolute w-0.5 h-0.5 bg-cyan-400/15 rounded-full bottom-[20%] left-[40%] animate-float" style={{animationDelay: '1.5s'}} />
         </div>
 
-        {/* Shield icon - solid with gradient fill when locked */}
+        {/* Shield icon - solid with gradient fill, matches current theme */}
         <div className="mb-4 animate-float flex justify-center">
-          <svg width="52" height="52" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" style={{filter: 'drop-shadow(0 0 15px rgba(56,189,248,0.6)) drop-shadow(0 0 30px rgba(168,85,247,0.3))'}}>
+          <svg width="52" height="52" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="shield-icon">
             <defs>
               <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#22d3ee" />
-                <stop offset="50%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#22d3ee" />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#ec4899' : '#d97706'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#f43f5e' : '#ea580c'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#ec4899' : '#d97706'} />
               </linearGradient>
             </defs>
             <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" fill="url(#shieldGrad)" stroke="none" />
@@ -104,9 +106,9 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
             {/* Gradient definition */}
             <defs>
               <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#22d3ee" />
-                <stop offset="50%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#22d3ee" />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#ec4899' : '#d97706'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#f43f5e' : '#ea580c'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#ec4899' : '#d97706'} />
               </linearGradient>
             </defs>
           </svg>
