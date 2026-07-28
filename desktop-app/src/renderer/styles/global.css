@@ -990,3 +990,22 @@ main > div {
 [data-theme="aurora"] input[type="checkbox"] { accent-color: #10b981; }
 [data-theme="sakura"] input[type="checkbox"] { accent-color: #ec4899; }
 [data-theme="sunset"] input[type="checkbox"] { accent-color: #d97706; }
+
+
+
+/* Fix invisible inputs/textareas on light themes */
+[data-theme="sakura"] input,
+[data-theme="sakura"] select,
+[data-theme="sakura"] textarea {
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid rgba(236,72,153,0.2) !important;
+  color: #3f1f2c !important;
+}
+
+[data-theme="sunset"] input,
+[data-theme="sunset"] select,
+[data-theme="sunset"] textarea {
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid rgba(217,119,6,0.2) !important;
+  color: #422006 !important;
+}
