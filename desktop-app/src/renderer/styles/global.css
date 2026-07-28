@@ -1030,3 +1030,29 @@ main > div {
 [data-theme="sunset"] [class*="border-cyan"] { border-color: rgba(217,119,6,0.2) !important; }
 [data-theme="sunset"] [class*="border-emerald"] { border-color: rgba(217,119,6,0.2) !important; }
 [data-theme="sunset"] [class*="border-purple"] { border-color: rgba(217,119,6,0.2) !important; }
+
+
+
+/* Sakura: force ALL green/emerald backgrounds to pink */
+[data-theme="sakura"] [class*="bg-emerald"] { background-color: rgba(236,72,153,0.15) !important; }
+[data-theme="sakura"] [class*="bg-cyan"] { background-color: rgba(236,72,153,0.15) !important; }
+[data-theme="sakura"] .bg-emerald-400 { background-color: #ec4899 !important; }
+[data-theme="sakura"] .bg-cyan-400 { background-color: #ec4899 !important; }
+[data-theme="sakura"] [class*="shadow-\\[0_0"][class*="emerald"] { box-shadow: 0 0 6px rgba(236,72,153,0.6) !important; }
+[data-theme="sakura"] [class*="shadow-\\[0_0"][class*="cyan"] { box-shadow: 0 0 6px rgba(236,72,153,0.6) !important; }
+
+/* Sakura: gradient overrides */
+[data-theme="sakura"] [class*="from-emerald"] { --tw-gradient-from: #ec4899; }
+[data-theme="sakura"] [class*="to-emerald"] { --tw-gradient-to: #f472b6; }
+[data-theme="sakura"] [class*="from-cyan"] { --tw-gradient-from: #ec4899; }
+[data-theme="sakura"] [class*="to-cyan"] { --tw-gradient-to: #f472b6; }
+[data-theme="sakura"] [class*="via-emerald"] { --tw-gradient-via: rgba(236,72,153,0.3); }
+[data-theme="sakura"] [class*="via-cyan"] { --tw-gradient-via: rgba(236,72,153,0.3); }
+
+/* Sunset: force ALL green/cyan backgrounds to amber */
+[data-theme="sunset"] [class*="bg-emerald"] { background-color: rgba(217,119,6,0.15) !important; }
+[data-theme="sunset"] [class*="bg-cyan"] { background-color: rgba(217,119,6,0.15) !important; }
+[data-theme="sunset"] .bg-emerald-400 { background-color: #d97706 !important; }
+[data-theme="sunset"] .bg-cyan-400 { background-color: #d97706 !important; }
+[data-theme="sunset"] [class*="shadow-\\[0_0"][class*="emerald"] { box-shadow: 0 0 6px rgba(217,119,6,0.6) !important; }
+[data-theme="sunset"] [class*="shadow-\\[0_0"][class*="cyan"] { box-shadow: 0 0 6px rgba(217,119,6,0.6) !important; }
