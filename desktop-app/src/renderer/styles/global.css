@@ -805,6 +805,14 @@
 [data-theme="aurora"] .stars::after { background: linear-gradient(90deg, rgba(16,185,129,0), rgba(16,185,129,0.8), rgba(16,185,129,0)); }
 [data-theme="aurora"] .sakura-petals { display: none; }
 
+/* Aurora stat cards - teal tint instead of purple */
+[data-theme="aurora"] [style*="background: rgba(10,5,30"] {
+  background: rgba(5, 25, 22, 0.7) !important;
+}
+[data-theme="aurora"] [style*="backdrop-filter: blur"] {
+  background: rgba(5, 25, 22, 0.6) !important;
+}
+
 
 
 /* ═══ SUNSET THEME (Light + Amber/Orange) ═══ */
