@@ -158,6 +158,10 @@ function setupIPC(): void {
         const dayRules = JSON.parse(dayRulesStr);
         const todayRules = dayRules[today];
         if (todayRules && todayRules.enabled) {
+          // Block all trading this day
+          if (todayRules.blocked) {
+            return { success: false, error: `Trading is blocked on ${today}. You set this rule yourself. Come back tomorrow.` };
+          }
           // Auto-tighten: halve max contracts and loss limit
           if (todayRules.tighten) {
             if (settings.maxContracts > 0) settings.maxContracts = Math.max(1, Math.floor(settings.maxContracts / 2));
@@ -167,6 +171,7 @@ function setupIPC(): void {
           if (todayRules.maxLots > 0) settings.maxContracts = todayRules.maxLots;
           if (todayRules.lossLimit > 0) settings.dailyLossLimit = todayRules.lossLimit;
           if (todayRules.sessionEnd) settings.resetTime = todayRules.sessionEnd;
+          // maxTrades is handled by the extension via position limits broadcast
         }
       } catch {}
     }
@@ -447,11 +452,11 @@ function setupIPC(): void {
     }
     // Default: Friday protection enabled
     return {
-      Monday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Tuesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Wednesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Thursday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Friday: { enabled: true, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: true },
+      Monday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Tuesday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Wednesday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Thursday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Friday: { enabled: true, blocked: false, maxLots: 0, maxTrades: 2, lossLimit: 0, sessionEnd: '', tighten: true },
     };
   });
 

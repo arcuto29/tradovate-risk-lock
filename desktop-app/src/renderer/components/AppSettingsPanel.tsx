@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
+  const { theme, toggleTheme } = useTheme();
   const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true, trustedPersonEnabled: false });
   const [saved, setSaved] = useState(false);
   const [tpPassword, setTpPassword] = useState('');
@@ -70,6 +72,39 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
           <span className="text-amber-300/80 text-xs font-medium">Some settings locked during active session</span>
         </div>
       )}
+
+      {/* Appearance */}
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-4 animate-reveal">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="text-indigo-400/60 text-sm">🎨</span>
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-indigo-400/60">Appearance</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => theme !== 'dark' && toggleTheme()}
+              className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
+                theme === 'dark'
+                  ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
+                  : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
+              }`}
+            >
+              Dark
+            </button>
+            <button
+              onClick={() => theme !== 'light' && toggleTheme()}
+              className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
+                theme === 'light'
+                  ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
+                  : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
+              }`}
+            >
+              Light
+            </button>
+          </div>
+        </div>
+      </div>
 
 
       {/* Cooldown */}

@@ -5,15 +5,19 @@ const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 interface DayConfig {
   enabled: boolean;
+  blocked: boolean;  // block ALL trading this day
   maxLots: number;
+  maxTrades: number; // max trades for this day (0 = use default)
   lossLimit: number;
   sessionEnd: string;
-  tighten: boolean; // auto-tighten (half lots, lower loss)
+  tighten: boolean;
 }
 
 const DEFAULT_CONFIG: DayConfig = {
   enabled: false,
+  blocked: false,
   maxLots: 0,
+  maxTrades: 0,
   lossLimit: 0,
   sessionEnd: '',
   tighten: false,
@@ -22,7 +26,9 @@ const DEFAULT_CONFIG: DayConfig = {
 // Friday comes pre-configured with tighter defaults
 const FRIDAY_DEFAULT: DayConfig = {
   enabled: true,
+  blocked: false,
   maxLots: 0,
+  maxTrades: 2,
   lossLimit: 0,
   sessionEnd: '',
   tighten: true,
@@ -126,58 +132,91 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
 
           {config.enabled && (
             <div className="space-y-5">
-              {/* Auto-tighten */}
+              {/* Block all trading */}
               <div className="p-4 rounded-xl bg-red-400/[0.03] border border-red-400/10">
                 <label className="flex items-center justify-between cursor-pointer group">
                   <div>
-                    <span className="text-sm text-white/50 group-hover:text-white/70 transition-colors font-medium">Auto-tighten</span>
-                    <p className="text-[0.6rem] text-white/20 mt-0.5">Halves your max lots and reduces loss limit by 50%</p>
+                    <span className="text-sm text-white/50 group-hover:text-white/70 transition-colors font-medium">Block all trading</span>
+                    <p className="text-[0.6rem] text-white/20 mt-0.5">No trades allowed this day. Complete day off.</p>
                   </div>
                   <div
-                    className={`toggle-premium ${config.tighten ? 'active' : ''}`}
-                    onClick={() => !isLocked && updateDay(selectedDay, 'tighten', !config.tighten)}
+                    className={`toggle-premium ${config.blocked ? 'active' : ''}`}
+                    onClick={() => !isLocked && updateDay(selectedDay, 'blocked', !config.blocked)}
                     style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
                   />
                 </label>
               </div>
 
-              {/* Custom overrides */}
-              <div>
-                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max lots override (0 = use default)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={config.maxLots}
-                  onChange={(e) => updateDay(selectedDay, 'maxLots', Number(e.target.value) || 0)}
-                  disabled={isLocked}
-                  className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
-                />
-              </div>
+              {!config.blocked && (
+                <>
+                  {/* Auto-tighten */}
+                  <div className="p-4 rounded-xl bg-orange-400/[0.03] border border-orange-400/10">
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <div>
+                        <span className="text-sm text-white/50 group-hover:text-white/70 transition-colors font-medium">Auto-tighten</span>
+                        <p className="text-[0.6rem] text-white/20 mt-0.5">Halves your max lots and reduces loss limit by 50%</p>
+                      </div>
+                      <div
+                        className={`toggle-premium ${config.tighten ? 'active' : ''}`}
+                        onClick={() => !isLocked && updateDay(selectedDay, 'tighten', !config.tighten)}
+                        style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                      />
+                    </label>
+                  </div>
 
-              <div>
-                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Loss limit override $ (0 = use default)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="50000"
-                  value={config.lossLimit}
-                  onChange={(e) => updateDay(selectedDay, 'lossLimit', Number(e.target.value) || 0)}
-                  disabled={isLocked}
-                  className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
-                />
-              </div>
+                  {/* Max trades */}
+                  <div>
+                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max trades for this day (0 = use default)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={config.maxTrades}
+                      onChange={(e) => updateDay(selectedDay, 'maxTrades', Number(e.target.value) || 0)}
+                      disabled={isLocked}
+                      className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Session ends at (empty = use default)</label>
-                <input
-                  type="time"
-                  value={config.sessionEnd}
-                  onChange={(e) => updateDay(selectedDay, 'sessionEnd', e.target.value)}
-                  disabled={isLocked}
-                  className="w-32 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
-                />
-              </div>
+                  {/* Custom overrides */}
+                  <div>
+                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max lots override (0 = use default)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={config.maxLots}
+                      onChange={(e) => updateDay(selectedDay, 'maxLots', Number(e.target.value) || 0)}
+                      disabled={isLocked}
+                      className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Loss limit override $ (0 = use default)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50000"
+                      value={config.lossLimit}
+                      onChange={(e) => updateDay(selectedDay, 'lossLimit', Number(e.target.value) || 0)}
+                      disabled={isLocked}
+                      className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Session ends at (empty = use default)</label>
+                    <input
+                      type="time"
+                      value={config.sessionEnd}
+                      onChange={(e) => updateDay(selectedDay, 'sessionEnd', e.target.value)}
+                      disabled={isLocked}
+                      className="w-32 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 
