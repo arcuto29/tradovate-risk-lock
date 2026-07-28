@@ -273,8 +273,10 @@
 
       // Position size
       if (body && isOversized(body)) {
-        console.log('[TradingGuardian] BLOCKED: Oversize', body.positionSize, body.symbolId);
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + body.positionSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
+        var blockedSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
+        console.log('[TradingGuardian] BLOCKED: Oversize', blockedSize, body.symbolId);
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + blockedSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
+        window.postMessage({ type: 'TRL_ORDER_PLACED', size: blockedSize }, '*'); // Still notify tilt meter
         return Promise.reject(new Error('Blocked: Position size exceeds limit'));
       }
 

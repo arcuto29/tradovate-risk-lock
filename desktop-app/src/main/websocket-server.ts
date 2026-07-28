@@ -66,6 +66,7 @@ export class WebSocketServer {
         else if (details.includes('COACH')) logType = 'coach_blocked';
         else if (details.includes('symbol')) logType = 'symbol_blocked';
         
+        console.log('[WebSocket] Bypass report received:', logType, details);
         this.db.logActivity(logType, details);
         if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(details); }
         ws.send(JSON.stringify({ type: 'bypass_recorded' }));
