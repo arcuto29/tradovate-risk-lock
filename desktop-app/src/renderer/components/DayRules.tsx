@@ -24,7 +24,7 @@ const FRIDAY_DEFAULT: DayConfig = {
   enabled: true,
   maxLots: 0,
   lossLimit: 0,
-  sessionEnd: '14:00',
+  sessionEnd: '',
   tighten: true,
 };
 

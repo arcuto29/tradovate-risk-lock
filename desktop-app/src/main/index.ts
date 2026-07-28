@@ -451,7 +451,7 @@ function setupIPC(): void {
       Tuesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
       Wednesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
       Thursday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Friday: { enabled: true, maxLots: 0, lossLimit: 0, sessionEnd: '14:00', tighten: true },
+      Friday: { enabled: true, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: true },
     };
   });
 
