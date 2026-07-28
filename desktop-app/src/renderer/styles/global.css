@@ -1056,3 +1056,85 @@ main > div {
 [data-theme="sunset"] .bg-cyan-400 { background-color: #d97706 !important; }
 [data-theme="sunset"] [class*="shadow-\\[0_0"][class*="emerald"] { box-shadow: 0 0 6px rgba(217,119,6,0.6) !important; }
 [data-theme="sunset"] [class*="shadow-\\[0_0"][class*="cyan"] { box-shadow: 0 0 6px rgba(217,119,6,0.6) !important; }
+
+
+
+/* ═══ NUCLEAR THEME COLOR MATCHING ═══ */
+/* Every possible color class forced to match the active theme */
+
+/* AURORA: Everything green/teal */
+[data-theme="aurora"] [class*="text-cyan"] { color: #10b981 !important; }
+[data-theme="aurora"] [class*="text-purple"] { color: #06b6d4 !important; }
+[data-theme="aurora"] [class*="text-indigo"] { color: #06b6d4 !important; }
+[data-theme="aurora"] [class*="bg-cyan"] { background-color: rgba(16,185,129,0.15) !important; }
+[data-theme="aurora"] [class*="bg-purple"] { background-color: rgba(6,182,212,0.1) !important; }
+[data-theme="aurora"] [class*="bg-indigo"] { background-color: rgba(6,182,212,0.1) !important; }
+[data-theme="aurora"] [class*="border-cyan"] { border-color: rgba(16,185,129,0.2) !important; }
+[data-theme="aurora"] [class*="border-purple"] { border-color: rgba(6,182,212,0.2) !important; }
+[data-theme="aurora"] [class*="border-indigo"] { border-color: rgba(6,182,212,0.2) !important; }
+[data-theme="aurora"] [class*="from-cyan"] { --tw-gradient-from: #10b981; }
+[data-theme="aurora"] [class*="to-cyan"] { --tw-gradient-to: #06b6d4; }
+[data-theme="aurora"] [class*="to-purple"] { --tw-gradient-to: #06b6d4; }
+[data-theme="aurora"] [class*="from-purple"] { --tw-gradient-from: #06b6d4; }
+[data-theme="aurora"] [class*="via-cyan"] { --tw-gradient-via: rgba(16,185,129,0.3); }
+[data-theme="aurora"] [class*="via-purple"] { --tw-gradient-via: rgba(6,182,212,0.2); }
+[data-theme="aurora"] .bg-emerald-400, [data-theme="aurora"] .bg-cyan-400 { background-color: #10b981 !important; }
+[data-theme="aurora"] [class*="shadow"][class*="cyan"] { --tw-shadow-color: rgba(16,185,129,0.4); }
+[data-theme="aurora"] [class*="shadow"][class*="purple"] { --tw-shadow-color: rgba(6,182,212,0.3); }
+
+/* SAKURA: Everything pink/rose */
+[data-theme="sakura"] [class*="text-cyan"] { color: #ec4899 !important; }
+[data-theme="sakura"] [class*="text-emerald"] { color: #ec4899 !important; }
+[data-theme="sakura"] [class*="text-purple"] { color: #f43f5e !important; }
+[data-theme="sakura"] [class*="text-indigo"] { color: #ec4899 !important; }
+[data-theme="sakura"] [class*="text-amber"] { color: #ec4899 !important; }
+[data-theme="sakura"] [class*="text-orange"] { color: #f43f5e !important; }
+[data-theme="sakura"] [class*="bg-cyan"] { background-color: rgba(236,72,153,0.12) !important; }
+[data-theme="sakura"] [class*="bg-emerald"] { background-color: rgba(236,72,153,0.12) !important; }
+[data-theme="sakura"] [class*="bg-purple"] { background-color: rgba(244,63,94,0.1) !important; }
+[data-theme="sakura"] [class*="bg-indigo"] { background-color: rgba(236,72,153,0.1) !important; }
+[data-theme="sakura"] [class*="bg-amber"] { background-color: rgba(236,72,153,0.1) !important; }
+[data-theme="sakura"] .bg-emerald-400, [data-theme="sakura"] .bg-cyan-400 { background-color: #ec4899 !important; }
+[data-theme="sakura"] [class*="border-cyan"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-emerald"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-purple"] { border-color: rgba(244,63,94,0.2) !important; }
+[data-theme="sakura"] [class*="border-indigo"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-amber"] { border-color: rgba(236,72,153,0.15) !important; }
+[data-theme="sakura"] [class*="from-cyan"] { --tw-gradient-from: #ec4899; }
+[data-theme="sakura"] [class*="from-emerald"] { --tw-gradient-from: #ec4899; }
+[data-theme="sakura"] [class*="from-purple"] { --tw-gradient-from: #f43f5e; }
+[data-theme="sakura"] [class*="to-cyan"] { --tw-gradient-to: #f472b6; }
+[data-theme="sakura"] [class*="to-emerald"] { --tw-gradient-to: #f472b6; }
+[data-theme="sakura"] [class*="to-purple"] { --tw-gradient-to: #f43f5e; }
+[data-theme="sakura"] [class*="via-cyan"] { --tw-gradient-via: rgba(236,72,153,0.3); }
+[data-theme="sakura"] [class*="via-emerald"] { --tw-gradient-via: rgba(236,72,153,0.2); }
+[data-theme="sakura"] [class*="via-purple"] { --tw-gradient-via: rgba(244,63,94,0.2); }
+
+/* SUNSET: Everything amber/orange */
+[data-theme="sunset"] [class*="text-cyan"] { color: #d97706 !important; }
+[data-theme="sunset"] [class*="text-emerald"] { color: #d97706 !important; }
+[data-theme="sunset"] [class*="text-purple"] { color: #ea580c !important; }
+[data-theme="sunset"] [class*="text-indigo"] { color: #d97706 !important; }
+[data-theme="sunset"] [class*="bg-cyan"] { background-color: rgba(217,119,6,0.12) !important; }
+[data-theme="sunset"] [class*="bg-emerald"] { background-color: rgba(217,119,6,0.12) !important; }
+[data-theme="sunset"] [class*="bg-purple"] { background-color: rgba(234,88,12,0.1) !important; }
+[data-theme="sunset"] [class*="bg-indigo"] { background-color: rgba(217,119,6,0.1) !important; }
+[data-theme="sunset"] .bg-emerald-400, [data-theme="sunset"] .bg-cyan-400 { background-color: #d97706 !important; }
+[data-theme="sunset"] [class*="border-cyan"] { border-color: rgba(217,119,6,0.2) !important; }
+[data-theme="sunset"] [class*="border-emerald"] { border-color: rgba(217,119,6,0.2) !important; }
+[data-theme="sunset"] [class*="border-purple"] { border-color: rgba(234,88,12,0.2) !important; }
+[data-theme="sunset"] [class*="border-indigo"] { border-color: rgba(217,119,6,0.2) !important; }
+[data-theme="sunset"] [class*="from-cyan"] { --tw-gradient-from: #d97706; }
+[data-theme="sunset"] [class*="from-emerald"] { --tw-gradient-from: #d97706; }
+[data-theme="sunset"] [class*="from-purple"] { --tw-gradient-from: #ea580c; }
+[data-theme="sunset"] [class*="to-cyan"] { --tw-gradient-to: #fbbf24; }
+[data-theme="sunset"] [class*="to-emerald"] { --tw-gradient-to: #fbbf24; }
+[data-theme="sunset"] [class*="to-purple"] { --tw-gradient-to: #ea580c; }
+[data-theme="sunset"] [class*="via-cyan"] { --tw-gradient-via: rgba(217,119,6,0.3); }
+[data-theme="sunset"] [class*="via-emerald"] { --tw-gradient-via: rgba(217,119,6,0.2); }
+[data-theme="sunset"] [class*="via-purple"] { --tw-gradient-via: rgba(234,88,12,0.2); }
+
+/* Keep red for errors/warnings on ALL themes (never override red to theme color) */
+[data-theme="sakura"] [class*="text-red-4"]:not([class*="text-red-400/5"]) { color: #e11d48 !important; }
+[data-theme="sunset"] [class*="text-red-4"]:not([class*="text-red-400/5"]) { color: #dc2626 !important; }
+[data-theme="aurora"] [class*="text-red-4"]:not([class*="text-red-400/5"]) { color: #f87171 !important; }
