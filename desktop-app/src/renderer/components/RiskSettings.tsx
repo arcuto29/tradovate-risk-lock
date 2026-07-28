@@ -141,7 +141,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       const lockSettings = {
         dailyLossLimit: Number(lossLimitAmount) || 0,
         dailyProfitTarget: Number(profitTargetAmount) || 0,
-        maxContracts: Number(defaultMax) || 0,
+        maxContracts: Number(defaultMax) || (contractLimits.length > 0 ? Math.min(...contractLimits.map(c => c.maxSize)) : 0),
         resetTime,
         resetTimezone,
         platform: 'web',
