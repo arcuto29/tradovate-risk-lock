@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 interface LockStatusProps {
   lockState: any;
@@ -8,6 +9,7 @@ interface LockStatusProps {
 
 export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) => {
   const { theme } = useTheme();
+  const colors = getThemeColors(theme);
   const [showUnlockForm, setShowUnlockForm] = useState(false);
   const [unlockReason, setUnlockReason] = useState('');
   const [password, setPassword] = useState('');
@@ -54,17 +56,20 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
     <div className="max-w-lg mx-auto">
       {/* Hero with shield + particles */}
       <div className="text-center mb-8 animate-reveal relative">
-        {/* Floating particles */}
+        {/* Floating particles - only on dark themes */}
+        {(theme === 'nebula' || theme === 'aurora') && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute w-1 h-1 bg-cyan-400/30 rounded-full top-[20%] left-[15%] animate-float" style={{animationDelay: '0s'}} />
-          <div className="absolute w-1 h-1 bg-purple-400/20 rounded-full top-[40%] right-[20%] animate-float" style={{animationDelay: '1s'}} />
-          <div className="absolute w-0.5 h-0.5 bg-cyan-400/20 rounded-full top-[60%] left-[25%] animate-float" style={{animationDelay: '2s'}} />
-          <div className="absolute w-1 h-1 bg-white/10 rounded-full top-[30%] right-[30%] animate-float" style={{animationDelay: '3s'}} />
-          <div className="absolute w-0.5 h-0.5 bg-cyan-400/15 rounded-full bottom-[20%] left-[40%] animate-float" style={{animationDelay: '1.5s'}} />
+          <div className="absolute w-1.5 h-1.5 rounded-full top-[20%] left-[15%]" style={{background: colors.primary + '40', animation: 'float 6s ease-in-out infinite', animationDelay: '0s'}} />
+          <div className="absolute w-1 h-1 rounded-full top-[40%] right-[20%]" style={{background: colors.secondary + '30', animation: 'float 6s ease-in-out infinite', animationDelay: '1s'}} />
+          <div className="absolute w-1 h-1 rounded-full top-[60%] left-[25%]" style={{background: colors.primary + '25', animation: 'float 6s ease-in-out infinite', animationDelay: '2s'}} />
+          <div className="absolute w-1.5 h-1.5 rounded-full top-[30%] right-[30%]" style={{background: colors.primary + '20', animation: 'float 6s ease-in-out infinite', animationDelay: '3s'}} />
+          <div className="absolute w-1 h-1 rounded-full bottom-[20%] left-[40%]" style={{background: colors.secondary + '20', animation: 'float 6s ease-in-out infinite', animationDelay: '1.5s'}} />
+          <div className="absolute w-0.5 h-0.5 rounded-full top-[50%] right-[40%]" style={{background: colors.primary + '30', animation: 'float 6s ease-in-out infinite', animationDelay: '2.5s'}} />
         </div>
+        )}
 
         {/* Shield icon - solid with gradient fill, matches current theme */}
-        <div className="mb-4 animate-float flex justify-center">
+        <div className="mb-4 flex justify-center" style={{animation: 'float 6s ease-in-out infinite'}}>
           <svg width="52" height="52" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="shield-icon">
             <defs>
               <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
