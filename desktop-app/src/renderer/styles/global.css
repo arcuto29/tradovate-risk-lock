@@ -547,19 +547,31 @@
 }
 
 [data-theme="sakura"] .nebula-bg {
-  background: linear-gradient(135deg, #fdf8f6 0%, #fce7f3 25%, #fff1f2 50%, #fdf2f8 75%, #fdf8f6 100%);
+  background: linear-gradient(160deg, #fff5f7 0%, #fce4ec 20%, #fdf2f8 40%, #ffe4e6 60%, #fce7f3 80%, #fff5f7 100%);
+  animation: sakuraBgShift 20s ease-in-out infinite alternate;
 }
 
 [data-theme="sakura"] .nebula-bg::before {
   background:
-    radial-gradient(ellipse 40% 30% at 20% 30%, rgba(244, 114, 182, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 75% 60%, rgba(251, 113, 133, 0.06) 0%, transparent 55%),
-    radial-gradient(ellipse 35% 45% at 50% 80%, rgba(232, 121, 249, 0.05) 0%, transparent 50%);
-  animation: nebulaMove 50s ease-in-out infinite alternate;
+    radial-gradient(ellipse 60% 50% at 20% 25%, rgba(251, 113, 133, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 80% 55%, rgba(244, 114, 182, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 50% 85%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 35% at 65% 15%, rgba(251, 113, 133, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 10% 70%, rgba(244, 114, 182, 0.07) 0%, transparent 50%);
+  animation: nebulaMove 35s ease-in-out infinite alternate;
 }
 
 [data-theme="sakura"] .nebula-bg::after {
-  display: none;
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background:
+    radial-gradient(ellipse 30% 25% at 40% 30%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 25% 30% at 75% 65%, rgba(251, 113, 133, 0.05) 0%, transparent 50%);
+  animation: nebulaDrift 45s ease-in-out infinite alternate-reverse;
 }
 
 /* Sakura petals */
@@ -594,17 +606,17 @@
 }
 
 [data-theme="sakura"] .card-premium {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(244, 114, 182, 0.12);
-  box-shadow: 0 2px 12px rgba(244, 114, 182, 0.06), 0 8px 24px rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(244, 114, 182, 0.2);
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.08), 0 8px 32px rgba(251, 113, 133, 0.04), inset 0 0 30px rgba(251, 113, 133, 0.02);
 }
 
 [data-theme="sakura"] .card-premium::before {
-  background: linear-gradient(135deg, rgba(244,114,182,0.2), rgba(232,121,249,0.1), rgba(251,113,133,0.08));
+  background: linear-gradient(135deg, rgba(244,114,182,0.35), rgba(251,113,133,0.2), rgba(236,72,153,0.12));
 }
 
 [data-theme="sakura"] .card-premium::after {
-  background: linear-gradient(90deg, transparent, rgba(244,114,182,0.25), rgba(232,121,249,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(244,114,182,0.4), rgba(251,113,133,0.2), transparent);
 }
 
 /* Text */
@@ -651,9 +663,9 @@
 }
 
 /* Toggle */
-[data-theme="sakura"] .toggle-premium { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
-[data-theme="sakura"] .toggle-premium.active { background: linear-gradient(135deg, rgba(236,72,153,0.25), rgba(168,85,247,0.2)); border-color: rgba(236,72,153,0.4); box-shadow: 0 0 10px rgba(236,72,153,0.15); }
-[data-theme="sakura"] .toggle-premium::after { background: rgba(0,0,0,0.15); }
+[data-theme="sakura"] .toggle-premium { background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.18); }
+[data-theme="sakura"] .toggle-premium::after { background: rgba(0,0,0,0.35); }
+[data-theme="sakura"] .toggle-premium.active { background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(244,63,94,0.2)); border-color: rgba(236,72,153,0.5); box-shadow: 0 0 10px rgba(236,72,153,0.15); }
 [data-theme="sakura"] .toggle-premium.active::after { background: #ec4899; box-shadow: 0 0 6px rgba(236,72,153,0.5); }
 
 /* Sidebar */
@@ -704,62 +716,94 @@
   overflow: hidden;
 }
 
-/* Sakura tree silhouette in bottom-right */
+/* Sakura tree branch silhouette - top right corner */
 [data-theme="sakura"] .sakura-petals::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  right: -20px;
-  width: 300px;
-  height: 400px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'%3E%3Cpath d='M260 400 C260 350 250 320 240 300 C230 280 235 260 250 240 C260 225 255 210 245 200 C235 190 240 175 255 160 C265 148 258 135 248 128 C238 121 242 108 252 95 C258 86 250 75 240 72 C230 69 225 58 230 48 C234 40 225 32 218 30 C210 28 208 20 212 12 C214 7 208 3 202 5 C196 7 190 4 188 0' stroke='rgba(244%2C114%2C182%2C0.15)' fill='none' stroke-width='3'/%3E%3Cpath d='M240 300 C225 285 210 280 195 285 C180 290 175 280 180 270' stroke='rgba(244%2C114%2C182%2C0.12)' fill='none' stroke-width='2'/%3E%3Cpath d='M250 240 C235 230 220 232 210 240 C200 248 195 242 200 232' stroke='rgba(244%2C114%2C182%2C0.1)' fill='none' stroke-width='2'/%3E%3Cpath d='M248 128 C233 120 218 125 210 135' stroke='rgba(244%2C114%2C182%2C0.08)' fill='none' stroke-width='1.5'/%3E%3Ccircle cx='188' cy='5' r='4' fill='rgba(251%2C113%2C133%2C0.2)'/%3E%3Ccircle cx='212' cy='15' r='3' fill='rgba(244%2C114%2C182%2C0.15)'/%3E%3Ccircle cx='230' cy='50' r='5' fill='rgba(251%2C113%2C133%2C0.12)'/%3E%3Ccircle cx='252' cy='98' r='4' fill='rgba(244%2C114%2C182%2C0.1)'/%3E%3Ccircle cx='200' cy='235' r='3' fill='rgba(251%2C113%2C133%2C0.12)'/%3E%3Ccircle cx='180' cy='272' r='4' fill='rgba(244%2C114%2C182%2C0.1)'/%3E%3C/svg%3E");
+  top: -30px;
+  right: -30px;
+  width: 350px;
+  height: 350px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 350'%3E%3C!-- Main branch --%3E%3Cpath d='M350 0 C340 20 330 40 310 55 C290 70 270 75 250 85 C230 95 215 100 200 115 C185 130 175 145 160 155' stroke='rgba(139%2C69%2C79%2C0.15)' fill='none' stroke-width='4' stroke-linecap='round'/%3E%3C!-- Branch 1 --%3E%3Cpath d='M310 55 C300 45 285 40 270 35 C255 30 240 32 225 28' stroke='rgba(139%2C69%2C79%2C0.12)' fill='none' stroke-width='2.5' stroke-linecap='round'/%3E%3C!-- Branch 2 --%3E%3Cpath d='M250 85 C240 70 225 65 210 58 C195 51 180 50 165 45' stroke='rgba(139%2C69%2C79%2C0.1)' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C!-- Branch 3 --%3E%3Cpath d='M200 115 C185 105 170 100 155 92 C140 84 125 82 110 78' stroke='rgba(139%2C69%2C79%2C0.08)' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C!-- Blossoms --%3E%3Ccircle cx='225' cy='28' r='8' fill='rgba(244%2C114%2C182%2C0.2)'/%3E%3Ccircle cx='165' cy='45' r='7' fill='rgba(251%2C113%2C133%2C0.18)'/%3E%3Ccircle cx='110' cy='78' r='6' fill='rgba(244%2C114%2C182%2C0.15)'/%3E%3Ccircle cx='160' cy='155' r='9' fill='rgba(236%2C72%2C153%2C0.12)'/%3E%3Ccircle cx='270' cy='35' r='5' fill='rgba(251%2C113%2C133%2C0.2)'/%3E%3Ccircle cx='210' cy='58' r='6' fill='rgba(244%2C114%2C182%2C0.16)'/%3E%3Ccircle cx='155' cy='92' r='5' fill='rgba(251%2C113%2C133%2C0.14)'/%3E%3C!-- Small blossoms --%3E%3Ccircle cx='240' cy='22' r='3' fill='rgba(251%2C113%2C133%2C0.25)'/%3E%3Ccircle cx='215' cy='38' r='3' fill='rgba(244%2C114%2C182%2C0.22)'/%3E%3Ccircle cx='180' cy='50' r='3' fill='rgba(236%2C72%2C153%2C0.2)'/%3E%3Ccircle cx='195' cy='62' r='3' fill='rgba(251%2C113%2C133%2C0.18)'/%3E%3Ccircle cx='130' cy='80' r='3' fill='rgba(244%2C114%2C182%2C0.16)'/%3E%3Ccircle cx='145' cy='95' r='2.5' fill='rgba(251%2C113%2C133%2C0.2)'/%3E%3Ccircle cx='285' cy='42' r='3' fill='rgba(244%2C114%2C182%2C0.2)'/%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
-  background-position: bottom right;
-  opacity: 0.7;
+  background-position: top right;
+  opacity: 1;
 }
 
-/* Falling petals */
+/* Falling petals - multiple layers for depth */
 [data-theme="sakura"] .sakura-petals::after {
   content: '';
   position: absolute;
   width: 100%;
-  height: 200%;
-  top: -100%;
+  height: 250%;
+  top: -150%;
   background-image:
-    radial-gradient(4px 6px at 8% 15%, rgba(244,114,182,0.5) 50%, transparent 50%),
-    radial-gradient(3px 5px at 22% 35%, rgba(251,113,133,0.4) 50%, transparent 50%),
-    radial-gradient(5px 7px at 38% 10%, rgba(244,114,182,0.35) 50%, transparent 50%),
-    radial-gradient(3px 4px at 52% 50%, rgba(251,113,133,0.3) 50%, transparent 50%),
-    radial-gradient(4px 6px at 68% 25%, rgba(244,114,182,0.4) 50%, transparent 50%),
-    radial-gradient(3px 5px at 82% 40%, rgba(251,113,133,0.35) 50%, transparent 50%),
-    radial-gradient(4px 5px at 12% 65%, rgba(244,114,182,0.3) 50%, transparent 50%),
-    radial-gradient(3px 4px at 58% 75%, rgba(251,113,133,0.35) 50%, transparent 50%),
-    radial-gradient(5px 6px at 88% 60%, rgba(244,114,182,0.25) 50%, transparent 50%),
-    radial-gradient(3px 5px at 32% 85%, rgba(251,113,133,0.4) 50%, transparent 50%),
-    radial-gradient(4px 5px at 45% 95%, rgba(244,114,182,0.3) 50%, transparent 50%),
-    radial-gradient(3px 4px at 75% 80%, rgba(251,113,133,0.35) 50%, transparent 50%);
-  animation: sakuraFall 20s linear infinite;
+    /* Layer 1: Large petals (foreground) */
+    radial-gradient(5px 7px at 8% 12%, rgba(244,114,182,0.6) 50%, transparent 50%),
+    radial-gradient(4px 6px at 25% 28%, rgba(251,113,133,0.5) 50%, transparent 50%),
+    radial-gradient(6px 8px at 42% 8%, rgba(236,72,153,0.4) 50%, transparent 50%),
+    radial-gradient(4px 6px at 58% 35%, rgba(251,113,133,0.5) 50%, transparent 50%),
+    radial-gradient(5px 7px at 75% 18%, rgba(244,114,182,0.45) 50%, transparent 50%),
+    radial-gradient(4px 6px at 92% 30%, rgba(251,113,133,0.4) 50%, transparent 50%),
+    /* Layer 2: Medium petals */
+    radial-gradient(3px 5px at 15% 55%, rgba(244,114,182,0.4) 50%, transparent 50%),
+    radial-gradient(4px 5px at 35% 48%, rgba(251,113,133,0.35) 50%, transparent 50%),
+    radial-gradient(3px 4px at 55% 62%, rgba(244,114,182,0.3) 50%, transparent 50%),
+    radial-gradient(4px 5px at 72% 52%, rgba(251,113,133,0.35) 50%, transparent 50%),
+    radial-gradient(3px 5px at 88% 58%, rgba(236,72,153,0.3) 50%, transparent 50%),
+    /* Layer 3: Small petals (background) */
+    radial-gradient(2px 3px at 5% 75%, rgba(244,114,182,0.25) 50%, transparent 50%),
+    radial-gradient(2px 3px at 20% 82%, rgba(251,113,133,0.2) 50%, transparent 50%),
+    radial-gradient(3px 4px at 40% 70%, rgba(244,114,182,0.25) 50%, transparent 50%),
+    radial-gradient(2px 3px at 62% 88%, rgba(251,113,133,0.2) 50%, transparent 50%),
+    radial-gradient(3px 4px at 80% 76%, rgba(244,114,182,0.22) 50%, transparent 50%),
+    radial-gradient(2px 3px at 95% 85%, rgba(251,113,133,0.2) 50%, transparent 50%);
+  animation: sakuraFall 25s linear infinite;
 }
 
 @keyframes sakuraFall {
-  0% { transform: translateY(0) translateX(0); }
-  25% { transform: translateY(25%) translateX(10px); }
-  50% { transform: translateY(50%) translateX(-8px); }
-  75% { transform: translateY(75%) translateX(12px); }
-  100% { transform: translateY(50%) translateX(0); }
+  0% { transform: translateY(0) translateX(0) rotate(0deg); }
+  20% { transform: translateY(20%) translateX(8px) rotate(1deg); }
+  40% { transform: translateY(40%) translateX(-6px) rotate(-1deg); }
+  60% { transform: translateY(60%) translateX(10px) rotate(1.5deg); }
+  80% { transform: translateY(80%) translateX(-4px) rotate(-0.5deg); }
+  100% { transform: translateY(40%) translateX(0) rotate(0deg); }
+}
+
+@keyframes sakuraBgShift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 50% 50%; }
+  100% { background-position: 100% 100%; }
 }
 
 
 
-/* ═══ AURORA THEME (Dark + Green/Teal) ═══ */
+/* ═══ AURORA THEME (Dark + Green/Teal Northern Lights) ═══ */
 [data-theme="aurora"] .nebula-bg { background: #020c0a; }
-[data-theme="aurora"] .nebula-bg::before { background: radial-gradient(ellipse 60% 30% at 30% 20%, rgba(16,185,129,0.2) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 70% 50%, rgba(6,182,212,0.15) 0%, transparent 55%), radial-gradient(ellipse 40% 50% at 50% 80%, rgba(20,184,166,0.1) 0%, transparent 50%); animation: nebulaMove 35s ease-in-out infinite alternate; }
-[data-theme="aurora"] .nebula-bg::after { background: radial-gradient(ellipse 30% 40% at 60% 30%, rgba(34,197,94,0.12) 0%, transparent 50%), radial-gradient(ellipse 40% 30% at 25% 60%, rgba(6,182,212,0.08) 0%, transparent 50%); animation: nebulaDrift 45s ease-in-out infinite alternate-reverse; }
+[data-theme="aurora"] .nebula-bg::before {
+  background:
+    radial-gradient(ellipse 80% 20% at 30% 15%, rgba(16,185,129,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 25% at 60% 10%, rgba(6,182,212,0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 15% at 80% 20%, rgba(20,184,166,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 20% 30%, rgba(34,197,94,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 10% at 50% 5%, rgba(16,185,129,0.3) 0%, transparent 60%);
+  animation: auroraWave 12s ease-in-out infinite alternate;
+}
+[data-theme="aurora"] .nebula-bg::after {
+  background:
+    radial-gradient(ellipse 70% 15% at 40% 8%, rgba(34,197,94,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 20% at 70% 25%, rgba(6,182,212,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 12% at 25% 12%, rgba(16,185,129,0.22) 0%, transparent 55%);
+  animation: auroraWave 18s ease-in-out infinite alternate-reverse;
+}
 [data-theme="aurora"] .text-glow-cyan { color: #34d399; text-shadow: 0 0 10px rgba(16,185,129,0.6), 0 0 30px rgba(16,185,129,0.3); }
 [data-theme="aurora"] .text-gradient { background: linear-gradient(135deg, #34d399, #06b6d4, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 200% 200%; animation: gradientX 4s ease infinite; }
+[data-theme="aurora"] .card-premium { background: rgba(5, 20, 18, 0.6); border: 1px solid rgba(16,185,129,0.15); box-shadow: 0 4px 20px rgba(16,185,129,0.04); }
 [data-theme="aurora"] .card-premium::before { background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.2), rgba(20,184,166,0.1)); }
-[data-theme="aurora"] .card-premium::after { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), rgba(6,182,212,0.2), transparent); }
+[data-theme="aurora"] .card-premium::after { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.35), rgba(6,182,212,0.2), transparent); }
+[data-theme="aurora"] .glass { background: rgba(5,20,18,0.5); border: 1px solid rgba(16,185,129,0.1); }
+[data-theme="aurora"] .glass-strong { background: rgba(5,20,18,0.7); border: 1px solid rgba(16,185,129,0.12); }
 [data-theme="aurora"] .btn-premium { background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(6,182,212,0.9)); }
 [data-theme="aurora"] .btn-premium:hover { box-shadow: 0 0 25px rgba(16,185,129,0.4), 0 0 50px rgba(6,182,212,0.2); }
 [data-theme="aurora"] .toggle-premium.active { background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.2)); border-color: rgba(16,185,129,0.4); box-shadow: 0 0 12px rgba(16,185,129,0.2); }
@@ -776,16 +820,16 @@
 
 /* ═══ SUNSET THEME (Light + Amber/Orange) ═══ */
 [data-theme="sunset"] body { background: #fffbf5; color: #422006; }
-[data-theme="sunset"] .nebula-bg { background: linear-gradient(160deg, #fffbf5 0%, #fef3c7 25%, #ffedd5 50%, #fff7ed 75%, #fffbf5 100%); }
-[data-theme="sunset"] .nebula-bg::before { background: radial-gradient(ellipse 50% 40% at 70% 30%, rgba(251,146,60,0.08) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 30% 70%, rgba(245,158,11,0.06) 0%, transparent 55%); animation: nebulaMove 50s ease-in-out infinite alternate; }
-[data-theme="sunset"] .nebula-bg::after { display: none; }
+[data-theme="sunset"] .nebula-bg { background: linear-gradient(160deg, #fffbf5 0%, #fef3c7 20%, #ffedd5 40%, #fed7aa 60%, #fff7ed 80%, #fffbf5 100%); animation: sunsetShift 25s ease-in-out infinite alternate; }
+[data-theme="sunset"] .nebula-bg::before { background: radial-gradient(ellipse 60% 50% at 70% 20%, rgba(251,146,60,0.15) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 30% 60%, rgba(245,158,11,0.1) 0%, transparent 55%), radial-gradient(ellipse 70% 30% at 50% 90%, rgba(234,88,12,0.06) 0%, transparent 50%), radial-gradient(ellipse 40% 40% at 85% 50%, rgba(251,146,60,0.08) 0%, transparent 50%); animation: nebulaMove 40s ease-in-out infinite alternate; }
+[data-theme="sunset"] .nebula-bg::after { content: ''; position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background: radial-gradient(ellipse 30% 25% at 80% 15%, rgba(234,88,12,0.06) 0%, transparent 50%), radial-gradient(ellipse 25% 30% at 20% 40%, rgba(245,158,11,0.04) 0%, transparent 50%); animation: nebulaDrift 50s ease-in-out infinite alternate-reverse; }
 [data-theme="sunset"] .stars { display: none !important; }
 [data-theme="sunset"] .sakura-petals { display: none; }
-[data-theme="sunset"] .glass { background: rgba(255,255,255,0.75); border: 1px solid rgba(245,158,11,0.12); }
-[data-theme="sunset"] .glass-strong { background: rgba(255,255,255,0.88); border: 1px solid rgba(245,158,11,0.12); }
-[data-theme="sunset"] .card-premium { background: rgba(255,255,255,0.85); border: 1px solid rgba(245,158,11,0.12); box-shadow: 0 2px 12px rgba(245,158,11,0.05); }
-[data-theme="sunset"] .card-premium::before { background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(251,146,60,0.12), rgba(234,88,12,0.08)); }
-[data-theme="sunset"] .card-premium::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.25), transparent); }
+[data-theme="sunset"] .glass { background: rgba(255,255,255,0.7); border: 1px solid rgba(245,158,11,0.15); box-shadow: 0 2px 8px rgba(245,158,11,0.04); }
+[data-theme="sunset"] .glass-strong { background: rgba(255,255,255,0.85); border: 1px solid rgba(245,158,11,0.15); }
+[data-theme="sunset"] .card-premium { background: rgba(255,255,255,0.8); border: 1px solid rgba(245,158,11,0.18); box-shadow: 0 4px 16px rgba(245,158,11,0.06), 0 8px 32px rgba(234,88,12,0.03), inset 0 0 30px rgba(251,146,60,0.02); }
+[data-theme="sunset"] .card-premium::before { background: linear-gradient(135deg, rgba(245,158,11,0.3), rgba(251,146,60,0.18), rgba(234,88,12,0.1)); }
+[data-theme="sunset"] .card-premium::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.35), rgba(234,88,12,0.15), transparent); }
 [data-theme="sunset"] .text-gradient { background: linear-gradient(135deg, #d97706, #ea580c, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 200% 200%; animation: gradientX 4s ease infinite; }
 [data-theme="sunset"] .text-glow-cyan { color: #b45309; text-shadow: none; }
 [data-theme="sunset"] .text-glow-green { color: #059669; text-shadow: none; }
@@ -816,11 +860,22 @@
 
 
 /* Sunset toggle fix */
-[data-theme="sunset"] .toggle-premium { background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.15); }
-[data-theme="sunset"] .toggle-premium::after { background: rgba(0,0,0,0.25); }
+[data-theme="sunset"] .toggle-premium { background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.18); }
+[data-theme="sunset"] .toggle-premium::after { background: rgba(0,0,0,0.35); }
 [data-theme="sunset"] .toggle-premium.active { background: linear-gradient(135deg, rgba(217,119,6,0.25), rgba(234,88,12,0.2)); border-color: rgba(217,119,6,0.5); box-shadow: 0 0 10px rgba(217,119,6,0.15); }
 [data-theme="sunset"] .toggle-premium.active::after { background: #d97706; box-shadow: 0 0 6px rgba(217,119,6,0.5); }
 
-/* Sakura toggle fix */
-[data-theme="sakura"] .toggle-premium { background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.15); }
-[data-theme="sakura"] .toggle-premium::after { background: rgba(0,0,0,0.25); }
+
+
+@keyframes auroraWave {
+  0% { transform: translate(0, 0) scaleY(1) scaleX(1); opacity: 0.7; }
+  25% { transform: translate(2%, -1%) scaleY(1.2) scaleX(1.05); opacity: 1; }
+  50% { transform: translate(-1%, 1%) scaleY(0.9) scaleX(1.1); opacity: 0.8; }
+  75% { transform: translate(1%, -2%) scaleY(1.3) scaleX(0.95); opacity: 0.9; }
+  100% { transform: translate(-2%, 0%) scaleY(1.1) scaleX(1); opacity: 1; }
+}
+
+@keyframes sunsetShift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
