@@ -109,12 +109,18 @@ export const App: React.FC = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong">
+      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong" style={{borderBottom: `1px solid ${colors.primary}15`}}>
+        {/* Subtle top glow line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, ${colors.secondary}20, transparent)`}} />
+        
         {/* Brand */}
         <div className="flex items-center justify-center mb-5">
           <div className="flex items-center gap-3">
-            <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${colors.gradientBg} ${colors.border} flex items-center justify-center`}>
-              <span className="text-[0.6rem]" style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}80)`}}>&#x1F6E1;</span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}25`}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" fill={colors.primary} opacity="0.8" />
+                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
             <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
               Trading Guardian
@@ -135,9 +141,10 @@ export const App: React.FC = () => {
                 relative px-4 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200 group
                 ${navBlocked ? 'opacity-30 cursor-not-allowed' : ''}
                 ${currentPage === page
-                  ? 'text-white bg-white/[0.04]'
+                  ? 'text-white'
                   : 'text-white/25 hover:text-white/50 hover:bg-white/[0.02]'}
               `}
+              style={currentPage === page ? {background: `${colors.primary}08`} : undefined}
             >
               <span className="flex items-center gap-2">
                 <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? colors.primary : undefined}}>{icon}</span>
@@ -219,7 +226,7 @@ export const App: React.FC = () => {
 
 
       {/* Footer */}
-      <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center">
+      <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}10`}}>
         <span className="text-[0.55rem] text-white/15 italic">
           Behavioral barrier only
         </span>
