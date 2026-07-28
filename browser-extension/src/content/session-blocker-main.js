@@ -438,7 +438,8 @@
               window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
             }
           
-          window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
+            window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');
+          }
         } else if (lastKnownPnL !== null && currentPnl > lastKnownPnL) {
           // P&L went up = win detected
           var winAmount = currentPnl - lastKnownPnL;
