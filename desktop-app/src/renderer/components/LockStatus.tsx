@@ -94,19 +94,29 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
       {/* Circular Countdown Ring */}
       <div className="flex justify-center mb-10 animate-reveal">
         <div className="relative">
+          {/* Outer glow */}
+          <div className="absolute inset-[-12px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}08 0%, transparent 70%)`}} />
+          
+          {/* Rotating outer track */}
+          <svg width="240" height="240" className="absolute top-[-10px] left-[-10px]" style={{animation: 'spin 20s linear infinite'}}>
+            <circle cx="120" cy="120" r="108" fill="none" stroke={`${colors.primary}10`} strokeWidth="1" strokeDasharray="8 12" />
+          </svg>
+
           {/* SVG Ring */}
           <svg width="220" height="220" className="transform -rotate-90">
             {/* Background ring */}
-            <circle cx="110" cy="110" r="90" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
+            <circle cx="110" cy="110" r="90" fill="none" stroke={`${colors.primary}08`} strokeWidth="6" />
+            {/* Secondary faint ring */}
+            <circle cx="110" cy="110" r="82" fill="none" stroke={`${colors.primary}05`} strokeWidth="1" />
             {/* Progress ring */}
             <circle
               cx="110" cy="110" r="90" fill="none"
-              stroke="url(#gradient)" strokeWidth="4"
+              stroke="url(#gradient)" strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={strokeOffset}
               strokeLinecap="round"
               className="transition-all duration-1000"
-              style={{filter: 'drop-shadow(0 0 8px rgba(56,189,248,0.5))'}}
+              style={{filter: `drop-shadow(0 0 10px ${colors.primary}60)`}}
             />
             {/* Gradient definition */}
             <defs>
@@ -119,11 +129,19 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           </svg>
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[0.5rem] font-semibold tracking-[3px] uppercase text-cyan-400/40 mb-2">Unlocks in</p>
-            <p className="font-mono text-3xl font-bold tracking-tight text-glow-cyan animate-pulse-glow">
+            <p className="text-[0.5rem] font-bold tracking-[3px] uppercase mb-2" style={{color: `${colors.primary}70`}}>Unlocks in</p>
+            <p className="font-mono text-3xl font-bold tracking-tight" style={{color: colors.primary, textShadow: `0 0 20px ${colors.primary}40`}}>
               {formatTime(lockState.timeRemaining)}
             </p>
           </div>
+
+          {/* Dot indicator at progress end */}
+          <div className="absolute w-2.5 h-2.5 rounded-full" style={{
+            background: colors.primary,
+            boxShadow: `0 0 8px ${colors.primary}80`,
+            top: `${110 - 90 * Math.cos((1 - progress) * 2 * Math.PI - Math.PI/2)}px`,
+            left: `${110 + 90 * Math.sin((1 - progress) * 2 * Math.PI - Math.PI/2) - 5}px`,
+          }} />
         </div>
       </div>
 
@@ -172,14 +190,16 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"
               className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm focus:border-cyan-400/50 focus:outline-none transition-all placeholder:text-white/20 mb-4" />
             <button onClick={handleTrustedUnlock} disabled={submitting}
-              className="px-6 py-3 bg-cyan-400 text-black text-xs font-bold uppercase tracking-[2px] rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all disabled:opacity-20 btn-glow press-scale">
+              className="px-6 py-3 text-white text-xs font-bold uppercase tracking-[2px] rounded-lg transition-all disabled:opacity-20 press-scale"
+              style={{background: colors.primary, boxShadow: `0 0 15px ${colors.primary}30`}}>
               Unlock
             </button>
           </div>
         ) : !showUnlockForm ? (
           <div className="text-center">
             <button onClick={() => setShowUnlockForm(true)}
-              className="px-6 py-3 border border-white/[0.1] text-white/40 text-xs font-semibold uppercase tracking-[2px] rounded-lg hover:border-cyan-400/30 hover:text-cyan-300/80 hover:shadow-[0_0_15px_rgba(56,189,248,0.1)] transition-all press-scale">
+              className="px-6 py-3 border text-xs font-semibold uppercase tracking-[2px] rounded-lg transition-all press-scale"
+              style={{borderColor: `${colors.primary}25`, color: `${colors.primary}90`}}>
               Request Early Unlock
             </button>
           </div>
@@ -193,7 +213,8 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
               <button onClick={() => setShowUnlockForm(false)}
                 className="px-5 py-2.5 border border-white/[0.08] text-white/30 text-xs font-semibold uppercase tracking-[1.5px] rounded-lg hover:border-white/20 hover:text-white/50 transition-all">Cancel</button>
               <button onClick={handleEarlyUnlock} disabled={submitting}
-                className="px-5 py-2.5 bg-cyan-400 text-black text-xs font-bold uppercase tracking-[1.5px] rounded-lg hover:bg-cyan-300 transition-all disabled:opacity-20 btn-glow press-scale">Submit</button>
+                className="px-5 py-2.5 text-white text-xs font-bold uppercase tracking-[1.5px] rounded-lg transition-all disabled:opacity-20 press-scale"
+                style={{background: colors.primary, boxShadow: `0 0 12px ${colors.primary}30`}}>Submit</button>
             </div>
           </div>
         )}
