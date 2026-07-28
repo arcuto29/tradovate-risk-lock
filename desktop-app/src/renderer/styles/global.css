@@ -238,7 +238,7 @@
 
   /* ═══ ANIMATIONS ═══ */
   .animate-reveal {
-    animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .animate-float {
@@ -878,4 +878,110 @@
 @keyframes sunsetShift {
   0% { background-position: 0% 0%; }
   100% { background-position: 100% 100%; }
+}
+
+
+
+/* ═══ MICRO-ANIMATIONS: MAKE THE APP FEEL ALIVE ═══ */
+
+/* Cards breathe subtly on hover */
+.card-premium {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-premium:hover {
+  transform: translateY(-1px) scale(1.002);
+}
+
+/* Page slide-in when switching tabs */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-reveal {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Countdown numbers pulse gently */
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.92; transform: scale(1.01); }
+}
+
+.font-mono.text-3xl {
+  animation: timerPulse 2s ease-in-out infinite;
+}
+
+/* Idle button subtle glow pulse */
+.btn-premium {
+  animation: btnIdle 3s ease-in-out infinite;
+}
+
+@keyframes btnIdle {
+  0%, 100% { box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15); }
+  50% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25), 0 0 30px rgba(99, 102, 241, 0.08); }
+}
+
+/* Score number count-up feel */
+@keyframes numberReveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.font-mono.text-xl,
+.font-mono.text-2xl,
+.font-mono.text-4xl,
+.font-mono.text-5xl {
+  animation: numberReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Toggle switch smooth bounce */
+.toggle-premium::after {
+  transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Tilt meter bar shimmer */
+@keyframes barShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Nav active indicator slide */
+nav button span:last-child {
+  transition: all 0.2s ease;
+}
+
+/* Smooth page transitions */
+main > div {
+  transition: opacity 0.15s ease;
+}
+
+/* Stat cards stagger animation */
+.grid > div:nth-child(1) { animation-delay: 0s; }
+.grid > div:nth-child(2) { animation-delay: 0.06s; }
+.grid > div:nth-child(3) { animation-delay: 0.12s; }
+.grid > div:nth-child(4) { animation-delay: 0.18s; }
+
+.grid > div {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Shield gentle hover float */
+.shield-icon {
+  transition: transform 0.3s ease;
+}
+
+.shield-icon:hover {
+  transform: scale(1.05);
+}
+
+/* Section labels fade in from left */
+@keyframes labelSlide {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+[class*="tracking-\\[2"] {
+  animation: labelSlide 0.4s ease both;
 }
