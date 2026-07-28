@@ -93,48 +93,57 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
       {/* Circular Countdown Ring */}
       <div className="flex justify-center mb-10 animate-reveal">
-        <div className="relative">
-          {/* Outer glow */}
-          <div className="absolute inset-[-12px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}08 0%, transparent 70%)`}} />
+        <div className="relative" style={{width: '240px', height: '240px'}}>
+          {/* Outer ambient glow */}
+          <div className="absolute inset-[-20px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}12 0%, ${colors.primary}05 40%, transparent 70%)`}} />
           
-          {/* Rotating outer track */}
-          <svg width="240" height="240" className="absolute top-[-10px] left-[-10px]" style={{animation: 'spin 20s linear infinite'}}>
-            <circle cx="120" cy="120" r="108" fill="none" stroke={`${colors.primary}10`} strokeWidth="1" strokeDasharray="8 12" />
+          {/* Rotating outer orbit ring */}
+          <svg width="240" height="240" className="absolute inset-0" style={{animation: 'spin 30s linear infinite'}}>
+            <circle cx="120" cy="120" r="115" fill="none" stroke={`${colors.primary}12`} strokeWidth="0.5" strokeDasharray="4 8" />
           </svg>
 
-          {/* SVG Ring */}
-          <svg width="220" height="220" className="transform -rotate-90">
-            {/* Background ring */}
-            <circle cx="110" cy="110" r="90" fill="none" stroke={`${colors.primary}08`} strokeWidth="6" />
-            {/* Secondary faint ring */}
-            <circle cx="110" cy="110" r="82" fill="none" stroke={`${colors.primary}05`} strokeWidth="1" />
-            {/* Progress ring */}
+          {/* Second orbit - counter rotation */}
+          <svg width="240" height="240" className="absolute inset-0" style={{animation: 'spin 20s linear infinite reverse'}}>
+            <circle cx="120" cy="120" r="108" fill="none" stroke={`${colors.secondary}10`} strokeWidth="0.5" strokeDasharray="2 12" />
+          </svg>
+
+          {/* Main SVG Ring */}
+          <svg width="240" height="240" className="absolute inset-0 transform -rotate-90">
+            {/* Background track */}
+            <circle cx="120" cy="120" r="95" fill="none" stroke={`${colors.primary}10`} strokeWidth="3" />
+            {/* Inner subtle ring */}
+            <circle cx="120" cy="120" r="85" fill="none" stroke={`${colors.primary}06`} strokeWidth="1" />
+            {/* Outer subtle ring */}
+            <circle cx="120" cy="120" r="100" fill="none" stroke={`${colors.primary}06`} strokeWidth="0.5" />
+            {/* Progress arc */}
             <circle
-              cx="110" cy="110" r="90" fill="none"
-              stroke="url(#gradient)" strokeWidth="6"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeOffset}
+              cx="120" cy="120" r="95" fill="none"
+              stroke="url(#timerGradient)" strokeWidth="4"
+              strokeDasharray={2 * Math.PI * 95}
+              strokeDashoffset={2 * Math.PI * 95 * (1 - progress)}
               strokeLinecap="round"
               className="transition-all duration-1000"
-              style={{filter: `drop-shadow(0 0 10px ${colors.primary}60)`}}
+              style={{filter: `drop-shadow(0 0 8px ${colors.primary}60) drop-shadow(0 0 20px ${colors.primary}25)`}}
             />
-            {/* Gradient definition */}
             <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : '#fbbf24'} />
                 <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : '#f59e0b'} />
                 <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : '#fbbf24'} />
               </linearGradient>
             </defs>
           </svg>
+
+          {/* Center glass backdrop */}
+          <div className="absolute inset-[25px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}04 0%, transparent 70%)`}} />
+
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[0.5rem] font-bold tracking-[3px] uppercase mb-2" style={{color: `${colors.primary}70`}}>Unlocks in</p>
-            <p className="font-mono text-3xl font-bold tracking-tight" style={{color: colors.primary, textShadow: `0 0 20px ${colors.primary}40`}}>
+            <p className="text-[0.5rem] font-bold tracking-[4px] uppercase mb-3" style={{color: `${colors.primary}60`}}>Unlocks in</p>
+            <p className="font-mono text-[2.2rem] font-black tracking-tight leading-none" style={{color: colors.primary, textShadow: `0 0 30px ${colors.primary}30, 0 0 60px ${colors.primary}10`}}>
               {formatTime(lockState.timeRemaining)}
             </p>
           </div>
-
         </div>
       </div>
 
