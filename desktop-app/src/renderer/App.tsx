@@ -17,8 +17,9 @@ import { DailyReport } from './components/DailyReport';
 import { StreakRewards } from './components/StreakRewards';
 import { ActivationScreen } from './components/ActivationScreen';
 import { Blocklist } from './components/Blocklist';
+import { DayRules } from './components/DayRules';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'log' | 'settings';
 
 declare global {
   interface Window { electronAPI: any; }
@@ -28,9 +29,9 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'main', label: 'Risk', lockedLabel: 'Status', icon: '◆' },
   { page: 'session', label: 'Session', icon: '◷' },
   { page: 'coach', label: 'Coach', icon: '◈' },
+  { page: 'dayrules', label: 'Days', icon: '◇' },
   { page: 'discipline', label: 'Score', icon: '◉' },
   { page: 'blocklist', label: 'Blocklist', icon: '◻' },
-  { page: 'log', label: 'Log', icon: '◫' },
   { page: 'settings', label: 'Settings', icon: '◎' },
 ];
 
@@ -201,6 +202,7 @@ export const App: React.FC = () => {
             </>
           )}
           {currentPage === 'blocklist' && <Blocklist isLocked={lockState?.isLocked} />}
+          {currentPage === 'dayrules' && <DayRules isLocked={lockState?.isLocked} />}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
         </div>

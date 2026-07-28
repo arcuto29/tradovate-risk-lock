@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addCustomPlatform: (platform: any) => ipcRenderer.invoke('add-custom-platform', platform),
   removeCustomPlatform: (id: string) => ipcRenderer.invoke('remove-custom-platform', id),
   updatePlatformEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke('update-platform-enabled', id, enabled),
+  // Day rules
+  getDayRules: () => ipcRenderer.invoke('get-day-rules'),
+  updateDayRules: (rules: any) => ipcRenderer.invoke('update-day-rules', rules),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),

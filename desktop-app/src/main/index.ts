@@ -149,6 +149,28 @@ function setupIPC(): void {
     return { success: true };
   });
   ipcMain.handle('lock-settings', (_e, settings) => {
+    // Apply day rules if applicable
+    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = DAYS[new Date().getDay()];
+    const dayRulesStr = db.getDayRulesConfig();
+    if (dayRulesStr) {
+      try {
+        const dayRules = JSON.parse(dayRulesStr);
+        const todayRules = dayRules[today];
+        if (todayRules && todayRules.enabled) {
+          // Auto-tighten: halve max contracts and loss limit
+          if (todayRules.tighten) {
+            if (settings.maxContracts > 0) settings.maxContracts = Math.max(1, Math.floor(settings.maxContracts / 2));
+            if (settings.dailyLossLimit > 0) settings.dailyLossLimit = Math.floor(settings.dailyLossLimit / 2);
+          }
+          // Override with day-specific values if set
+          if (todayRules.maxLots > 0) settings.maxContracts = todayRules.maxLots;
+          if (todayRules.lossLimit > 0) settings.dailyLossLimit = todayRules.lossLimit;
+          if (todayRules.sessionEnd) settings.resetTime = todayRules.sessionEnd;
+        }
+      } catch {}
+    }
+
     const result = lockManager.lock(settings);
     if (result.success) {
       updateTrayMenu();
@@ -414,6 +436,28 @@ function setupIPC(): void {
     const config: Record<string, boolean> = {};
     platforms.forEach(p => { config[p.id] = p.enabled; });
     db.saveBlocklistConfig(JSON.stringify(config));
+    return { success: true };
+  });
+
+  // Day Rules
+  ipcMain.handle('get-day-rules', () => {
+    const configStr = db.getDayRulesConfig();
+    if (configStr) {
+      try { return JSON.parse(configStr); } catch {}
+    }
+    // Default: Friday protection enabled
+    return {
+      Monday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Tuesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Wednesday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Thursday: { enabled: false, maxLots: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Friday: { enabled: true, maxLots: 0, lossLimit: 0, sessionEnd: '14:00', tighten: true },
+    };
+  });
+
+  ipcMain.handle('update-day-rules', (_e, rules) => {
+    db.saveDayRulesConfig(JSON.stringify(rules));
+    db.logActivity('day_rules_updated', 'Day rules configuration updated');
     return { success: true };
   });
 }

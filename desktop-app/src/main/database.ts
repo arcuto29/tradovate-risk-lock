@@ -273,4 +273,18 @@ export class DatabaseManager {
     this.db.run('UPDATE app_settings SET blocklist_config = ? WHERE id = 1', [configJson]);
     this.save();
   }
+
+  // Day rules
+  getDayRulesConfig(): string | null {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN day_rules_config TEXT'); } catch {}
+    const results = this.db.exec('SELECT day_rules_config FROM app_settings WHERE id = 1');
+    if (!results.length || !results[0].values.length) return null;
+    return results[0].values[0][0] as string | null;
+  }
+
+  saveDayRulesConfig(configJson: string): void {
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN day_rules_config TEXT'); } catch {}
+    this.db.run('UPDATE app_settings SET day_rules_config = ? WHERE id = 1', [configJson]);
+    this.save();
+  }
 }
