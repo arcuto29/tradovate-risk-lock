@@ -716,21 +716,45 @@
 
 /* Light mode input fields */
 [data-theme="light"] input,
-[data-theme="light"] select {
-  background: rgba(0, 0, 0, 0.02) !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
-  color: #1e293b !important;
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
 }
 
-[data-theme="light"] input::placeholder {
-  color: rgba(30, 41, 59, 0.3) !important;
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: rgba(30, 41, 59, 0.4) !important;
 }
 
 [data-theme="light"] input:focus,
-[data-theme="light"] select:focus {
-  border-color: rgba(8, 145, 178, 0.4) !important;
-  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.06) !important;
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  border-color: rgba(8, 145, 178, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.08) !important;
 }
 
 /* Light mode font-mono numbers */
-[data-theme="light"] .font-mono { color: #1e293b; }
+[data-theme="light"] .font-mono { color: #0f172a; }
+
+/* Light mode - force all text to be readable */
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] label,
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3 {
+  color: #1e293b;
+}
+
+[data-theme="light"] .text-white { color: #0f172a !important; }
+[data-theme="light"] .text-white\/80 { color: rgba(15,23,42,0.9) !important; }
+[data-theme="light"] .text-white\/70 { color: rgba(15,23,42,0.8) !important; }
+[data-theme="light"] .text-white\/60 { color: rgba(15,23,42,0.7) !important; }
+[data-theme="light"] .text-white\/50 { color: rgba(15,23,42,0.6) !important; }
+[data-theme="light"] .text-white\/40 { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] .text-white\/35 { color: rgba(15,23,42,0.5) !important; }
+[data-theme="light"] .text-white\/30 { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] .text-white\/25 { color: rgba(15,23,42,0.4) !important; }
+[data-theme="light"] .text-white\/20 { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] .text-white\/15 { color: rgba(15,23,42,0.3) !important; }
+[data-theme="light"] .text-white\/10 { color: rgba(15,23,42,0.25) !important; }
