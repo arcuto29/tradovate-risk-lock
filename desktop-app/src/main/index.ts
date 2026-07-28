@@ -168,7 +168,6 @@ function setupIPC(): void {
             if (settings.dailyLossLimit > 0) settings.dailyLossLimit = Math.floor(settings.dailyLossLimit / 2);
           }
           // Override with day-specific values if set
-          if (todayRules.maxLots > 0) settings.maxContracts = todayRules.maxLots;
           if (todayRules.lossLimit > 0) settings.dailyLossLimit = todayRules.lossLimit;
           if (todayRules.sessionEnd) settings.resetTime = todayRules.sessionEnd;
           // maxTrades is handled by the extension via position limits broadcast
@@ -452,11 +451,11 @@ function setupIPC(): void {
     }
     // Default: Friday protection enabled
     return {
-      Monday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Tuesday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Wednesday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Thursday: { enabled: false, blocked: false, maxLots: 0, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
-      Friday: { enabled: true, blocked: false, maxLots: 0, maxTrades: 2, lossLimit: 0, sessionEnd: '', tighten: true },
+      Monday: { enabled: false, blocked: false, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Tuesday: { enabled: false, blocked: false, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Wednesday: { enabled: false, blocked: false, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Thursday: { enabled: false, blocked: false, maxTrades: 0, lossLimit: 0, sessionEnd: '', tighten: false },
+      Friday: { enabled: true, blocked: false, maxTrades: 2, lossLimit: 0, sessionEnd: '', tighten: true },
     };
   });
 

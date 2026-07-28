@@ -5,9 +5,8 @@ const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 interface DayConfig {
   enabled: boolean;
-  blocked: boolean;  // block ALL trading this day
-  maxLots: number;
-  maxTrades: number; // max trades for this day (0 = use default)
+  blocked: boolean;
+  maxTrades: number;
   lossLimit: number;
   sessionEnd: string;
   tighten: boolean;
@@ -16,7 +15,6 @@ interface DayConfig {
 const DEFAULT_CONFIG: DayConfig = {
   enabled: false,
   blocked: false,
-  maxLots: 0,
   maxTrades: 0,
   lossLimit: 0,
   sessionEnd: '',
@@ -27,7 +25,6 @@ const DEFAULT_CONFIG: DayConfig = {
 const FRIDAY_DEFAULT: DayConfig = {
   enabled: true,
   blocked: false,
-  maxLots: 0,
   maxTrades: 2,
   lossLimit: 0,
   sessionEnd: '',
@@ -154,7 +151,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                     <label className="flex items-center justify-between cursor-pointer group">
                       <div>
                         <span className="text-sm text-white/50 group-hover:text-white/70 transition-colors font-medium">Auto-tighten</span>
-                        <p className="text-[0.6rem] text-white/20 mt-0.5">Halves your max lots and reduces loss limit by 50%</p>
+                        <p className="text-[0.6rem] text-white/20 mt-0.5">Halves all contract limits and loss limit for this day</p>
                       </div>
                       <div
                         className={`toggle-premium ${config.tighten ? 'active' : ''}`}
@@ -178,20 +175,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                     />
                   </div>
 
-                  {/* Custom overrides */}
-                  <div>
-                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max lots override (0 = use default)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={config.maxLots}
-                      onChange={(e) => updateDay(selectedDay, 'maxLots', Number(e.target.value) || 0)}
-                      disabled={isLocked}
-                      className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
-                    />
-                  </div>
-
+                  {/* Loss limit override */}
                   <div>
                     <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Loss limit override $ (0 = use default)</label>
                     <input
