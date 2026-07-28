@@ -1168,3 +1168,19 @@ main > div {
 [data-theme="sunset"] [class*="border-amber-400\\/20"] {
   border-color: rgba(217, 119, 6, 0.3) !important;
 }
+
+
+
+/* Pre-Market Check buttons visible on Aurora too */
+[data-theme="aurora"] [class*="border-red-400"] {
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+[data-theme="aurora"] [class*="border-emerald-400"] {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+[data-theme="aurora"] [class*="bg-red-400"] {
+  background-color: rgba(248, 113, 113, 0.08) !important;
+}
+[data-theme="aurora"] [class*="bg-emerald-400"] {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
