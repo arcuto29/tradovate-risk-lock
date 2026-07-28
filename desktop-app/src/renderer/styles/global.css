@@ -739,22 +739,58 @@
 [data-theme="light"] .font-mono { color: #0f172a; }
 
 /* Light mode - force all text to be readable */
-[data-theme="light"] p,
-[data-theme="light"] span,
-[data-theme="light"] label,
-[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3 {
+[data-theme="light"] {
+  color-scheme: light;
   color: #1e293b;
 }
 
-[data-theme="light"] .text-white { color: #0f172a !important; }
-[data-theme="light"] .text-white\/80 { color: rgba(15,23,42,0.9) !important; }
-[data-theme="light"] .text-white\/70 { color: rgba(15,23,42,0.8) !important; }
-[data-theme="light"] .text-white\/60 { color: rgba(15,23,42,0.7) !important; }
-[data-theme="light"] .text-white\/50 { color: rgba(15,23,42,0.6) !important; }
-[data-theme="light"] .text-white\/40 { color: rgba(15,23,42,0.55) !important; }
-[data-theme="light"] .text-white\/35 { color: rgba(15,23,42,0.5) !important; }
-[data-theme="light"] .text-white\/30 { color: rgba(15,23,42,0.45) !important; }
-[data-theme="light"] .text-white\/25 { color: rgba(15,23,42,0.4) !important; }
-[data-theme="light"] .text-white\/20 { color: rgba(15,23,42,0.35) !important; }
-[data-theme="light"] .text-white\/15 { color: rgba(15,23,42,0.3) !important; }
-[data-theme="light"] .text-white\/10 { color: rgba(15,23,42,0.25) !important; }
+/* Nuclear: override ALL text color in light mode */
+[data-theme="light"] * {
+  --light-text: #0f172a;
+}
+
+[data-theme="light"] body {
+  color: #1e293b !important;
+}
+
+/* Force every element to use dark text unless it has a specific color */
+[data-theme="light"] div,
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] label,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] button {
+  color: inherit;
+}
+
+/* Override Tailwind's white text - catch everything */
+[data-theme="light"] [class*="text-white"] {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* Brighter for headings and important text */
+[data-theme="light"] h1[class*="text-white"],
+[data-theme="light"] h2[class*="text-white"],
+[data-theme="light"] h3[class*="text-white"],
+[data-theme="light"] [class*="font-bold"][class*="text-white"],
+[data-theme="light"] [class*="font-semibold"][class*="text-white"],
+[data-theme="light"] [class*="font-black"][class*="text-white"] {
+  color: #0f172a !important;
+}
+
+/* Keep colored text as-is (cyan, emerald, red, etc.) */
+[data-theme="light"] [class*="text-cyan"] { color: #0891b2 !important; }
+[data-theme="light"] [class*="text-emerald"] { color: #059669 !important; }
+[data-theme="light"] [class*="text-red"] { color: #dc2626 !important; }
+[data-theme="light"] [class*="text-amber"] { color: #d97706 !important; }
+[data-theme="light"] [class*="text-purple"] { color: #7c3aed !important; }
+[data-theme="light"] [class*="text-indigo"] { color: #4f46e5 !important; }
+[data-theme="light"] [class*="text-orange"] { color: #ea580c !important; }
+
+/* Button text should stay white on colored buttons */
+[data-theme="light"] .btn-premium {
+  color: white !important;
+}
