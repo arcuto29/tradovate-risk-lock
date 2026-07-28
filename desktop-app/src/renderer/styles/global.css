@@ -982,3 +982,11 @@ main > div {
 [class*="tracking-\\[2"] {
   animation: labelSlide 0.4s ease both;
 }
+
+
+
+/* Theme-matched checkboxes */
+[data-theme="nebula"] input[type="checkbox"] { accent-color: #22d3ee; }
+[data-theme="aurora"] input[type="checkbox"] { accent-color: #10b981; }
+[data-theme="sakura"] input[type="checkbox"] { accent-color: #ec4899; }
+[data-theme="sunset"] input[type="checkbox"] { accent-color: #d97706; }
