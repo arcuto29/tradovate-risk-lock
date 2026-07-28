@@ -812,3 +812,11 @@
 [data-theme="sunset"] .animate-float { opacity: 0 !important; }
 [data-theme="sunset"] ::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.15); }
 [data-theme="sunset"] .hover-lift:hover { box-shadow: 0 8px 25px rgba(245,158,11,0.08); }
+
+
+
+/* Sunset toggle fix */
+[data-theme="sunset"] .toggle-premium { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); }
+[data-theme="sunset"] .toggle-premium::after { background: rgba(0,0,0,0.2); }
+[data-theme="sunset"] .toggle-premium.active { background: linear-gradient(135deg, rgba(217,119,6,0.2), rgba(234,88,12,0.15)); border-color: rgba(217,119,6,0.4); box-shadow: 0 0 10px rgba(217,119,6,0.15); }
+[data-theme="sunset"] .toggle-premium.active::after { background: #d97706; box-shadow: 0 0 6px rgba(217,119,6,0.5); }
