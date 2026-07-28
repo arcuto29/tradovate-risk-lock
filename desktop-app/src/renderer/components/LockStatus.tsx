@@ -180,7 +180,7 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           <div className="absolute inset-0 rounded-xl border border-red-400/20 group-hover:border-red-400/40 transition-colors" />
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-400/30 to-transparent" />
           <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase text-red-400/50 mb-2 relative">Bypass Attempts</p>
-          <p className="font-mono text-xl font-bold text-glow-red relative">{lockState.bypassAttempts}</p>
+          <p className={`font-mono text-xl font-bold relative ${lockState.bypassAttempts > 0 ? 'text-glow-red' : 'text-white'}`}>{lockState.bypassAttempts}</p>
         </div>
       </div>
 
