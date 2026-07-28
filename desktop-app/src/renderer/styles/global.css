@@ -794,3 +794,20 @@
 [data-theme="light"] .btn-premium {
   color: white !important;
 }
+
+
+
+/* Light mode - Lock Status stat cards */
+[data-theme="light"] [style*="background: rgba(10,5,30"] {
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06) !important;
+}
+
+[data-theme="light"] [style*="backdrop-filter: blur"] {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Light mode - Kill Switch card */
+[data-theme="light"] [class*="border-red-500"] {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
