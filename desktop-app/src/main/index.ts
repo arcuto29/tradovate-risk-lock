@@ -204,7 +204,9 @@ function setupIPC(): void {
 
     // Process each log entry into daily scores
     log.forEach((entry: any) => {
-      const date = entry.timestamp?.split('T')[0] || today;
+      const ts = entry.timestamp || '';
+      // SQLite datetime uses space separator, ISO uses T - handle both
+      const date = ts.includes('T') ? ts.split('T')[0] : ts.split(' ')[0] || today;
       if (!scores[date]) scores[date] = { score: 100, violations: [] };
 
       switch (entry.type) {
