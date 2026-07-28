@@ -1009,3 +1009,24 @@ main > div {
   border: 1px solid rgba(217,119,6,0.2) !important;
   color: #422006 !important;
 }
+
+
+
+/* Sakura: force ALL accent colors to pink family */
+[data-theme="sakura"] [class*="text-emerald"] { color: #db2777 !important; }
+[data-theme="sakura"] [class*="text-red"] { color: #e11d48 !important; }
+[data-theme="sakura"] [class*="text-amber"] { color: #db2777 !important; }
+[data-theme="sakura"] [class*="text-orange"] { color: #e11d48 !important; }
+[data-theme="sakura"] [class*="border-cyan"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-emerald"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-purple"] { border-color: rgba(236,72,153,0.2) !important; }
+[data-theme="sakura"] [class*="border-red"] { border-color: rgba(225,29,72,0.2) !important; }
+
+/* Sunset: force ALL accent colors to amber/orange family */
+[data-theme="sunset"] [class*="text-cyan"] { color: #b45309 !important; }
+[data-theme="sunset"] [class*="text-emerald"] { color: #b45309 !important; }
+[data-theme="sunset"] [class*="text-purple"] { color: #d97706 !important; }
+[data-theme="sunset"] [class*="text-red"] { color: #dc2626 !important; }
+[data-theme="sunset"] [class*="border-cyan"] { border-color: rgba(217,119,6,0.2) !important; }
+[data-theme="sunset"] [class*="border-emerald"] { border-color: rgba(217,119,6,0.2) !important; }
+[data-theme="sunset"] [class*="border-purple"] { border-color: rgba(217,119,6,0.2) !important; }
