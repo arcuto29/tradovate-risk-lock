@@ -499,65 +499,49 @@ app.whenReady().then(async () => {
     }
   };
 
-  // Anti-bypass: if extension disconnects while locked, warn the user
+  // Anti-bypass: if extension disconnects while locked, ESCALATE to full blocklist
   wsServer.onExtensionDisconnected = () => {
     if (!lockManager.isLocked()) return; // Do nothing if not locked
     
     bypassWarningActive = true;
-    db.logActivity('extension_disconnected', 'Extension disconnected while locked — protection inactive');
-    // Kill trading platforms
-    const { exec } = require('child_process');
-    if (process.platform === 'win32') {
-      exec('taskkill /F /IM Tradesea.exe /T', () => {});
-      exec('taskkill /F /IM TopstepX.exe /T', () => {});
-    } else {
-      exec('pkill -f Tradesea', () => {});
-      exec('pkill -f TopstepX', () => {});
+    db.logActivity('extension_disconnected', 'Extension removed while locked — full blocklist activated');
+    
+    // ESCALATE: Activate the full platform blocker (hosts file + process killing)
+    // This blocks ALL trading websites in EVERY browser + kills desktop apps continuously
+    // They can't bypass this by opening a different browser or reinstalling later
+    if (platformBlocker && !platformBlocker.isActive()) {
+      platformBlocker.activate();
     }
 
-      // Go fullscreen warning (simplified — no kiosk, no keyboard hooks)
-      if (mainWindow) {
-        mainWindow.show();
-        mainWindow.focus();
-        mainWindow.setFullScreen(true);
-        mainWindow.setAlwaysOnTop(true, 'screen-saver');
-        mainWindow.setClosable(false);
-        mainWindow.setMinimizable(false);
-        mainWindow.webContents.send('extension-disconnected');
+    // Go fullscreen warning
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.setFullScreen(true);
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.setClosable(false);
+      mainWindow.setMinimizable(false);
+      mainWindow.webContents.send('extension-disconnected');
 
-        // If they switch away, re-focus every 2 seconds
-        const refocusInterval = setInterval(() => {
-          if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
-          if (mainWindow && !mainWindow.isFocused()) {
-            mainWindow.focus();
-            mainWindow.setAlwaysOnTop(true, 'screen-saver');
-          }
-        }, 2000);
-
-        // Release after 5 minutes
-        setTimeout(() => {
-          bypassWarningActive = false;
-          clearInterval(refocusInterval);
-          mainWindow?.setFullScreen(false);
-          mainWindow?.setAlwaysOnTop(false);
-          mainWindow?.setClosable(true);
-          mainWindow?.setMinimizable(true);
-        }, 300000);
-      }
-
-      // 5-minute kill loop: keep killing trading desktop apps every 3 seconds
-      let killCount = 0;
-      const killLoop = setInterval(() => {
-        killCount++;
-        if (process.platform === 'win32') {
-          exec('taskkill /F /IM Tradesea.exe /T', () => {});
-          exec('taskkill /F /IM TopstepX.exe /T', () => {});
-        } else {
-          exec('pkill -f Tradesea', () => {});
-          exec('pkill -f TopstepX', () => {});
+      // If they switch away, re-focus every 2 seconds
+      const refocusInterval = setInterval(() => {
+        if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
+        if (mainWindow && !mainWindow.isFocused()) {
+          mainWindow.focus();
+          mainWindow.setAlwaysOnTop(true, 'screen-saver');
         }
-        if (killCount >= 100) clearInterval(killLoop);
-      }, 3000);
+      }, 2000);
+
+      // Release fullscreen after 5 minutes (but blocklist stays active until lock ends)
+      setTimeout(() => {
+        bypassWarningActive = false;
+        clearInterval(refocusInterval);
+        mainWindow?.setFullScreen(false);
+        mainWindow?.setAlwaysOnTop(false);
+        mainWindow?.setClosable(true);
+        mainWindow?.setMinimizable(true);
+      }, 300000);
+    }
   };
 
   tamperGuard = new TamperGuard(lockManager, db);
