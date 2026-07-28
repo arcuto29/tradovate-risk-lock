@@ -9,7 +9,21 @@ function connectToDesktopApp() {
   if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) return;
   try {
     ws = new WebSocket(WS_URL);
-    ws.onopen = () => { chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: true }); ws.send(JSON.stringify({ type: 'check_lock' })); ws.send(JSON.stringify({ type: 'check_session' })); };
+    ws.onopen = () => {
+      chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: true });
+      ws.send(JSON.stringify({ type: 'check_lock' }));
+      ws.send(JSON.stringify({ type: 'check_session' }));
+      // Send any queued bypass reports
+      chrome.storage.local.get('pending_bypass_reports', (r) => {
+        const pending = r.pending_bypass_reports || [];
+        if (pending.length > 0) {
+          pending.forEach((report) => {
+            ws.send(JSON.stringify({ type: 'report_bypass', details: report.details }));
+          });
+          chrome.storage.local.set({ pending_bypass_reports: [] });
+        }
+      });
+    };
     ws.onmessage = (event) => { try { handleMessage(JSON.parse(event.data)); } catch {} };
     ws.onclose = () => { ws = null; chrome.storage.local.set({ [STORAGE_KEYS.CONNECTION_STATUS]: false }); clearAllState(); scheduleReconnect(); };
     ws.onerror = () => { ws = null; clearAllState(); scheduleReconnect(); };
@@ -142,7 +156,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ connected: ws?.readyState === WebSocket.OPEN, locked: lockState.locked, sessionBlocked: sessionState.blocked });
       break;
     case 'REPORT_BYPASS_ATTEMPT':
-      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_bypass', details: msg.details }));
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'report_bypass', details: msg.details }));
+      } else {
+        // WebSocket not connected - queue the report for when it reconnects
+        chrome.storage.local.get('pending_bypass_reports', (r) => {
+          const pending = r.pending_bypass_reports || [];
+          pending.push({ details: msg.details, timestamp: Date.now() });
+          chrome.storage.local.set({ pending_bypass_reports: pending });
+        });
+      }
       sendResponse({ success: true });
       break;
     case 'TILT_UPDATE':
