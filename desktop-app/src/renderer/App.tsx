@@ -20,6 +20,7 @@ import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { Logo } from './components/Logo';
+import { MarketTimer } from './components/MarketTimer';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
@@ -229,9 +230,7 @@ export const App: React.FC = () => {
 
       {/* Footer */}
       <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}10`}}>
-        <span className="text-[0.55rem] text-white/15 italic">
-          Behavioral barrier only
-        </span>
+        <MarketTimer />
         <span className="text-[0.5rem] font-bold tracking-[4px] uppercase text-gradient opacity-40">
           Priisma
         </span>
