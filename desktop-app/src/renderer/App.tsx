@@ -18,6 +18,8 @@ import { StreakRewards } from './components/StreakRewards';
 import { ActivationScreen } from './components/ActivationScreen';
 import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
+import { useTheme } from './ThemeContext';
+import { getThemeColors } from './themeColors';
 
 type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'log' | 'settings';
 
@@ -43,6 +45,8 @@ export const App: React.FC = () => {
   const [limitsTightened, setLimitsTightened] = useState(false);
   const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
+  const { theme } = useTheme();
+  const colors = getThemeColors(theme);
 
   const refreshState = useCallback(async () => {
     try {
@@ -84,8 +88,8 @@ export const App: React.FC = () => {
       <div className="h-screen bg-[#030108] flex items-center justify-center">
         <div className="nebula-bg" />
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
-          <span className="text-cyan-300/40 text-xs font-medium tracking-[3px] uppercase">Initializing</span>
+          <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{borderColor: `${colors.primary}30`, borderTopColor: colors.primary}} />
+          <span className="text-xs font-medium tracking-[3px] uppercase" style={{color: `${colors.primary}60`}}>Initializing</span>
         </div>
       </div>
     );
@@ -109,8 +113,8 @@ export const App: React.FC = () => {
         {/* Brand */}
         <div className="flex items-center justify-center mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400/20 to-purple-400/10 border border-cyan-400/20 flex items-center justify-center">
-              <span className="text-[0.6rem] text-cyan-400" style={{filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.6))'}}>&#x1F6E1;</span>
+            <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${colors.gradientBg} ${colors.border} flex items-center justify-center`}>
+              <span className="text-[0.6rem]" style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}80)`}}>&#x1F6E1;</span>
             </div>
             <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
               Trading Guardian
@@ -136,11 +140,11 @@ export const App: React.FC = () => {
               `}
             >
               <span className="flex items-center gap-2">
-                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'text-cyan-400 opacity-100' : 'opacity-30'}`}>{icon}</span>
+                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? colors.primary : undefined}}>{icon}</span>
                 <span>{page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}</span>
               </span>
               {currentPage === page && (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-cyan-400 to-purple-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+                <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, boxShadow: `0 0 8px ${colors.primary}80`}} />
               )}
             </button>
             );

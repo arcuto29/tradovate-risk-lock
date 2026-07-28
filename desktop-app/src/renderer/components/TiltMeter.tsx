@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 export const TiltMeter: React.FC = () => {
+  const { theme } = useTheme();
+  const themeColors = getThemeColors(theme);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState<'green' | 'yellow' | 'red'>('green');
 
@@ -18,7 +22,7 @@ export const TiltMeter: React.FC = () => {
   const getColor = () => {
     if (level === 'red') return { bar: 'from-red-500 to-pink-500', dot: 'bg-red-500', glow: 'shadow-[0_0_20px_rgba(239,68,68,0.5)]', text: 'text-red-400', label: 'TILTING', borderGlow: 'border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' };
     if (level === 'yellow') return { bar: 'from-amber-400 to-orange-400', dot: 'bg-amber-400', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.4)]', text: 'text-amber-400', label: 'CAUTION', borderGlow: 'border-amber-400/20 shadow-[0_0_15px_rgba(251,191,36,0.05)]' };
-    return { bar: 'from-emerald-400 to-cyan-400', dot: 'bg-emerald-400', glow: 'shadow-[0_0_12px_rgba(52,211,153,0.4)]', text: 'text-emerald-400', label: 'CALM', borderGlow: 'border-emerald-400/20 shadow-[0_0_15px_rgba(52,211,153,0.05)]' };
+    return { bar: `from-[${themeColors.primary}] to-[${themeColors.secondary}]`, dot: themeColors.dot, glow: themeColors.dotGlow, text: themeColors.text, label: 'CALM', borderGlow: `${themeColors.border} ${themeColors.glow}` };
   };
 
   const colors = getColor();
