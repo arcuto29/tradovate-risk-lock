@@ -477,6 +477,21 @@ function setupIPC(): void {
     db.logActivity('day_rules_updated', 'Day rules configuration updated');
     return { success: true };
   });
+
+  // News Blocker
+  ipcMain.handle('get-news-blocker-config', () => {
+    const configStr = db.getNewsBlockerConfig();
+    if (configStr) {
+      try { return JSON.parse(configStr); } catch {}
+    }
+    return { enabled: false, blockMinutesBefore: 30, blockMinutesAfter: 15, customEvents: [] };
+  });
+
+  ipcMain.handle('update-news-blocker-config', (_e, config) => {
+    db.saveNewsBlockerConfig(JSON.stringify(config));
+    db.logActivity('news_blocker_updated', 'News blocker configuration updated');
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {
