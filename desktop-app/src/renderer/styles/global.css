@@ -91,19 +91,8 @@
     animation: starsTwinkle 6s ease-in-out infinite alternate-reverse;
   }
 
-  /* Shooting star */
   .stars::after {
-    content: '';
-    position: absolute;
-    top: 15%;
-    left: 0%;
-    width: 100px;
-    height: 1.5px;
-    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.9), rgba(255,255,255,0));
-    border-radius: 50%;
-    animation: shootingStar 12s ease-in-out infinite;
-    opacity: 0;
-    transform-origin: left center;
+    display: none;
   }
 
 
