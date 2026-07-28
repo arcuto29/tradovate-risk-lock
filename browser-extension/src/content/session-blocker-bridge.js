@@ -15,12 +15,18 @@
     if (r) { sessionBlocked = r.blocked; sessionHours = r.sessionHours; sendStateToPage(); }
   });
 
+  // Get lock state
+  chrome.runtime.sendMessage({ type: 'GET_LOCK_STATE' }, (r) => {
+    if (r) { window.postMessage({ type: 'TRL_LOCK_STATE', locked: r.locked }, '*'); }
+  });
+
   chrome.runtime.sendMessage({ type: 'GET_COACH_CONFIG' }, (r) => {
     if (r) sendCoachToPage(r);
   });
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
+    if (msg.type === 'LOCK_STATE_UPDATE') { window.postMessage({ type: 'TRL_LOCK_STATE', locked: msg.locked }, '*'); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }

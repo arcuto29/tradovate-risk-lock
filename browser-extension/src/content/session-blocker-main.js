@@ -13,6 +13,7 @@
 
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var fullDayBlocked = false; // Pre-market check blocked for the day
+  var lockActive = false; // Only enforce limits when locked
   var positionLimits = { limits: [], defaultMax: 2 };
   var blockedSymbols = [];
   var coachEnabled = false;
@@ -47,6 +48,16 @@
     if (event.data && event.data.type === 'TRL_SESSION_STATE') {
       sessionBlocked = event.data.blocked;
       if (event.data.positionLimits) positionLimits = event.data.positionLimits;
+    }
+    if (event.data && event.data.type === 'TRL_LOCK_STATE') {
+      lockActive = event.data.locked === true;
+      if (!lockActive) {
+        // Clear all enforcement when unlocked
+        cooldownActive = false;
+        dailyLossBlocked = false;
+        profitLocked = false;
+        fullDayBlocked = false;
+      }
     }
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
       fullDayBlocked = true;
@@ -257,7 +268,7 @@
       }
 
       // Blocked symbol check
-      if (body && isBlockedSymbol(body)) {
+      if (lockActive && body && isBlockedSymbol(body)) {
         var blockedSym = (body.symbolId || body.symbol || body.instrument || '');
         console.log('[TradingGuardian] BLOCKED: Symbol blocked -', blockedSym);
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol ' + blockedSym + ' is blocked' }, '*');
@@ -265,14 +276,14 @@
       }
 
       // Session block (still blocks everything including modifications when outside hours)
-      if (sessionBlocked) {
+      if (lockActive && sessionBlocked) {
         console.log('[TradingGuardian] BLOCKED: Outside trading hours');
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return Promise.reject(new Error('Blocked: Outside trading hours'));
       }
 
       // Position size
-      if (body && isOversized(body)) {
+      if (lockActive && body && isOversized(body)) {
         var blockedSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
         console.log('[TradingGuardian] BLOCKED: Oversize', blockedSize, body.symbolId);
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + blockedSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
@@ -281,7 +292,7 @@
       }
 
       // Tilt meter check
-      if (window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
+      if (lockActive && window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
         console.log('[TradingGuardian] TILT BLOCKED: Score', window.__tiltMeter.getScore());
         window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'TILTING', message: 'Your tilt meter is red. You are making emotional decisions. Step away and reset.' }, '*');
         return Promise.reject(new Error('Blocked: Tilt meter red'));
