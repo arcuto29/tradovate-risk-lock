@@ -29,6 +29,12 @@
   var totalDailyPnL = 0;
   var lastLossDetectedTime = 0;
 
+  // ─── Pyramiding / Stacking Protection ──────────────────────────────────────
+  var pyramidingEnabled = false;   // false = block all stacking (default)
+  var pyramidMaxContracts = 0;     // max total contracts allowed (0 = use position limit)
+  var pyramidMaxAddOns = 0;        // max times they can add to a position (0 = no adds)
+  var currentOpenPositions = {};   // { symbol: { size: N, addOns: N } }
+
   // ─── NEW: Advanced Protection Features ─────────────────────────────────────
   var consecutiveLosses = 0;
   var originalMaxSize = 0; // Stores original max at session start
@@ -57,6 +63,7 @@
         dailyLossBlocked = false;
         profitLocked = false;
         fullDayBlocked = false;
+        currentOpenPositions = {}; // Reset position tracking
       }
     }
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
@@ -81,6 +88,10 @@
       if (event.data.lossLimitAmount && event.data.lossLimitAmount > 0) {
         maxDailyLoss = event.data.lossLimitAmount;
       }
+      // Pyramiding config
+      if (event.data.pyramidingEnabled !== undefined) pyramidingEnabled = event.data.pyramidingEnabled;
+      if (event.data.pyramidMaxContracts !== undefined) pyramidMaxContracts = event.data.pyramidMaxContracts;
+      if (event.data.pyramidMaxAddOns !== undefined) pyramidMaxAddOns = event.data.pyramidMaxAddOns;
     }
     if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
       blockedSymbols = event.data.symbols || [];
@@ -282,13 +293,56 @@
         return Promise.reject(new Error('Blocked: Outside trading hours'));
       }
 
-      // Position size
+      // Position size (single order check)
       if (lockActive && body && isOversized(body)) {
         var blockedSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
         console.log('[TradingGuardian] BLOCKED: Oversize', blockedSize, body.symbolId);
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + blockedSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
-        window.postMessage({ type: 'TRL_ORDER_PLACED', size: blockedSize }, '*'); // Still notify tilt meter
+        window.postMessage({ type: 'TRL_ORDER_PLACED', size: blockedSize }, '*');
         return Promise.reject(new Error('Blocked: Position size exceeds limit'));
+      }
+
+      // Pyramiding / Stacking check
+      if (lockActive && body) {
+        var orderSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
+        var orderSymbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+        
+        if (orderSize > 0 && orderSymbol) {
+          var pos = currentOpenPositions[orderSymbol];
+          
+          if (pos && pos.size > 0) {
+            // Already have a position in this symbol - this is stacking
+            if (!pyramidingEnabled) {
+              // Stacking blocked by default
+              console.log('[TradingGuardian] BLOCKED: Stacking disabled. Already in', orderSymbol);
+              window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Already have a position in ' + orderSymbol + '. Stacking is disabled.' }, '*');
+              return Promise.reject(new Error('Blocked: Stacking disabled'));
+            } else {
+              // Pyramiding enabled - check limits
+              var newTotal = pos.size + orderSize;
+              var maxTotal = pyramidMaxContracts > 0 ? pyramidMaxContracts : (positionLimits.defaultMax || 2);
+              
+              if (newTotal > maxTotal) {
+                console.log('[TradingGuardian] BLOCKED: Pyramid max contracts. Current:', pos.size, 'Adding:', orderSize, 'Max:', maxTotal);
+                window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Adding ' + orderSize + ' would exceed pyramid max of ' + maxTotal + ' contracts for ' + orderSymbol }, '*');
+                return Promise.reject(new Error('Blocked: Pyramid max contracts'));
+              }
+              
+              if (pyramidMaxAddOns > 0 && pos.addOns >= pyramidMaxAddOns) {
+                console.log('[TradingGuardian] BLOCKED: Max add-ons reached for', orderSymbol);
+                window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Max add-ons reached for ' + orderSymbol + '. Already added ' + pos.addOns + ' times.' }, '*');
+                return Promise.reject(new Error('Blocked: Max add-ons'));
+              }
+              
+              // Allowed - update tracking
+              pos.size = newTotal;
+              pos.addOns++;
+            }
+          } else {
+            // First entry - track it
+            currentOpenPositions[orderSymbol] = { size: orderSize, addOns: 0 };
+          }
+        }
       }
 
       // Tilt meter check

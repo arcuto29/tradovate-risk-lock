@@ -121,15 +121,17 @@ export class WebSocketServer {
 
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
-    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };
+    let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0, pyramidingEnabled: false, pyramidMaxContracts: 0, pyramidMaxAddOns: 0 };
     try {
       if (settings.position_limits) {
         const parsed = JSON.parse(settings.position_limits);
-        // Map contractLimits to limits for extension compatibility
         limitsData.limits = parsed.contractLimits || parsed.limits || [];
         limitsData.defaultMax = parsed.defaultMax || 2;
         limitsData.blockedSymbols = parsed.blockedSymbols || [];
         limitsData.lossLimitAmount = parsed.lossLimitAmount || 0;
+        limitsData.pyramidingEnabled = parsed.pyramidingEnabled || false;
+        limitsData.pyramidMaxContracts = parsed.pyramidMaxContracts || 0;
+        limitsData.pyramidMaxAddOns = parsed.pyramidMaxAddOns || 0;
       }
     } catch {}
     const msg = JSON.stringify({ type: 'position_limits', ...limitsData });

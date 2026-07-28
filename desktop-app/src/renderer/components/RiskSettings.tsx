@@ -77,6 +77,9 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [maxContractsEnabled, setMaxContractsEnabled] = useState(false);
   const [contractLimits, setContractLimits] = useState<ContractLimit[]>([]);
   const [defaultMax, setDefaultMax] = useState('');
+  const [pyramidingEnabled, setPyramidingEnabled] = useState(false);
+  const [pyramidMaxContracts, setPyramidMaxContracts] = useState('');
+  const [pyramidMaxAddOns, setPyramidMaxAddOns] = useState('');
   const [lockoutEnabled, setLockoutEnabled] = useState(false);
   const [resetTime, setResetTime] = useState('17:00');
   const [resetTimezone, setResetTimezone] = useState('America/New_York');
@@ -98,6 +101,9 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (limits.maxContractsEnabled !== undefined) setMaxContractsEnabled(limits.maxContractsEnabled);
       if (limits.contractLimits) setContractLimits(limits.contractLimits);
       if (limits.defaultMax !== undefined) setDefaultMax(String(limits.defaultMax));
+      if (limits.pyramidingEnabled !== undefined) setPyramidingEnabled(limits.pyramidingEnabled);
+      if (limits.pyramidMaxContracts !== undefined) setPyramidMaxContracts(String(limits.pyramidMaxContracts));
+      if (limits.pyramidMaxAddOns !== undefined) setPyramidMaxAddOns(String(limits.pyramidMaxAddOns));
       if (limits.lockoutEnabled !== undefined) setLockoutEnabled(limits.lockoutEnabled);
       if (limits.resetTime) setResetTime(limits.resetTime);
       if (limits.resetTimezone) setResetTimezone(limits.resetTimezone);
@@ -128,6 +134,9 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     maxContractsEnabled,
     contractLimits,
     defaultMax: Number(defaultMax) || 0,
+    pyramidingEnabled,
+    pyramidMaxContracts: Number(pyramidMaxContracts) || 0,
+    pyramidMaxAddOns: Number(pyramidMaxAddOns) || 0,
     lockoutEnabled,
     resetTime,
     resetTimezone,
@@ -356,6 +365,45 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                 </div>
               </div>
             </div>
+
+            {/* Pyramiding */}
+            <div className="relative rounded-xl p-6 overflow-hidden card-premium mt-5">
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-400/60 text-sm">📐</span>
+                    <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Pyramiding</p>
+                  </div>
+                  <div
+                    className={`toggle-premium ${pyramidingEnabled ? 'active' : ''}`}
+                    onClick={() => !isLocked && setPyramidingEnabled(!pyramidingEnabled)}
+                    style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                  />
+                </div>
+                <p className="text-xs text-white/20 mb-4">
+                  {pyramidingEnabled
+                    ? 'Scaling into positions allowed within limits below.'
+                    : 'Stacking blocked. One entry per symbol. Cannot add to positions.'}
+                </p>
+
+                {pyramidingEnabled && (
+                  <div className="space-y-4 pt-3 border-t border-white/[0.04]">
+                    <div>
+                      <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max total contracts per position</label>
+                      <input type="number" min="1" max="50" className={inputClass + ' !w-24'} value={pyramidMaxContracts} onChange={(e) => setPyramidMaxContracts(e.target.value)} placeholder="e.g. 3" disabled={isLocked} />
+                      <p className="text-[0.6rem] text-white/15 mt-1">Total size you can build up to</p>
+                    </div>
+                    <div>
+                      <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/25 mb-2">Max add-ons</label>
+                      <input type="number" min="1" max="10" className={inputClass + ' !w-24'} value={pyramidMaxAddOns} onChange={(e) => setPyramidMaxAddOns(e.target.value)} placeholder="e.g. 2" disabled={isLocked} />
+                      <p className="text-[0.6rem] text-white/15 mt-1">How many times you can add to a position</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>
           </div>
         );

@@ -51,7 +51,7 @@
 
   function sendLimitsToPage(data) {
     if (data.limits) currentLimits = { limits: data.limits, defaultMax: data.defaultMax || 2 };
-    window.postMessage({ type: 'TRL_POSITION_LIMITS', limits: data.limits, defaultMax: data.defaultMax || 2, lossLimitAmount: data.lossLimitAmount || 0 }, '*');
+    window.postMessage({ type: 'TRL_POSITION_LIMITS', limits: data.limits, defaultMax: data.defaultMax || 2, lossLimitAmount: data.lossLimitAmount || 0, pyramidingEnabled: data.pyramidingEnabled || false, pyramidMaxContracts: data.pyramidMaxContracts || 0, pyramidMaxAddOns: data.pyramidMaxAddOns || 0 }, '*');
     // Also forward blocked symbols if present
     if (data.blockedSymbols) {
       window.postMessage({ type: 'TRL_BLOCKED_SYMBOLS', symbols: data.blockedSymbols }, '*');
