@@ -101,6 +101,7 @@ export const App: React.FC = () => {
       <BypassWarning />
       <div className="nebula-bg" />
       <div className="stars" />
+      <div className="sakura-petals" />
 
 
       {/* Header */}

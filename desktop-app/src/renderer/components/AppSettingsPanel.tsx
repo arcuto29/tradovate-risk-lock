@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../ThemeContext';
+import { useTheme, Theme } from '../ThemeContext';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true, trustedPersonEnabled: false });
   const [saved, setSaved] = useState(false);
   const [tpPassword, setTpPassword] = useState('');
@@ -83,24 +83,24 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => theme !== 'dark' && toggleTheme()}
+              onClick={() => setTheme('nebula')}
               className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
-                theme === 'dark'
+                theme === 'nebula'
                   ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
                   : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
               }`}
             >
-              Dark
+              Nebula
             </button>
             <button
-              onClick={() => theme !== 'light' && toggleTheme()}
+              onClick={() => setTheme('sakura')}
               className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
-                theme === 'light'
-                  ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
+                theme === 'sakura'
+                  ? 'bg-gradient-to-b from-pink-400/10 to-rose-400/5 border border-pink-400/20 text-pink-300'
                   : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
               }`}
             >
-              Light
+              Sakura
             </button>
           </div>
         </div>
