@@ -799,15 +799,76 @@
 
 /* Light mode - Lock Status stat cards */
 [data-theme="light"] [style*="background: rgba(10,5,30"] {
-  background: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
 }
 
 [data-theme="light"] [style*="backdrop-filter: blur"] {
-  background: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* Light mode - Kill Switch card */
 [data-theme="light"] [class*="border-red-500"] {
   background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Light mode - SVG ring glow toned down */
+[data-theme="light"] [style*="drop-shadow"] {
+  filter: none !important;
+}
+
+/* Light mode - countdown timer */
+[data-theme="light"] .text-glow-cyan {
+  color: #0891b2 !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .animate-pulse-glow {
+  animation: none;
+}
+
+/* Light mode - stat grid colored labels brighter */
+[data-theme="light"] .text-cyan-400\/50 { color: #0891b2 !important; }
+[data-theme="light"] .text-emerald-400\/50 { color: #059669 !important; }
+[data-theme="light"] .text-purple-400\/50 { color: #7c3aed !important; }
+[data-theme="light"] .text-red-400\/50 { color: #dc2626 !important; }
+
+/* Light mode - gradient accent lines on cards */
+[data-theme="light"] [class*="via-cyan-400"] { --tw-gradient-via: rgba(8,145,178,0.2); }
+[data-theme="light"] [class*="via-emerald-400"] { --tw-gradient-via: rgba(5,150,105,0.2); }
+[data-theme="light"] [class*="via-purple-400"] { --tw-gradient-via: rgba(124,58,237,0.2); }
+[data-theme="light"] [class*="via-red-400"] { --tw-gradient-via: rgba(220,38,38,0.2); }
+
+/* Light mode - floating particles hidden */
+[data-theme="light"] .animate-float {
+  opacity: 0 !important;
+}
+
+/* Light mode - shield icon */
+[data-theme="light"] [style*="drop-shadow(0 0 12px"] {
+  filter: drop-shadow(0 0 6px rgba(99,102,241,0.3)) !important;
+}
+
+/* Light mode - borders between sections */
+[data-theme="light"] .border-white\/\[0\.04\] {
+  border-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+/* Light mode - early unlock button */
+[data-theme="light"] .border-white\/\[0\.1\] {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #4f46e5 !important;
+}
+
+/* Light mode - numbers/values in stat cards */
+[data-theme="light"] .font-mono.text-xl,
+[data-theme="light"] .font-mono.text-2xl,
+[data-theme="light"] .font-mono.text-3xl {
+  color: #0f172a !important;
+}
+
+/* Light mode - .glow-red for bypass attempts */
+[data-theme="light"] .text-glow-red {
+  color: #dc2626 !important;
+  text-shadow: none !important;
 }
