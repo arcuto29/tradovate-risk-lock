@@ -18,6 +18,8 @@ import { StreakRewards } from './components/StreakRewards';
 import { ActivationScreen } from './components/ActivationScreen';
 import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { Logo } from './components/Logo';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
@@ -45,6 +47,7 @@ export const App: React.FC = () => {
   const [limitsTightened, setLimitsTightened] = useState(false);
   const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
+  const [welcomeDone, setWelcomeDone] = useState(() => localStorage.getItem('tg-welcome-done') === 'true');
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
 
@@ -99,6 +102,10 @@ export const App: React.FC = () => {
     return <ActivationScreen onActivated={() => { setActivated(true); refreshState(); }} />;
   }
 
+  if (!welcomeDone) {
+    return <WelcomeScreen onComplete={() => { setWelcomeDone(true); localStorage.setItem('tg-welcome-done', 'true'); }} />;
+  }
+
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
       <UpdateBanner />
@@ -116,12 +123,7 @@ export const App: React.FC = () => {
         {/* Brand */}
         <div className="flex items-center justify-center mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}25`}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" fill={colors.primary} opacity="0.8" />
-                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <Logo size={24} />
             <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
               Trading Guardian
             </p>
