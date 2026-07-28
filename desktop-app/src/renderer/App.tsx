@@ -198,7 +198,6 @@ export const App: React.FC = () => {
             <>
               <DisciplineScore />
               <StreakRewards streak={0} monthlyAvg={0} />
-              <div className="mt-8"><DailyReport /></div>
             </>
           )}
           {currentPage === 'blocklist' && <Blocklist isLocked={lockState?.isLocked} />}

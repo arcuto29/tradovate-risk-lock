@@ -207,8 +207,8 @@ export class LockManager {
     return { success: true };
   }
 
-  recordBypassAttempt(details: string): void {
+  recordBypassAttempt(details: string, logIt: boolean = true): void {
     this.db.incrementBypassAttempts();
-    this.db.logActivity('bypass_attempt', details);
+    if (logIt) this.db.logActivity('bypass_attempt', details);
   }
 }

@@ -65,10 +65,11 @@ export class WebSocketServer {
         else if (details.includes('hours') || details.includes('SESSION')) logType = 'session_blocked';
         else if (details.includes('COACH')) logType = 'coach_blocked';
         else if (details.includes('symbol')) logType = 'symbol_blocked';
+        else if (details.includes('Stacking')) logType = 'stacking_blocked';
         
         console.log('[WebSocket] Bypass report received:', logType, details);
         this.db.logActivity(logType, details);
-        if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(details); }
+        if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(details, false); }
         ws.send(JSON.stringify({ type: 'bypass_recorded' }));
         break;
       case 'report_settings_access':

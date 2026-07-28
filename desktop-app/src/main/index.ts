@@ -237,8 +237,11 @@ function setupIPC(): void {
 
       switch (entry.type) {
         case 'bypass_attempt':
-          scores[date].score -= 15;
-          scores[date].violations.push('Bypass attempt: ' + (entry.details || '').substring(0, 50));
+          // Only count if not already covered by a specific type
+          if (!scores[date].violations.some(v => v.includes('position size') || v.includes('session') || v.includes('symbol'))) {
+            scores[date].score -= 10;
+            scores[date].violations.push('Rule broken');
+          }
           break;
         case 'extension_disconnected':
           scores[date].score -= 25;
@@ -246,7 +249,7 @@ function setupIPC(): void {
           break;
         case 'session_blocked':
           scores[date].score -= 10;
-          scores[date].violations.push('Tried to trade outside session hours');
+          scores[date].violations.push('Traded outside session hours');
           break;
         case 'size_blocked':
           scores[date].score -= 10;
@@ -254,11 +257,15 @@ function setupIPC(): void {
           break;
         case 'symbol_blocked':
           scores[date].score -= 5;
-          scores[date].violations.push('Tried to trade a blocked symbol');
+          scores[date].violations.push('Traded a blocked symbol');
           break;
         case 'coach_blocked':
           scores[date].score -= 5;
-          scores[date].violations.push('Tried to trade during cooldown');
+          scores[date].violations.push('Traded during cooldown');
+          break;
+        case 'stacking_blocked':
+          scores[date].score -= 5;
+          scores[date].violations.push('Tried to stack positions');
           break;
         case 'app_close_attempt':
           scores[date].score -= 5;
@@ -326,13 +333,19 @@ function setupIPC(): void {
 
     return {
       todayScore: scores[today].score,
-      violations: scores[today].violations,
+      violations: deduplicateViolations(scores[today].violations),
       weeklyAvg,
       monthlyAvg,
       streak,
       history,
     };
   });
+
+  function deduplicateViolations(violations: string[]): string[] {
+    const counts: Record<string, number> = {};
+    violations.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+    return Object.entries(counts).map(([msg, count]) => count > 1 ? `${msg} (x${count})` : msg);
+  }
   ipcMain.handle('get-settings', () => lockManager.getSettings());
   ipcMain.handle('update-settings', (_e, settings) => {
     const result = lockManager.updateSettings(settings);
