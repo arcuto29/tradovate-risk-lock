@@ -536,7 +536,7 @@
 }
 
 [data-theme="sakura"] .nebula-bg {
-  background: linear-gradient(160deg, #fff5f7 0%, #fce4ec 20%, #fdf2f8 40%, #ffe4e6 60%, #fce7f3 80%, #fff5f7 100%);
+  background: linear-gradient(160deg, #faf5f3 0%, #f9e0e8 20%, #faeef4 40%, #f9e4ee 60%, #faeef2 80%, #faf5f3 100%);
   animation: sakuraBgShift 20s ease-in-out infinite alternate;
 }
 
@@ -816,8 +816,8 @@
 
 
 /* ═══ SUNSET THEME (Light + Amber/Orange) ═══ */
-[data-theme="sunset"] body { background: #fffbf5; color: #422006; }
-[data-theme="sunset"] .nebula-bg { background: linear-gradient(160deg, #fffbf5 0%, #fef3c7 20%, #ffedd5 40%, #fed7aa 60%, #fff7ed 80%, #fffbf5 100%); animation: sunsetShift 25s ease-in-out infinite alternate; }
+[data-theme="sunset"] body { background: #faf6ef; color: #422006; }
+[data-theme="sunset"] .nebula-bg { background: linear-gradient(160deg, #faf6ef 0%, #fbefc7 20%, #fde8c8 40%, #fdd8a8 60%, #faf2e8 80%, #faf6ef 100%); animation: sunsetShift 25s ease-in-out infinite alternate; }
 [data-theme="sunset"] .nebula-bg::before { background: radial-gradient(ellipse 60% 50% at 70% 20%, rgba(251,146,60,0.15) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 30% 60%, rgba(245,158,11,0.1) 0%, transparent 55%), radial-gradient(ellipse 70% 30% at 50% 90%, rgba(234,88,12,0.06) 0%, transparent 50%), radial-gradient(ellipse 40% 40% at 85% 50%, rgba(251,146,60,0.08) 0%, transparent 50%); animation: nebulaMove 40s ease-in-out infinite alternate; }
 [data-theme="sunset"] .nebula-bg::after { content: ''; position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background: radial-gradient(ellipse 30% 25% at 80% 15%, rgba(234,88,12,0.06) 0%, transparent 50%), radial-gradient(ellipse 25% 30% at 20% 40%, rgba(245,158,11,0.04) 0%, transparent 50%); animation: nebulaDrift 50s ease-in-out infinite alternate-reverse; }
 [data-theme="sunset"] .stars { display: none !important; }
