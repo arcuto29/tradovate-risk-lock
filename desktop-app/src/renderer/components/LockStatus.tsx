@@ -147,39 +147,39 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
         </div>
       </div>
 
-      {/* Stats Grid with gradient borders */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 mb-8 animate-reveal">
         <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl border border-cyan-400/20 group-hover:border-cyan-400/40 transition-colors" />
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase text-cyan-400/50 mb-2 relative">Loss Limit</p>
+          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.primary}25`}} />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}80`}}>Loss Limit</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.dailyLossLimit > 0 ? formatCurrency(lockState.settings.dailyLossLimit) : '—'}
           </p>
         </div>
 
         <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl border border-emerald-400/20 group-hover:border-emerald-400/40 transition-colors" />
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase text-emerald-400/50 mb-2 relative">Profit Target</p>
+          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.secondary}25`}} />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}30, transparent)`}} />
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.secondary}80`}}>Profit Target</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.dailyProfitTarget > 0 ? formatCurrency(lockState.settings.dailyProfitTarget) : '—'}
           </p>
         </div>
 
         <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl border border-purple-400/20 group-hover:border-purple-400/40 transition-colors" />
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase text-purple-400/50 mb-2 relative">Max Contracts</p>
+          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.primary}25`}} />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}80`}}>Max Contracts</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.maxContracts > 0 ? lockState.settings.maxContracts : '—'}
           </p>
         </div>
 
         <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl border border-red-400/20 group-hover:border-red-400/40 transition-colors" />
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-400/30 to-transparent" />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase text-red-400/50 mb-2 relative">Bypass Attempts</p>
+          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${lockState.bypassAttempts > 0 ? '#f8717125' : colors.primary + '25'}`}} />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${lockState.bypassAttempts > 0 ? '#f8717130' : colors.primary + '30'}, transparent)`}} />
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: lockState.bypassAttempts > 0 ? '#f87171' : `${colors.primary}80`}}>Bypass Attempts</p>
           <p className={`font-mono text-xl font-bold relative ${lockState.bypassAttempts > 0 ? 'text-glow-red' : 'text-white'}`}>{lockState.bypassAttempts}</p>
         </div>
       </div>
@@ -190,7 +190,8 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           <div className="glass rounded-xl p-6 max-w-xs mx-auto">
             <h3 className="text-sm font-semibold text-white/80 mb-4">Trusted Person Unlock</h3>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"
-              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm focus:border-cyan-400/50 focus:outline-none transition-all placeholder:text-white/20 mb-4" />
+              className="w-full bg-white/[0.03] border rounded-lg px-4 py-3 text-white text-sm focus:outline-none transition-all placeholder:text-white/20 mb-4"
+              style={{borderColor: `${colors.primary}20`}} />
             <button onClick={handleTrustedUnlock} disabled={submitting}
               className="px-6 py-3 text-white text-xs font-bold uppercase tracking-[2px] rounded-lg transition-all disabled:opacity-20 press-scale"
               style={{background: colors.primary, boxShadow: `0 0 15px ${colors.primary}30`}}>
@@ -208,9 +209,10 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
         ) : (
           <div className="glass rounded-xl p-6 max-w-sm mx-auto animate-scale-in">
             <h3 className="text-sm font-semibold text-white/80 mb-3">Early Unlock</h3>
-            <p className="text-amber-400/80 text-xs font-medium mb-4">Cooldown applies. Not removed immediately.</p>
+            <p className="text-xs font-medium mb-4" style={{color: `${colors.primary}cc`}}>Cooldown applies. Not removed immediately.</p>
             <textarea value={unlockReason} onChange={(e) => setUnlockReason(e.target.value)} placeholder="Why are you breaking your plan?" rows={3}
-              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm focus:border-cyan-400/50 focus:outline-none transition-all resize-none placeholder:text-white/20 mb-4" />
+              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white text-sm focus:outline-none transition-all resize-none placeholder:text-white/20 mb-4"
+              style={{borderColor: `${colors.primary}20`}} />
             <div className="flex gap-3">
               <button onClick={() => setShowUnlockForm(false)}
                 className="px-5 py-2.5 border border-white/[0.08] text-white/30 text-xs font-semibold uppercase tracking-[1.5px] rounded-lg hover:border-white/20 hover:text-white/50 transition-all">Cancel</button>
