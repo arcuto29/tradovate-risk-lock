@@ -135,13 +135,6 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
             </p>
           </div>
 
-          {/* Dot indicator at progress end */}
-          <div className="absolute w-2.5 h-2.5 rounded-full" style={{
-            background: colors.primary,
-            boxShadow: `0 0 8px ${colors.primary}80`,
-            top: `${110 - 90 * Math.cos((1 - progress) * 2 * Math.PI - Math.PI/2)}px`,
-            left: `${110 + 90 * Math.sin((1 - progress) * 2 * Math.PI - Math.PI/2) - 5}px`,
-          }} />
         </div>
       </div>
 
