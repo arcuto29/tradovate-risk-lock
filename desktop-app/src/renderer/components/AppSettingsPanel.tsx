@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme, Theme } from '../ThemeContext';
+import { useTheme, Theme, THEMES } from '../ThemeContext';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const { theme, setTheme } = useTheme();
@@ -81,27 +81,24 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
             <span className="text-indigo-400/60 text-sm">🎨</span>
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-indigo-400/60">Appearance</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTheme('nebula')}
-              className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
-                theme === 'nebula'
-                  ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
-                  : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
-              }`}
-            >
-              Nebula
-            </button>
-            <button
-              onClick={() => setTheme('sakura')}
-              className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1.5px] transition-all press-scale ${
-                theme === 'sakura'
-                  ? 'bg-gradient-to-b from-pink-400/10 to-rose-400/5 border border-pink-400/20 text-pink-300'
-                  : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
-              }`}
-            >
-              Sakura
-            </button>
+          <div className="grid grid-cols-2 gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-[1px] transition-all press-scale text-left ${
+                  theme === t.id
+                    ? t.id === 'nebula' ? 'bg-gradient-to-r from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-cyan-300'
+                    : t.id === 'aurora' ? 'bg-gradient-to-r from-emerald-400/10 to-teal-400/5 border border-emerald-400/20 text-emerald-300'
+                    : t.id === 'sakura' ? 'bg-gradient-to-r from-pink-400/10 to-rose-400/5 border border-pink-400/20 text-pink-300'
+                    : 'bg-gradient-to-r from-amber-400/10 to-orange-400/5 border border-amber-400/20 text-amber-300'
+                    : 'bg-white/[0.03] border border-white/[0.06] text-white/30'
+                }`}
+              >
+                <span className="block">{t.name}</span>
+                <span className="block text-[0.5rem] font-normal mt-0.5 opacity-60">{t.type === 'dark' ? '● Dark' : '○ Light'}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
