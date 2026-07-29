@@ -490,6 +490,8 @@ function setupIPC(): void {
   ipcMain.handle('update-news-blocker-config', (_e, config) => {
     db.saveNewsBlockerConfig(JSON.stringify(config));
     db.logActivity('news_blocker_updated', 'News blocker configuration updated');
+    // Broadcast to extension so it can check event windows
+    wsServer.broadcastNewsConfig(config);
     return { success: true };
   });
 }

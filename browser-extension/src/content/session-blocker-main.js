@@ -14,6 +14,10 @@
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var fullDayBlocked = false; // Pre-market check blocked for the day
   var lockActive = false; // Only enforce limits when locked
+  var newsBlockerEnabled = false;
+  var newsBlockMinBefore = 30;
+  var newsBlockMinAfter = 15;
+  var newsEvents = [];
   var positionLimits = { limits: [], defaultMax: 2 };
   var blockedSymbols = [];
   var coachEnabled = false;
@@ -92,6 +96,12 @@
       if (event.data.pyramidingEnabled !== undefined) pyramidingEnabled = event.data.pyramidingEnabled;
       if (event.data.pyramidMaxContracts !== undefined) pyramidMaxContracts = event.data.pyramidMaxContracts;
       if (event.data.pyramidMaxAddOns !== undefined) pyramidMaxAddOns = event.data.pyramidMaxAddOns;
+    }
+    if (event.data && event.data.type === 'TRL_NEWS_CONFIG') {
+      newsBlockerEnabled = event.data.enabled || false;
+      newsBlockMinBefore = event.data.blockMinutesBefore || 30;
+      newsBlockMinAfter = event.data.blockMinutesAfter || 15;
+      newsEvents = event.data.events || [];
     }
     if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
       blockedSymbols = event.data.symbols || [];
@@ -174,6 +184,26 @@
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
+  // Check if currently within a news event block window
+  function isNewsBlocked() {
+    if (!newsBlockerEnabled || !newsEvents || newsEvents.length === 0) return false;
+    var now = new Date();
+    var nowET = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    var todayStr = nowET.getFullYear() + '-' + String(nowET.getMonth() + 1).padStart(2, '0') + '-' + String(nowET.getDate()).padStart(2, '0');
+    
+    for (var i = 0; i < newsEvents.length; i++) {
+      var ev = newsEvents[i];
+      if (ev.date !== todayStr) continue;
+      var parts = ev.time.split(':');
+      var eventMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      var currentMin = nowET.getHours() * 60 + nowET.getMinutes();
+      var blockStart = eventMin - newsBlockMinBefore;
+      var blockEnd = eventMin + newsBlockMinAfter;
+      if (currentMin >= blockStart && currentMin <= blockEnd) return true;
+    }
+    return false;
+  }
+
   function isBlockedSymbol(body) {
     if (!body || blockedSymbols.length === 0) return false;
     var symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
@@ -286,11 +316,18 @@
         return Promise.reject(new Error('Blocked: Symbol is blocked'));
       }
 
-      // Session block (still blocks everything including modifications when outside hours)
+      // Session block
       if (lockActive && sessionBlocked) {
         console.log('[TradingGuardian] BLOCKED: Outside trading hours');
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return Promise.reject(new Error('Blocked: Outside trading hours'));
+      }
+
+      // News event block
+      if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
+        console.log('[TradingGuardian] BLOCKED: News event window');
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked - major news event window active. Wait for volatility to settle.' }, '*');
+        return Promise.reject(new Error('Blocked: News event'));
       }
 
       // Position size (single order check)

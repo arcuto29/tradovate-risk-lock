@@ -31,6 +31,7 @@
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }
     if (msg.type === 'GHOST_MODE') { window.postMessage({ type: 'TRL_GHOST_MODE', enabled: msg.enabled }, '*'); }
+    if (msg.type === 'NEWS_CONFIG') { window.postMessage({ type: 'TRL_NEWS_CONFIG', enabled: msg.enabled, blockMinutesBefore: msg.blockMinutesBefore, blockMinutesAfter: msg.blockMinutesAfter, events: msg.events || [] }, '*'); }
     if (msg.type === 'APP_DISCONNECTED') {
       // App is not running - disable all enforcement
       sessionBlocked = false;

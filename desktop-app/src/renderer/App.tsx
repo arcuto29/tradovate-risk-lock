@@ -191,13 +191,13 @@ export const App: React.FC = () => {
                   </div>
                   <button
                     onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
-                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all"
+                    className="mt-4 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all hidden"
                   >
                     Dev Unlock
                   </button>
                   <button
                     onClick={() => (window as any).electronAPI?.exitFullscreen?.()}
-                    className="mt-2 ml-2 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all"
+                    className="mt-2 ml-2 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all hidden"
                   >
                     Dev Exit Fullscreen
                   </button>

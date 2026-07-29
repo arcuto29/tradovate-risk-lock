@@ -120,6 +120,11 @@ export class WebSocketServer {
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 
+  broadcastNewsConfig(config: any): void {
+    const msg = JSON.stringify({ type: 'news_config', ...config });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
     let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0, pyramidingEnabled: false, pyramidMaxContracts: 0, pyramidMaxAddOns: 0 };

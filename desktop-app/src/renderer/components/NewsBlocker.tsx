@@ -91,8 +91,10 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   }, []);
 
   const handleSave = async () => {
+    // Send all events (built-in + custom) so extension can check them
+    const allEventsForExtension = [...BUILT_IN_EVENTS_2026, ...customEvents].map(e => ({ date: e.date, time: e.time, name: e.name }));
     await (window as any).electronAPI?.updateNewsBlockerConfig?.({
-      enabled, blockMinutesBefore, blockMinutesAfter, customEvents,
+      enabled, blockMinutesBefore, blockMinutesAfter, customEvents, events: allEventsForExtension,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
