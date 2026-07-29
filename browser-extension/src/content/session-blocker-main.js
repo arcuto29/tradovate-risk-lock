@@ -184,6 +184,25 @@
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
+  // ─── Block Sound ─────────────────────────────────────────────────────────
+  function playBlockSound() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(220, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(440, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch(e) {}
+  }
+
   // Check if currently within a news event block window
   function isNewsBlocked() {
     if (!newsBlockerEnabled || !newsEvents || newsEvents.length === 0) return false;
@@ -312,6 +331,7 @@
       if (lockActive && body && isBlockedSymbol(body)) {
         var blockedSym = (body.symbolId || body.symbol || body.instrument || '');
         console.log('[TradingGuardian] BLOCKED: Symbol blocked -', blockedSym);
+        playBlockSound();
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol ' + blockedSym + ' is blocked' }, '*');
         return Promise.reject(new Error('Blocked: Symbol is blocked'));
       }
@@ -319,6 +339,7 @@
       // Session block
       if (lockActive && sessionBlocked) {
         console.log('[TradingGuardian] BLOCKED: Outside trading hours');
+        playBlockSound();
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
         return Promise.reject(new Error('Blocked: Outside trading hours'));
       }
@@ -326,6 +347,7 @@
       // News event block
       if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
         console.log('[TradingGuardian] BLOCKED: News event window');
+        playBlockSound();
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked - major news event window active. Wait for volatility to settle.' }, '*');
         return Promise.reject(new Error('Blocked: News event'));
       }
@@ -334,6 +356,7 @@
       if (lockActive && body && isOversized(body)) {
         var blockedSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
         console.log('[TradingGuardian] BLOCKED: Oversize', blockedSize, body.symbolId);
+        playBlockSound();
         window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + blockedSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
         window.postMessage({ type: 'TRL_ORDER_PLACED', size: blockedSize }, '*');
         return Promise.reject(new Error('Blocked: Position size exceeds limit'));
