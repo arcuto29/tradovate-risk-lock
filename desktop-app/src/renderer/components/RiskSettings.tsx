@@ -83,6 +83,8 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
   const [lockoutEnabled, setLockoutEnabled] = useState(false);
   const [resetTime, setResetTime] = useState('17:00');
   const [resetTimezone, setResetTimezone] = useState('America/New_York');
+  const [lockMode, setLockMode] = useState<'time' | 'duration'>('time');
+  const [lockDurationHours, setLockDurationHours] = useState('4');
   const [selectedBlockedSymbol, setSelectedBlockedSymbol] = useState('');
   const [selectedContractSymbol, setSelectedContractSymbol] = useState('');
   const [selectedContractMax, setSelectedContractMax] = useState('');
@@ -147,11 +149,20 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     setError('');
     try {
       await (window as any).electronAPI.updatePositionLimits(buildPayload());
+      
+      // Calculate reset time based on lock mode
+      let finalResetTime = resetTime;
+      if (lockMode === 'duration') {
+        const hours = Number(lockDurationHours) || 4;
+        const unlockAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+        finalResetTime = unlockAt.getHours().toString().padStart(2, '0') + ':' + unlockAt.getMinutes().toString().padStart(2, '0');
+      }
+      
       const lockSettings = {
         dailyLossLimit: Number(lossLimitAmount) || 0,
         dailyProfitTarget: Number(profitTargetAmount) || 0,
         maxContracts: Number(defaultMax) || (contractLimits.length > 0 ? Math.min(...contractLimits.map(c => c.maxSize)) : 0),
-        resetTime,
+        resetTime: finalResetTime,
         resetTimezone,
         platform: 'web',
       };
@@ -416,23 +427,82 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
               <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-sm">⏱</div>
               <h2 className="text-xl font-bold text-gradient">Lockout Options</h2>
             </div>
-            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">When trading resumes after a lockout.</p>
+            <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Choose how long to lock.</p>
             <div className="relative rounded-xl p-6 overflow-hidden card-premium">
               <div className="relative z-10 space-y-5">
+                {/* Mode selector */}
                 <div>
-                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Reset Time</label>
-                  <input type="time" className={inputClass} value={resetTime} onChange={(e) => setResetTime(e.target.value)} disabled={isLocked} />
+                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-3">Lock Mode</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => !isLocked && setLockMode('duration')}
+                      disabled={isLocked}
+                      className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1px] transition-all press-scale ${
+                        lockMode === 'duration'
+                          ? 'btn-premium'
+                          : 'bg-white/[0.03] border border-white/[0.08] text-white/30'
+                      }`}
+                    >
+                      For X hours
+                    </button>
+                    <button
+                      onClick={() => !isLocked && setLockMode('time')}
+                      disabled={isLocked}
+                      className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1px] transition-all press-scale ${
+                        lockMode === 'time'
+                          ? 'btn-premium'
+                          : 'bg-white/[0.03] border border-white/[0.08] text-white/30'
+                      }`}
+                    >
+                      Until time
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Timezone</label>
-                  <select className={selectClass} value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} disabled={isLocked}>
-                    <option value="America/New_York">Eastern Time (ET)</option>
-                    <option value="America/Chicago">Central Time (CT)</option>
-                    <option value="America/Denver">Mountain Time (MT)</option>
-                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                    <option value="UTC">UTC</option>
-                  </select>
-                </div>
+
+                {/* Duration mode */}
+                {lockMode === 'duration' && (
+                  <div>
+                    <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Lock for (hours)</label>
+                    <div className="flex gap-2 mb-3">
+                      {['1', '2', '4', '8'].map((h) => (
+                        <button
+                          key={h}
+                          onClick={() => !isLocked && setLockDurationHours(h)}
+                          disabled={isLocked}
+                          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all press-scale ${
+                            lockDurationHours === h
+                              ? 'btn-premium'
+                              : 'bg-white/[0.03] border border-white/[0.08] text-white/30'
+                          }`}
+                        >
+                          {h}h
+                        </button>
+                      ))}
+                    </div>
+                    <input type="number" min="1" max="24" className={inputClass + ' !w-24'} value={lockDurationHours} onChange={(e) => setLockDurationHours(e.target.value)} placeholder="4" disabled={isLocked} />
+                    <p className="text-[0.6rem] text-white/15 mt-2">Unlocks {lockDurationHours} hours from when you lock</p>
+                  </div>
+                )}
+
+                {/* Time mode */}
+                {lockMode === 'time' && (
+                  <>
+                    <div>
+                      <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Unlock At</label>
+                      <input type="time" className={inputClass} value={resetTime} onChange={(e) => setResetTime(e.target.value)} disabled={isLocked} />
+                    </div>
+                    <div>
+                      <label className="block text-[0.65rem] font-semibold tracking-[1.5px] uppercase text-white/30 mb-2">Timezone</label>
+                      <select className={selectClass} value={resetTimezone} onChange={(e) => setResetTimezone(e.target.value)} disabled={isLocked}>
+                        <option value="America/New_York">Eastern Time (ET)</option>
+                        <option value="America/Chicago">Central Time (CT)</option>
+                        <option value="America/Denver">Mountain Time (MT)</option>
+                        <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                        <option value="UTC">UTC</option>
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <button className="mt-6 px-6 py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale" onClick={handleSave} disabled={isLocked}>Save</button>

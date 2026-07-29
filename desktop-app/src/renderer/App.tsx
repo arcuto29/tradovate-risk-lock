@@ -189,6 +189,21 @@ export const App: React.FC = () => {
                       }} />
                     </div>
                   </div>
+                  <div className="mt-3 relative rounded-xl p-5 overflow-hidden card-premium">
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-semibold text-white/60">Floating Widget</span>
+                        <p className="text-[0.6rem] text-white/20 mt-0.5">Mini tilt + timer on top of charts</p>
+                      </div>
+                      <button
+                        onClick={() => (window as any).electronAPI?.openWidget?.()}
+                        className="px-4 py-2 text-[0.6rem] font-bold uppercase tracking-[1.5px] rounded-lg press-scale"
+                        style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}25`, color: `${colors.primary}cc`}}
+                      >
+                        Show
+                      </button>
+                    </div>
+                  </div>
                   <button
                     onClick={() => (window as any).electronAPI?.devForceUnlock?.().then(() => refreshState())}
                     className="mt-4 px-4 py-2 text-[0.6rem] text-white/15 border border-white/[0.04] rounded-lg hover:text-white/30 hover:border-white/[0.08] transition-all hidden"

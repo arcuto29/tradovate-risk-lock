@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // News blocker
   getNewsBlockerConfig: () => ipcRenderer.invoke('get-news-blocker-config'),
   updateNewsBlockerConfig: (config: any) => ipcRenderer.invoke('update-news-blocker-config', config),
+  // Widget
+  openWidget: () => ipcRenderer.invoke('open-widget'),
+  closeWidget: () => ipcRenderer.invoke('close-widget'),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),

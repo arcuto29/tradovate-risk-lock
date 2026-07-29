@@ -13,6 +13,7 @@ import { isActivated, activate, generateLicenseKey, getLicenseInfo } from './lic
 app.setAppUserModelId('com.tradovate-risk-lock.app');
 
 let mainWindow: BrowserWindow | null = null;
+let widgetWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let db: DatabaseManager;
 let lockManager: LockManager;
@@ -44,6 +45,29 @@ function createWindow(): void {
       mainWindow?.hide();
       db.logActivity('app_close_attempt', 'User attempted to close while lock active — minimized to tray');
     }
+  });
+}
+
+function createWidget(): void {
+  if (widgetWindow) { widgetWindow.focus(); return; }
+  widgetWindow = new BrowserWindow({
+    width: 260, height: 70,
+    frame: false, transparent: true, alwaysOnTop: true, resizable: false,
+    skipTaskbar: true, hasShadow: false,
+    webPreferences: { nodeIntegration: true, contextIsolation: false },
+    x: 20, y: 20,
+  });
+  widgetWindow.loadFile(path.join(__dirname, '../renderer/widget.html'));
+  widgetWindow.on('closed', () => { widgetWindow = null; });
+}
+
+function updateWidget(): void {
+  if (!widgetWindow) return;
+  const state = lockManager.getState();
+  widgetWindow.webContents.send('widget-update', {
+    tiltScore: 0,
+    tiltLevel: 'green',
+    timeRemaining: state.timeRemaining,
   });
 }
 
@@ -198,6 +222,18 @@ function setupIPC(): void {
     updateTrayMenu();
     return { success: true };
   });
+
+  // Widget
+  ipcMain.handle('open-widget', () => { createWidget(); return { success: true }; });
+  ipcMain.handle('close-widget', () => { widgetWindow?.close(); return { success: true }; });
+  ipcMain.on('close-widget', () => { widgetWindow?.close(); });
+  
+  // Update widget every second when locked
+  setInterval(() => {
+    if (widgetWindow && lockManager.isLocked()) {
+      updateWidget();
+    }
+  }, 1000);
 
   // Exit fullscreen
   ipcMain.handle('exit-fullscreen', () => {
@@ -513,6 +549,14 @@ app.whenReady().then(async () => {
   wsServer.onTiltUpdate = (data) => {
     if (mainWindow) {
       mainWindow.webContents.send('tilt-update', data);
+    }
+    // Also update widget
+    if (widgetWindow) {
+      widgetWindow.webContents.send('widget-update', {
+        tiltScore: data.score || 0,
+        tiltLevel: data.level || 'green',
+        timeRemaining: lockManager.getState().timeRemaining,
+      });
     }
   };
 

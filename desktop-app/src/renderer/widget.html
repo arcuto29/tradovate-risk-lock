@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: transparent;
+      overflow: hidden;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+    .widget {
+      background: rgba(10, 5, 30, 0.92);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(56,189,248,0.05);
+    }
+    .tilt-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tilt-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 6px rgba(52,211,153,0.6);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .tilt-dot.yellow { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.6); }
+    .tilt-dot.red { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.6); }
+    .tilt-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .tilt-score {
+      font-size: 14px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #34d399;
+    }
+    .tilt-score.yellow { color: #fbbf24; }
+    .tilt-score.red { color: #f87171; }
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255,255,255,0.08);
+    }
+    .timer-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .timer-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(56,189,248,0.5);
+    }
+    .timer-value {
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #67e8f9;
+      text-shadow: 0 0 10px rgba(56,189,248,0.3);
+    }
+    .close-btn {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.15);
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .close-btn:hover { color: rgba(255,255,255,0.5); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div class="widget" id="widget">
+    <span class="close-btn" id="close-btn">✕</span>
+    <div class="tilt-section">
+      <span class="tilt-dot" id="tilt-dot"></span>
+      <div>
+        <div class="tilt-label">Tilt</div>
+        <div class="tilt-score" id="tilt-score">0</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="timer-section">
+      <div class="timer-label">Unlocks</div>
+      <div class="timer-value" id="timer-value">--:--:--</div>
+    </div>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    ipcRenderer.on('widget-update', (event, data) => {
+      // Tilt
+      const dot = document.getElementById('tilt-dot');
+      const score = document.getElementById('tilt-score');
+      score.textContent = data.tiltScore || '0';
+      score.className = 'tilt-score';
+      dot.className = 'tilt-dot';
+      if (data.tiltLevel === 'yellow') { score.classList.add('yellow'); dot.classList.add('yellow'); }
+      else if (data.tiltLevel === 'red') { score.classList.add('red'); dot.classList.add('red'); }
+      
+      // Timer
+      const timer = document.getElementById('timer-value');
+      if (data.timeRemaining && data.timeRemaining > 0) {
+        const h = Math.floor(data.timeRemaining / 3600);
+        const m = Math.floor((data.timeRemaining % 3600) / 60);
+        const s = data.timeRemaining % 60;
+        timer.textContent = h.toString().padStart(2,'0') + ':' + m.toString().padStart(2,'0') + ':' + s.toString().padStart(2,'0');
+      } else {
+        timer.textContent = '--:--:--';
+      }
+    });
+    
+    document.getElementById('close-btn').addEventListener('click', () => {
+      ipcRenderer.send('close-widget');
+    });
+  </script>
+</body>
+</html>
