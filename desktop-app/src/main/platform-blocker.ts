@@ -40,6 +40,9 @@ export const BUILT_IN_PLATFORMS: Platform[] = [
   { id: 'ctrader', name: 'cTrader', processes: ['cTrader.exe'], macProcesses: ['cTrader'], domains: ['ctrader.com'], builtIn: true, enabled: false },
   { id: 'ibkr', name: 'Interactive Brokers TWS', processes: ['tws.exe', 'javaw.exe'], macProcesses: ['Trader Workstation', 'tws'], domains: ['interactivebrokers.com', 'ibkr.com'], builtIn: true, enabled: false },
   { id: 'projectx', name: 'ProjectX', processes: ['ProjectX.exe'], macProcesses: ['ProjectX'], domains: ['projectx.com'], builtIn: true, enabled: false },
+  { id: 'redline', name: 'Redline Funding', processes: [], macProcesses: [], domains: ['redlinefuturesfunding.com', 'www.redlinefuturesfunding.com'], builtIn: true, enabled: false },
+  { id: 'apex', name: 'Apex Trader Funding', processes: [], macProcesses: [], domains: ['apextraderfunding.com', 'app.apextraderfunding.com'], builtIn: true, enabled: false },
+  { id: 'takeprofittrader', name: 'Take Profit Trader', processes: [], macProcesses: [], domains: ['takeprofittrader.com', 'app.takeprofittrader.com'], builtIn: true, enabled: false },
 ];
 
 export class PlatformBlocker {
