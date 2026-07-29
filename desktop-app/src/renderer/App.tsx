@@ -22,10 +22,11 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { Logo } from './components/Logo';
 import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
+import { AdvancedProtection } from './components/AdvancedProtection';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings';
 
 declare global {
   interface Window { electronAPI: any; }
@@ -35,7 +36,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'main', label: 'Risk', lockedLabel: 'Status', icon: '◆' },
   { page: 'session', label: 'Session', icon: '◷' },
   { page: 'coach', label: 'Coach', icon: '◈' },
-  { page: 'dayrules', label: 'Days', icon: '◇' },
+  { page: 'advanced', label: 'Advanced', icon: '◇' },
   { page: 'news', label: 'News', icon: '◌' },
   { page: 'discipline', label: 'Score', icon: '◉' },
   { page: 'blocklist', label: 'Blocklist', icon: '◻' },
@@ -244,7 +245,12 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'blocklist' && <Blocklist isLocked={lockState?.isLocked} />}
           {currentPage === 'news' && <NewsBlocker isLocked={lockState?.isLocked} />}
-          {currentPage === 'dayrules' && <DayRules isLocked={lockState?.isLocked} />}
+          {currentPage === 'advanced' && (
+            <>
+              <AdvancedProtection isLocked={lockState?.isLocked} />
+              <div className="mt-8"><DayRules isLocked={lockState?.isLocked} /></div>
+            </>
+          )}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
         </div>

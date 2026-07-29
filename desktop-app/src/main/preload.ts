@@ -29,6 +29,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Widget
   openWidget: () => ipcRenderer.invoke('open-widget'),
   closeWidget: () => ipcRenderer.invoke('close-widget'),
+  // Advanced protection
+  getAdvancedConfig: () => ipcRenderer.invoke('get-advanced-config'),
+  updateAdvancedConfig: (config: any) => ipcRenderer.invoke('update-advanced-config', config),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),

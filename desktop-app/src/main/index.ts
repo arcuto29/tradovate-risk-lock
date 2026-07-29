@@ -530,6 +530,19 @@ function setupIPC(): void {
     wsServer.broadcastNewsConfig(config);
     return { success: true };
   });
+
+  // Advanced Protection
+  ipcMain.handle('get-advanced-config', () => {
+    const configStr = db.getAdvancedConfig();
+    if (configStr) { try { return JSON.parse(configStr); } catch {} }
+    return null;
+  });
+
+  ipcMain.handle('update-advanced-config', (_e, config) => {
+    db.saveAdvancedConfig(JSON.stringify(config));
+    db.logActivity('advanced_config_updated', 'Advanced protection settings updated');
+    return { success: true };
+  });
 }
 
 app.whenReady().then(async () => {
