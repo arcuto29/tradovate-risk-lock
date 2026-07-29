@@ -3,7 +3,7 @@ import { useTheme, Theme, THEMES } from '../ThemeContext';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const { theme, setTheme } = useTheme();
-  const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true, trustedPersonEnabled: false });
+  const [settings, setSettings] = useState({ cooldownHours: 12, startWithWindows: true, minimizeToTray: true, trustedPersonEnabled: false, killBrowserOnBypass: false });
   const [saved, setSaved] = useState(false);
   const [tpPassword, setTpPassword] = useState('');
   const [tpConfirm, setTpConfirm] = useState('');
@@ -19,6 +19,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
         startWithWindows: s.startWithWindows,
         minimizeToTray: s.minimizeToTray,
         trustedPersonEnabled: s.trustedPersonEnabled || false,
+        killBrowserOnBypass: s.killBrowserOnBypass || false,
       });
     })();
   }, []);
@@ -133,6 +134,13 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
             <label className="flex items-center justify-between cursor-pointer group">
               <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Minimize to tray on close</span>
               <div className={`toggle-premium ${settings.minimizeToTray ? 'active' : ''}`} onClick={() => setSettings({ ...settings, minimizeToTray: !settings.minimizeToTray })} />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer group">
+              <div>
+                <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Kill browser on bypass</span>
+                <p className="text-[0.55rem] text-white/15 mt-0.5">Closes all browsers if extension is removed while locked</p>
+              </div>
+              <div className={`toggle-premium ${settings.killBrowserOnBypass ? 'active' : ''}`} onClick={() => setSettings({ ...settings, killBrowserOnBypass: !settings.killBrowserOnBypass })} />
             </label>
           </div>
         </div>

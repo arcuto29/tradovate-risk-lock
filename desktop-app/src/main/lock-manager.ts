@@ -198,7 +198,7 @@ export class LockManager {
 
   getSettings(): any {
     const s = this.db.getSettings();
-    return { cooldownHours: s.cooldown_hours, startWithWindows: s.start_with_windows === 1, minimizeToTray: s.minimize_to_tray === 1, trustedPersonEnabled: s.trusted_person_enabled === 1 };
+    return { cooldownHours: s.cooldown_hours, startWithWindows: s.start_with_windows === 1, minimizeToTray: s.minimize_to_tray === 1, trustedPersonEnabled: s.trusted_person_enabled === 1, killBrowserOnBypass: s.kill_browser_on_bypass === 1 };
   }
 
   updateSettings(newSettings: any): { success: boolean } {

@@ -568,10 +568,27 @@ app.whenReady().then(async () => {
     db.logActivity('extension_disconnected', 'Extension removed while locked — full blocklist activated');
     
     // ESCALATE: Activate the full platform blocker (hosts file + process killing)
-    // This blocks ALL trading websites in EVERY browser + kills desktop apps continuously
-    // They can't bypass this by opening a different browser or reinstalling later
     if (platformBlocker && !platformBlocker.isActive()) {
       platformBlocker.activate();
+    }
+
+    // Kill browser if setting enabled
+    const settings = db.getSettings();
+    if (settings.kill_browser_on_bypass) {
+      const { exec } = require('child_process');
+      if (process.platform === 'win32') {
+        exec('taskkill /F /IM chrome.exe /T', () => {});
+        exec('taskkill /F /IM msedge.exe /T', () => {});
+        exec('taskkill /F /IM firefox.exe /T', () => {});
+        exec('taskkill /F /IM brave.exe /T', () => {});
+        exec('taskkill /F /IM opera.exe /T', () => {});
+      } else {
+        exec('pkill -f "Google Chrome"', () => {});
+        exec('pkill -f "Microsoft Edge"', () => {});
+        exec('pkill -f Firefox', () => {});
+        exec('pkill -f Brave', () => {});
+        exec('pkill -f Opera', () => {});
+      }
     }
 
     // Go fullscreen warning
@@ -584,7 +601,6 @@ app.whenReady().then(async () => {
       mainWindow.setMinimizable(false);
       mainWindow.webContents.send('extension-disconnected');
 
-      // If they switch away, re-focus every 2 seconds
       const refocusInterval = setInterval(() => {
         if (!bypassWarningActive) { clearInterval(refocusInterval); return; }
         if (mainWindow && !mainWindow.isFocused()) {
@@ -593,7 +609,6 @@ app.whenReady().then(async () => {
         }
       }, 2000);
 
-      // Release fullscreen after 5 minutes (but blocklist stays active until lock ends)
       setTimeout(() => {
         bypassWarningActive = false;
         clearInterval(refocusInterval);
