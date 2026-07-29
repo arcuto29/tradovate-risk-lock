@@ -46,7 +46,12 @@ export const App: React.FC = () => {
   const [lockState, setLockState] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('main');
   const [loading, setLoading] = useState(true);
-  const [preMarketPassed, setPreMarketPassed] = useState(false);
+  const [preMarketPassed, setPreMarketPassed] = useState(() => {
+    // Only ask once per day
+    const lastPassed = localStorage.getItem('tg-premarket-date');
+    const today = new Date().toISOString().split('T')[0];
+    return lastPassed === today;
+  });
   const [limitsTightened, setLimitsTightened] = useState(false);
   const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
@@ -136,8 +141,8 @@ export const App: React.FC = () => {
         {/* Nav */}
         <nav className="flex justify-center gap-1">
           {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => {
-            // Block nav if pre-market check not done and not locked
-            const navBlocked = !lockState?.isLocked && !preMarketPassed && page !== 'main';
+            // Block only Risk tab content if pre-market not done (let them access other tabs)
+            const navBlocked = false; // Nav is always accessible
             return (
             <button
               key={page}
@@ -218,7 +223,7 @@ export const App: React.FC = () => {
                   </button>
                 </>
               : !preMarketPassed
-                ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); }} />
+                ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
                 : <>
                     {limitsTightened && (
                       <div className="mb-6 px-5 py-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] text-amber-300/80 text-xs font-medium animate-reveal flex items-center gap-3">
