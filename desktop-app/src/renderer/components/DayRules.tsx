@@ -103,7 +103,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
           const isMidnight = theme === 'midnight';
 
           return (
-            <div key={day} className={`flex-1 relative ${isMidnight && isSelected ? 'midnight-day-tab-selected' : ''}`}>
+            <div key={day} className={`flex-1 relative ${isSelected ? `${theme}-day-tab-selected` : ''}`}>
               {/* Gradient border wrapper for midnight selected */}
               {isMidnight && isSelected && (
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
@@ -116,7 +116,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                   isSelected
                     ? isMidnight
                       ? 'bg-black/90 border border-transparent text-white midnight-day-active'
-                      : 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-white'
+                      : 'border border-transparent text-white day-tab-active'
                     : isEnabled
                       ? 'bg-white/[0.03] border border-orange-400/15 text-orange-300/60'
                       : 'bg-white/[0.02] border border-white/[0.04] text-white/25'

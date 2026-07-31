@@ -1615,3 +1615,224 @@ main > div {
 [data-theme="midnight"] .text-orange-300\\/60 { color: rgba(255,255,255,0.4) !important; }
 [data-theme="midnight"] .bg-orange-400 { background-color: #ffffff !important; }
 [data-theme="midnight"] [class*="shadow-\\[0_0_4px_rgba\\(249"] { box-shadow: 0 0 4px rgba(255,255,255,0.4) !important; }
+
+
+/* ═══ ALL THEMES: ELEVATED DAY TAB SELECTORS ═══ */
+
+/* Shared day tab active inner */
+.day-tab-active {
+  background: rgba(255,255,255,0.03) !important;
+}
+[data-theme="sakura"] .day-tab-active {
+  background: rgba(255,255,255,0.95) !important;
+}
+[data-theme="sunset"] .day-tab-active {
+  background: rgba(255,255,255,0.95) !important;
+}
+
+/* Nebula - cyan→purple gradient border */
+.nebula-day-tab-selected {
+  padding: 1px;
+  background: linear-gradient(135deg, #22d3ee, #a78bfa, #818cf8, #22d3ee);
+  background-size: 300% 300%;
+  animation: themeTabGradient 3s ease infinite;
+  border-radius: 12px;
+}
+
+/* Aurora - emerald→teal gradient border */
+.aurora-day-tab-selected {
+  padding: 1px;
+  background: linear-gradient(135deg, #10b981, #06b6d4, #34d399, #10b981);
+  background-size: 300% 300%;
+  animation: themeTabGradient 3s ease infinite;
+  border-radius: 12px;
+}
+
+/* Sakura - pink→purple gradient border */
+.sakura-day-tab-selected {
+  padding: 1px;
+  background: linear-gradient(135deg, #ec4899, #a855f7, #f472b6, #ec4899);
+  background-size: 300% 300%;
+  animation: themeTabGradient 3s ease infinite;
+  border-radius: 12px;
+}
+.sakura-day-tab-selected .day-tab-active { color: #3f1f2c !important; }
+
+/* Sunset - amber→orange gradient border */
+.sunset-day-tab-selected {
+  padding: 1px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444, #d97706, #f59e0b);
+  background-size: 300% 300%;
+  animation: themeTabGradient 3s ease infinite;
+  border-radius: 12px;
+}
+.sunset-day-tab-selected .day-tab-active { color: #422006 !important; }
+
+@keyframes themeTabGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+/* ═══ ALL THEMES: ENHANCED CARD BORDER GLOW ═══ */
+
+/* Nebula - spinning cyan/purple border trace */
+[data-theme="nebula"] .card-premium {
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="nebula"] .card-premium::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: conic-gradient(from 0deg, rgba(34,211,238,0.3), transparent, rgba(168,85,247,0.3), transparent, rgba(34,211,238,0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: inherit;
+  animation: cardBorderSpin 8s linear infinite;
+  padding: 1px;
+}
+
+/* Aurora - spinning emerald/teal border trace */
+[data-theme="aurora"] .card-premium::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: conic-gradient(from 0deg, rgba(16,185,129,0.3), transparent, rgba(6,182,212,0.3), transparent, rgba(16,185,129,0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: inherit;
+  animation: cardBorderSpin 8s linear infinite;
+  padding: 1px;
+}
+
+/* Sakura - spinning pink/purple border trace */
+[data-theme="sakura"] .card-premium::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: conic-gradient(from 0deg, rgba(236,72,153,0.25), transparent, rgba(168,85,247,0.25), transparent, rgba(236,72,153,0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: inherit;
+  animation: cardBorderSpin 8s linear infinite;
+  padding: 1px;
+}
+
+/* Sunset - spinning amber/red border trace */
+[data-theme="sunset"] .card-premium::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: conic-gradient(from 0deg, rgba(245,158,11,0.25), transparent, rgba(239,68,68,0.2), transparent, rgba(245,158,11,0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: inherit;
+  animation: cardBorderSpin 8s linear infinite;
+  padding: 1px;
+}
+
+@keyframes cardBorderSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+/* ═══ ALL THEMES: ENHANCED TOGGLE GLOW ═══ */
+
+/* Nebula toggle - gradient knob */
+[data-theme="nebula"] .toggle-premium.active::after {
+  background: linear-gradient(135deg, #22d3ee, #818cf8) !important;
+  box-shadow: 0 0 8px rgba(34,211,238,0.5), 0 0 12px rgba(129,140,248,0.3) !important;
+}
+[data-theme="nebula"] .toggle-premium.active {
+  background: linear-gradient(135deg, rgba(34,211,238,0.2), rgba(129,140,248,0.15));
+  border-color: rgba(34,211,238,0.4);
+  box-shadow: 0 0 12px rgba(34,211,238,0.15), 0 0 20px rgba(129,140,248,0.08);
+}
+
+/* Aurora toggle override */
+[data-theme="aurora"] .toggle-premium.active::after {
+  background: linear-gradient(135deg, #10b981, #06b6d4) !important;
+  box-shadow: 0 0 8px rgba(16,185,129,0.5), 0 0 12px rgba(6,182,212,0.3) !important;
+}
+
+/* Sakura toggle override */
+[data-theme="sakura"] .toggle-premium.active::after {
+  background: linear-gradient(135deg, #ec4899, #a855f7) !important;
+  box-shadow: 0 0 8px rgba(236,72,153,0.5), 0 0 12px rgba(168,85,247,0.3) !important;
+}
+
+/* Sunset toggle override */
+[data-theme="sunset"] .toggle-premium.active::after {
+  background: linear-gradient(135deg, #d97706, #ef4444) !important;
+  box-shadow: 0 0 8px rgba(217,119,6,0.5), 0 0 12px rgba(239,68,68,0.3) !important;
+}
+
+
+/* ═══ ALL THEMES: ENHANCED BUTTON HOVER ═══ */
+
+/* Nebula button glow */
+[data-theme="nebula"] .btn-premium:hover {
+  box-shadow: 0 0 20px rgba(34,211,238,0.3), 0 0 40px rgba(129,140,248,0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* Aurora button glow */
+[data-theme="aurora"] .btn-premium:hover {
+  box-shadow: 0 0 20px rgba(16,185,129,0.3), 0 0 40px rgba(6,182,212,0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* Sakura button glow */
+[data-theme="sakura"] .btn-premium:hover {
+  box-shadow: 0 0 20px rgba(236,72,153,0.3), 0 0 40px rgba(168,85,247,0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* Sunset button glow */
+[data-theme="sunset"] .btn-premium:hover {
+  box-shadow: 0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(239,68,68,0.15) !important;
+  transform: translateY(-1px);
+}
+
+
+/* ═══ ALL THEMES: ENHANCED SIDEBAR ACTIVE ═══ */
+
+/* Nebula sidebar glow */
+[data-theme="nebula"] .sidebar-active {
+  box-shadow: 0 0 12px rgba(34,211,238,0.06) !important;
+}
+
+/* Aurora sidebar glow */
+[data-theme="aurora"] .sidebar-active {
+  box-shadow: 0 0 12px rgba(16,185,129,0.06) !important;
+}
+
+/* Sakura sidebar glow */
+[data-theme="sakura"] .sidebar-active {
+  box-shadow: 0 0 12px rgba(236,72,153,0.06) !important;
+}
+
+/* Sunset sidebar glow */
+[data-theme="sunset"] .sidebar-active {
+  box-shadow: 0 0 12px rgba(245,158,11,0.06) !important;
+}
+
+
+/* ═══ ALL THEMES: NAV UNDERLINE GLOW ENHANCEMENT ═══ */
+
+/* All themes get enhanced underline glow on active nav tab */
+header nav button span[style*="linear-gradient"] {
+  animation: navUnderlineGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes navUnderlineGlow {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; filter: brightness(1.2); }
+}
