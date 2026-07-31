@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type Theme = 'nebula' | 'aurora' | 'sakura' | 'sunset';
+export type Theme = 'nebula' | 'aurora' | 'sakura' | 'sunset' | 'midnight';
 
 export const THEMES: { id: Theme; name: string; type: 'dark' | 'light'; description: string }[] = [
   { id: 'nebula', name: 'Nebula', type: 'dark', description: 'Deep space, stars, cyan & purple' },
   { id: 'aurora', name: 'Aurora', type: 'dark', description: 'Northern lights, green & teal' },
+  { id: 'midnight', name: 'Midnight', type: 'dark', description: 'Pure black, OLED, minimal white' },
   { id: 'sakura', name: 'Sakura', type: 'light', description: 'Cherry blossom, pink & rose' },
   { id: 'sunset', name: 'Sunset', type: 'light', description: 'Golden hour, amber & orange' },
 ];
@@ -22,11 +23,11 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('tg-theme') as Theme;
-    if (['nebula', 'aurora', 'sakura', 'sunset'].includes(saved)) return saved;
+    if (['nebula', 'aurora', 'sakura', 'sunset', 'midnight'].includes(saved)) return saved;
     return 'nebula';
   });
 
-  const isDark = theme === 'nebula' || theme === 'aurora';
+  const isDark = theme === 'nebula' || theme === 'aurora' || theme === 'midnight';
 
   useEffect(() => {
     localStorage.setItem('tg-theme', theme);

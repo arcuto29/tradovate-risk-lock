@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 interface DayScore {
   date: string;
@@ -7,6 +9,8 @@ interface DayScore {
 }
 
 export const DisciplineScore: React.FC = () => {
+  const { theme } = useTheme();
+  const themeColors = getThemeColors(theme);
   const [todayScore, setTodayScore] = useState(100);
   const [violations, setViolations] = useState<string[]>([]);
   const [weeklyAvg, setWeeklyAvg] = useState(0);
@@ -38,22 +42,22 @@ export const DisciplineScore: React.FC = () => {
   if (loading) return <span className="text-white/20 text-sm animate-pulse">Loading...</span>;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-emerald-400';
-    if (score >= 70) return 'text-cyan-400';
+    if (score >= 90) return `text-[${themeColors.primary}]`;
+    if (score >= 70) return `text-[${themeColors.secondary}]`;
     if (score >= 50) return 'text-amber-400';
     return 'text-red-400';
   };
 
   const getScoreGradient = (score: number) => {
-    if (score >= 90) return 'from-emerald-400 to-cyan-400';
-    if (score >= 70) return 'from-cyan-400 to-indigo-400';
+    if (score >= 90) return `from-[${themeColors.primary}] to-[${themeColors.secondary}]`;
+    if (score >= 70) return `from-[${themeColors.secondary}] to-[${themeColors.primary}]`;
     if (score >= 50) return 'from-amber-400 to-orange-400';
     return 'from-red-400 to-pink-400';
   };
 
   const getScoreRingColor = (score: number) => {
-    if (score >= 90) return '#34d399';
-    if (score >= 70) return '#22d3ee';
+    if (score >= 90) return themeColors.primary;
+    if (score >= 70) return themeColors.secondary;
     if (score >= 50) return '#fbbf24';
     return '#f87171';
   };

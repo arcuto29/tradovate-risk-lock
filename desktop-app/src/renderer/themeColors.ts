@@ -74,5 +74,23 @@ export function getThemeColors(theme: Theme) {
         dotGlow: 'shadow-[0_0_6px_rgba(217,119,6,0.6)]',
         ring: '#d97706',
       };
+    case 'midnight':
+      return {
+        primary: '#ffffff',
+        secondary: '#a1a1aa',
+        accent: 'white',
+        accentHover: 'white',
+        gradient: 'from-white to-zinc-400',
+        gradientBg: 'from-white/10 to-zinc-400/5',
+        border: 'border-white/10',
+        borderHover: 'border-white/20',
+        text: 'text-white',
+        textSoft: 'text-white/50',
+        bg: 'bg-white/5',
+        glow: 'shadow-[0_0_15px_rgba(255,255,255,0.05)]',
+        dot: 'bg-white',
+        dotGlow: 'shadow-[0_0_6px_rgba(255,255,255,0.3)]',
+        ring: '#ffffff',
+      };
   }
 }
