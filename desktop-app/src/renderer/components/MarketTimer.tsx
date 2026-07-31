@@ -144,19 +144,28 @@ export const MarketTimer: React.FC = () => {
 
   const isActive = session.active.length > 0;
 
+  // Brighten colors for Midnight theme (dark colors hard to see on black)
+  let displayColor = session.color;
+  if (theme === 'midnight') {
+    if (session.color === '#10b981') displayColor = '#4ade80'; // brighter green
+    else if (session.color === '#3b82f6') displayColor = '#60a5fa'; // brighter blue
+    else if (session.color === '#f59e0b') displayColor = '#fbbf24'; // brighter amber
+    else if (session.color === '#6b7280') displayColor = '#9ca3af'; // brighter grey
+  }
+
   return (
     <div className="flex items-center gap-2.5">
       {/* Session badge */}
       <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{
-        background: `${session.color}10`,
-        border: `1px solid ${session.color}25`,
+        background: `${displayColor}15`,
+        border: `1px solid ${displayColor}30`,
       }}>
         <span className="w-2 h-2 rounded-full" style={{
-          background: session.color,
-          boxShadow: isActive ? `0 0 6px ${session.color}90, 0 0 12px ${session.color}40` : 'none',
+          background: displayColor,
+          boxShadow: isActive ? `0 0 6px ${displayColor}90, 0 0 12px ${displayColor}40` : 'none',
           animation: isActive ? 'pulseGlow 2s ease-in-out infinite' : 'none',
         }} />
-        <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase" style={{ color: session.color }}>
+        <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase" style={{ color: displayColor, textShadow: theme === 'midnight' ? `0 0 8px ${displayColor}50` : 'none' }}>
           {session.label}
         </span>
       </div>
