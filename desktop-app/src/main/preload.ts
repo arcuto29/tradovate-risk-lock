@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // News blocker
   getNewsBlockerConfig: () => ipcRenderer.invoke('get-news-blocker-config'),
   updateNewsBlockerConfig: (config: any) => ipcRenderer.invoke('update-news-blocker-config', config),
+  syncForexFactory: () => ipcRenderer.invoke('sync-forex-factory'),
   // Widget
   openWidget: () => ipcRenderer.invoke('open-widget'),
   closeWidget: () => ipcRenderer.invoke('close-widget'),

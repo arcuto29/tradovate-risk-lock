@@ -67,14 +67,19 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
   const [enabled, setEnabled] = useState(false);
+  const [notifyEnabled, setNotifyEnabled] = useState(true);
+  const [notifyMinutesBefore, setNotifyMinutesBefore] = useState(15);
   const [blockMinutesBefore, setBlockMinutesBefore] = useState(30);
   const [blockMinutesAfter, setBlockMinutesAfter] = useState(15);
   const [customEvents, setCustomEvents] = useState<NewsEvent[]>([]);
+  const [ffEvents, setFfEvents] = useState<NewsEvent[]>([]);
   const [newEventName, setNewEventName] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventTime, setNewEventTime] = useState('08:30');
   const [saved, setSaved] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -82,22 +87,44 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
         const data = await (window as any).electronAPI?.getNewsBlockerConfig?.();
         if (data) {
           setEnabled(data.enabled || false);
+          setNotifyEnabled(data.notifyEnabled !== false);
+          setNotifyMinutesBefore(data.notifyMinutesBefore || 15);
           setBlockMinutesBefore(data.blockMinutesBefore || 30);
           setBlockMinutesAfter(data.blockMinutesAfter || 15);
           setCustomEvents(data.customEvents || []);
+          setFfEvents(data.ffEvents || []);
         }
       } catch {}
     })();
   }, []);
 
   const handleSave = async () => {
-    // Send all events (built-in + custom) so extension can check them
-    const allEventsForExtension = [...BUILT_IN_EVENTS_2026, ...customEvents].map(e => ({ date: e.date, time: e.time, name: e.name }));
+    const allEventsForExtension = [...BUILT_IN_EVENTS_2026, ...customEvents, ...ffEvents].map(e => ({ date: e.date, time: e.time, name: e.name }));
     await (window as any).electronAPI?.updateNewsBlockerConfig?.({
-      enabled, blockMinutesBefore, blockMinutesAfter, customEvents, events: allEventsForExtension,
+      enabled, notifyEnabled, notifyMinutesBefore, blockMinutesBefore, blockMinutesAfter, customEvents, ffEvents, events: allEventsForExtension,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleSyncFF = async () => {
+    setSyncing(true);
+    setSyncStatus('');
+    try {
+      const result = await (window as any).electronAPI?.syncForexFactory?.();
+      if (result?.success && result.events?.length > 0) {
+        setFfEvents(result.events);
+        setSyncStatus(`Synced ${result.count} high-impact events`);
+      } else if (result?.success && result.events?.length === 0) {
+        setSyncStatus('No high-impact USD events found this week');
+      } else {
+        setSyncStatus(result?.error || 'Sync failed - check internet connection');
+      }
+    } catch (err) {
+      setSyncStatus('Failed to connect to Forex Factory');
+    }
+    setSyncing(false);
+    setTimeout(() => setSyncStatus(''), 5000);
   };
 
   const addCustomEvent = () => {
@@ -124,7 +151,7 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   // Get upcoming events (next 7 days)
   const today = new Date().toISOString().split('T')[0];
   const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const allEvents = [...BUILT_IN_EVENTS_2026, ...customEvents];
+  const allEvents = [...BUILT_IN_EVENTS_2026, ...customEvents, ...ffEvents];
   const upcoming = allEvents
     .filter(e => e.date >= today && e.date <= nextWeek)
     .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
@@ -154,6 +181,106 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             onClick={() => !isLocked && setEnabled(!enabled)}
             style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
           />
+        </div>
+      </div>
+
+      {/* Notification toggle - works even if blocker is OFF */}
+      <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5 animate-reveal">
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full transition-all" style={{background: notifyEnabled ? colors.secondary : 'rgba(255,255,255,0.15)', boxShadow: notifyEnabled ? `0 0 8px ${colors.secondary}60` : 'none'}} />
+              <span className="text-sm text-white/70 font-medium">Notify before high-impact news</span>
+            </div>
+            <p className="text-[0.6rem] text-white/25 mt-1 ml-5">Get a notification alert even if blocking is off</p>
+          </div>
+          <div
+            className={`toggle-premium ${notifyEnabled ? 'active' : ''}`}
+            onClick={() => setNotifyEnabled(!notifyEnabled)}
+          />
+        </div>
+        {notifyEnabled && (
+          <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.04] flex items-center gap-3">
+            <label className="text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25">Alert</label>
+            <input
+              type="number" min="5" max="60" step="5"
+              value={notifyMinutesBefore}
+              onChange={(e) => setNotifyMinutesBefore(Number(e.target.value) || 15)}
+              className="w-16 bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1.5 text-white font-mono text-xs font-bold text-center focus:outline-none transition-all input-premium"
+            />
+            <span className="text-[0.6rem] text-white/25">min before event</span>
+          </div>
+        )}
+      </div>
+
+      {/* Forex Factory Sync */}
+      <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5 animate-reveal">
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm">🏭</span>
+              <div>
+                <p className="text-[0.6rem] font-bold tracking-[2px] uppercase" style={{color: `${colors.primary}80`}}>Forex Factory</p>
+                <p className="text-[0.55rem] text-white/20 mt-0.5">Pull high-impact USD events from this week's calendar</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSyncFF}
+              disabled={syncing}
+              className="px-4 py-2 text-[0.6rem] font-bold rounded-lg press-scale transition-all disabled:opacity-30"
+              style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}25`, color: `${colors.primary}cc`}}
+            >
+              {syncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+          </div>
+          {syncStatus && (
+            <p className={`text-[0.6rem] mt-2 ${syncStatus.includes('Synced') ? 'text-emerald-400/70' : syncStatus.includes('fail') || syncStatus.includes('Failed') ? 'text-red-400/70' : 'text-white/30'}`}>
+              {syncStatus}
+            </p>
+          )}
+          {ffEvents.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/[0.04]">
+              <p className="text-[0.55rem] text-white/20 mb-2">{ffEvents.length} events synced from FF:</p>
+              <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                {ffEvents.map((event) => (
+                  <div key={event.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-white/[0.02]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400/80" />
+                    <span className="text-[0.6rem] text-white/50">{event.name}</span>
+                    <span className="text-[0.5rem] text-white/20 ml-auto">{event.date} {event.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Upcoming Events - ALWAYS shown regardless of blocker on/off */}
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-5 animate-reveal">
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}30, transparent)`}} />
+        <div className="relative z-10">
+          <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase mb-4" style={{color: `${colors.secondary}80`}}>Upcoming (Next 7 Days)</p>
+          {upcoming.length === 0 ? (
+            <p className="text-xs text-white/20 text-center py-3">No events this week</p>
+          ) : (
+            <div className="space-y-2">
+              {upcoming.slice(0, 10).map((event) => (
+                <div key={event.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full" style={{background: event.impact === 'high' ? '#ef4444' : '#f59e0b'}} />
+                    <div>
+                      <span className="text-xs text-white/60 font-medium">{event.name}</span>
+                      <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET{(event as any).source === 'forex_factory' ? ' (FF)' : ''}</p>
+                    </div>
+                  </div>
+                  {!event.builtIn && !isLocked && !(event as any).source && (
+                    <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -189,34 +316,6 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
               <p className="text-[0.6rem] text-white/15 mt-3">
                 Trading blocked from {blockMinutesBefore}min before until {blockMinutesAfter}min after each event
               </p>
-            </div>
-          </div>
-
-          {/* Upcoming Events */}
-          <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-2">
-            <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}30, transparent)`}} />
-            <div className="relative z-10">
-              <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase mb-4" style={{color: `${colors.secondary}80`}}>Next 7 Days</p>
-              {upcoming.length === 0 ? (
-                <p className="text-xs text-white/20 text-center py-3">No events this week</p>
-              ) : (
-                <div className="space-y-2">
-                  {upcoming.slice(0, 8).map((event) => (
-                    <div key={event.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                      <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full" style={{background: event.impact === 'high' ? '#ef4444' : '#f59e0b'}} />
-                        <div>
-                          <span className="text-xs text-white/60 font-medium">{event.name}</span>
-                          <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET</p>
-                        </div>
-                      </div>
-                      {!event.builtIn && !isLocked && (
-                        <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 

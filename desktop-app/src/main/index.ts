@@ -521,7 +521,7 @@ function setupIPC(): void {
     if (configStr) {
       try { return JSON.parse(configStr); } catch {}
     }
-    return { enabled: false, blockMinutesBefore: 30, blockMinutesAfter: 15, customEvents: [] };
+    return { enabled: false, blockMinutesBefore: 30, blockMinutesAfter: 15, customEvents: [], ffEvents: [] };
   });
 
   ipcMain.handle('update-news-blocker-config', (_e, config) => {
@@ -530,6 +530,135 @@ function setupIPC(): void {
     // Broadcast to extension so it can check event windows
     wsServer.broadcastNewsConfig(config);
     return { success: true };
+  });
+
+  // Forex Factory scraper
+  ipcMain.handle('sync-forex-factory', async () => {
+    try {
+      const https = require('https');
+      const html: string = await new Promise((resolve, reject) => {
+        const options = {
+          hostname: 'www.forexfactory.com',
+          path: '/calendar?week=this',
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml',
+            'Accept-Language': 'en-US,en;q=0.9',
+          },
+        };
+        const req = https.request(options, (res: any) => {
+          let data = '';
+          res.on('data', (chunk: string) => { data += chunk; });
+          res.on('end', () => resolve(data));
+        });
+        req.on('error', reject);
+        req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')); });
+        req.end();
+      });
+
+      // Parse the HTML for high-impact events
+      const events: { name: string; date: string; time: string; impact: string; currency: string }[] = [];
+
+      // FF uses table rows with specific classes
+      // Each event row has: date, time, currency, impact (icon color), event name
+      // Impact: "icon--ff-impact-red" = high, "icon--ff-impact-ora" = medium, "icon--ff-impact-yel" = low
+
+      // Extract year from page or use current
+      const year = new Date().getFullYear();
+
+      // Match event rows - FF HTML structure has calendar__row with data
+      const rowRegex = /calendar__cell calendar__date[^>]*>([^<]*)<[\s\S]*?calendar__cell calendar__time[^>]*>([^<]*)<[\s\S]*?calendar__cell calendar__currency[^>]*>([^<]*)<[\s\S]*?(icon--ff-impact-(?:red|ora|yel))[\s\S]*?calendar__cell calendar__event[^>]*>[\s\S]*?<span[^>]*>([^<]+)</g;
+
+      // Simpler approach - look for high impact events
+      const dateMatches = html.match(/data-eventid="[^"]*"[^>]*>[\s\S]*?<\/tr>/g) || [];
+
+      // Alternative: parse the structured calendar data
+      // FF calendar page has JSON data embedded or we can parse table structure
+      let currentDate = '';
+      const lines = html.split('\n');
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // Look for date cells
+        const dateMatch = line.match(/calendar__date[^>]*><span[^>]*>([^<]+)/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1].trim();
+          if (dateStr) currentDate = dateStr;
+        }
+
+        // Look for high impact indicator
+        if (line.includes('icon--ff-impact-red')) {
+          // Look around for event name and time
+          const contextStart = Math.max(0, i - 10);
+          const contextEnd = Math.min(lines.length, i + 10);
+          const context = lines.slice(contextStart, contextEnd).join('\n');
+
+          const timeMatch = context.match(/calendar__time[^>]*>(?:<span[^>]*>)?([^<]+)/);
+          const currMatch = context.match(/calendar__currency[^>]*>([^<]+)/);
+          const eventMatch = context.match(/calendar__event[^>]*>[\s\S]*?<span class="[^"]*">([^<]+)/);
+
+          if (eventMatch) {
+            const eventName = eventMatch[1].trim();
+            const time = timeMatch ? timeMatch[1].trim() : '';
+            const currency = currMatch ? currMatch[1].trim() : 'USD';
+
+            // Only care about USD events for futures traders
+            if (currency === 'USD' || !currency) {
+              events.push({
+                name: eventName,
+                date: currentDate,
+                time: time,
+                impact: 'high',
+                currency: currency || 'USD',
+              });
+            }
+          }
+        }
+      }
+
+      // Convert FF date format to YYYY-MM-DD
+      const processedEvents = events.map((e, idx) => {
+        let dateStr = e.date;
+        // FF shows dates like "Mon Jul 21" or just "Jul 21"
+        // Try to parse
+        let parsedDate = '';
+        try {
+          const testDate = new Date(`${dateStr} ${year}`);
+          if (!isNaN(testDate.getTime())) {
+            parsedDate = testDate.toISOString().split('T')[0];
+          }
+        } catch {}
+
+        // Convert time from "8:30am" format to "08:30"
+        let time24 = e.time;
+        const timeMatch = e.time.match(/(\d{1,2}):(\d{2})(am|pm)/i);
+        if (timeMatch) {
+          let h = parseInt(timeMatch[1]);
+          const m = timeMatch[2];
+          const ampm = timeMatch[3].toLowerCase();
+          if (ampm === 'pm' && h !== 12) h += 12;
+          if (ampm === 'am' && h === 12) h = 0;
+          time24 = `${h.toString().padStart(2, '0')}:${m}`;
+        }
+
+        return {
+          id: `ff_${idx}_${Date.now()}`,
+          name: e.name,
+          date: parsedDate || new Date().toISOString().split('T')[0],
+          time: time24 || '08:30',
+          impact: 'high' as const,
+          currency: e.currency,
+          source: 'forex_factory',
+        };
+      }).filter(e => e.date && e.name);
+
+      db.logActivity('ff_sync', `Synced ${processedEvents.length} high-impact events from Forex Factory`);
+      return { success: true, events: processedEvents, count: processedEvents.length };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to fetch Forex Factory calendar', events: [] };
+    }
   });
 
   // Advanced Protection
@@ -676,6 +805,63 @@ app.whenReady().then(async () => {
   }
 
   db.logActivity('app_started', 'Application started');
+
+  // ─── News Event Notification Timer ─────────────────────────────────────
+  // Check every 60 seconds for upcoming high-impact events and send desktop notification
+  const notifiedEvents = new Set<string>();
+  setInterval(() => {
+    try {
+      const configStr = db.getNewsBlockerConfig();
+      if (!configStr) return;
+      const config = JSON.parse(configStr);
+      if (!config.notifyEnabled) return;
+
+      const notifyMinutes = config.notifyMinutesBefore || 15;
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+
+      // Combine all event sources
+      const allEvents = [
+        ...(config.events || []),
+        ...(config.ffEvents || []).map((e: any) => ({ date: e.date, time: e.time, name: e.name })),
+      ];
+
+      allEvents.forEach((event: any) => {
+        if (event.date !== todayStr) return;
+        const [eh, em] = (event.time || '').split(':').map(Number);
+        if (isNaN(eh) || isNaN(em)) return;
+
+        const eventMinutes = eh * 60 + em;
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const diff = eventMinutes - nowMinutes;
+
+        // Notify if within the notify window and haven't already notified
+        const eventKey = `${event.date}_${event.time}_${event.name}`;
+        if (diff > 0 && diff <= notifyMinutes && !notifiedEvents.has(eventKey)) {
+          notifiedEvents.add(eventKey);
+          const { Notification } = require('electron');
+          if (Notification.isSupported()) {
+            const notif = new Notification({
+              title: 'High-Impact News Alert',
+              body: `${event.name} in ${diff} minutes (${event.time} ET). Be careful trading.`,
+              icon: undefined,
+              urgency: 'critical' as any,
+            });
+            notif.show();
+          }
+          // Also send to renderer
+          if (mainWindow) {
+            mainWindow.webContents.send('news-alert', { name: event.name, time: event.time, minutesAway: diff });
+          }
+        }
+      });
+
+      // Clear old notifications at midnight
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        notifiedEvents.clear();
+      }
+    } catch {}
+  }, 60000); // Check every minute
 });
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin' && !lockManager.isLocked()) app.exit(0); });
