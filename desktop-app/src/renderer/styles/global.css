@@ -1342,9 +1342,10 @@ main > div {
 [data-theme="midnight"] .sakura-petals { display: none; }
 [data-theme="midnight"] .glass { background: rgba(255,255,255,0.02); backdrop-filter: none; border: 1px solid rgba(255,255,255,0.06); }
 [data-theme="midnight"] .glass-strong { background: rgba(255,255,255,0.03); backdrop-filter: none; border: 1px solid rgba(255,255,255,0.08); }
-[data-theme="midnight"] .card-premium { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); box-shadow: none; }
-[data-theme="midnight"] .card-premium::before { background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02), transparent); }
-[data-theme="midnight"] .card-premium::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+/* Midnight card border glow animation */
+[data-theme="midnight"] .card-premium { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); box-shadow: none; position: relative; overflow: hidden; }
+[data-theme="midnight"] .card-premium::before { background: conic-gradient(from 0deg, rgba(255,255,255,0.15), rgba(255,255,255,0.02), rgba(255,255,255,0.15), rgba(255,255,255,0.02), rgba(255,255,255,0.15)) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: midnightBorderSpin 8s linear infinite; }
+[data-theme="midnight"] .card-premium::after { background: none; }
 [data-theme="midnight"] .text-gradient { background: linear-gradient(135deg, #ffffff, #a1a1aa, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 200% 200%; animation: gradientX 4s ease infinite; }
 [data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
 [data-theme="midnight"] .btn-premium { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(161,161,170,0.9)); color: #000 !important; }
@@ -1383,4 +1384,9 @@ main > div {
   33% { opacity: 0.6; transform: scale(1.05) translate(1%, -1%); }
   66% { opacity: 0.4; transform: scale(1.02) translate(-1%, 1%); }
   100% { opacity: 0.7; transform: scale(1.08) translate(2%, -2%); }
+}
+
+@keyframes midnightBorderSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
