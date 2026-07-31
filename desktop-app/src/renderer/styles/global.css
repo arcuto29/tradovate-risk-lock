@@ -1555,3 +1555,9 @@ main > div {
 [data-theme="midnight"] nav button span:last-child {
   background: linear-gradient(90deg, #ef4444, #3b82f6) !important;
 }
+
+
+
+/* Midnight: clean white tabs, only underline is red/blue */
+[data-theme="midnight"] nav button { color: rgba(255,255,255,0.35) !important; background: transparent !important; }
+[data-theme="midnight"] nav button[style] { background: transparent !important; }
