@@ -120,33 +120,15 @@ export class PlatformBlocker {
   }
 
   private closeBrowserTabsWindows(): void {
-    const enabled = this.getEnabledPlatforms();
-    const domains = enabled.flatMap(p => p.domains);
-    if (domains.length === 0) return;
-
-    domains.forEach(domain => {
-      const shortName = domain.replace('www.', '').replace('app.', '').split('.')[0];
-      exec(`powershell -Command "Get-Process chrome -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -like '*${shortName}*'} | ForEach-Object { $_.CloseMainWindow() }"`, () => {});
-    });
+    // Don't kill the browser - only block sites via hosts file
+    // Killing chrome.exe would close ALL tabs (email, youtube, etc)
+    // Hosts file blocking is sufficient for websites
   }
 
   private closeBrowserTabsMac(): void {
-    const enabled = this.getEnabledPlatforms();
-    const domains = enabled.flatMap(p => p.domains);
-    if (domains.length === 0) return;
-
-    // Close Safari tabs
-    domains.forEach(domain => {
-      exec(`osascript -e 'tell application "Safari" to close (every tab of every window whose URL contains "${domain}")'`, () => {});
-    });
-
-    // Close Chrome tabs
-    domains.forEach(domain => {
-      exec(`osascript -e 'tell application "Google Chrome" to set tabList to every tab of every window
-        repeat with t in tabList
-          if URL of t contains "${domain}" then close t
-        end repeat'`, () => {});
-    });
+    // Don't kill browsers - only block sites via hosts file
+    // Killing Safari/Chrome would close ALL tabs
+    // Hosts file blocking is sufficient for websites
   }
 
   private blockHosts(): void {
