@@ -1484,7 +1484,7 @@ main > div {
 [data-theme="midnight"] [class*="from-indigo"], [data-theme="midnight"] [class*="from-emerald"],
 [data-theme="midnight"] [class*="from-orange"], [data-theme="midnight"] [class*="from-amber"],
 [data-theme="midnight"] [class*="from-pink"], [data-theme="midnight"] [class*="from-red"] {
-  background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(59,130,246,0.1)) !important;
+  background: rgba(255,255,255,0.02) !important;
 }
 
 /* Icon container borders */
@@ -1551,3 +1551,17 @@ main > div {
 /* Midnight: clean white tabs, only underline is red/blue */
 [data-theme="midnight"] nav button { color: rgba(255,255,255,0.35) !important; background: transparent !important; }
 [data-theme="midnight"] nav button[style] { background: transparent !important; }
+
+
+
+/* Midnight: force all colored backgrounds near-invisible */
+[data-theme="midnight"] [class*="bg-cyan-400\\/\\[0"] { background: rgba(255,255,255,0.03) !important; }
+[data-theme="midnight"] [class*="bg-emerald-400\\/\\[0"] { background: rgba(255,255,255,0.03) !important; }
+[data-theme="midnight"] [class*="bg-red-400\\/\\[0"] { background: rgba(239,68,68,0.04) !important; }
+[data-theme="midnight"] [class*="bg-purple-400\\/\\[0"] { background: rgba(255,255,255,0.02) !important; }
+[data-theme="midnight"] [class*="bg-indigo-400\\/\\[0"] { background: rgba(255,255,255,0.02) !important; }
+[data-theme="midnight"] [class*="bg-gradient-to"] { background: rgba(255,255,255,0.02) !important; }
+
+/* Midnight: status badges - minimal, not colored */
+[data-theme="midnight"] [class*="border-emerald-400"] { border-color: rgba(255,255,255,0.12) !important; background: rgba(255,255,255,0.03) !important; }
+[data-theme="midnight"] [class*="border-red-400"][class*="bg-"] { background: rgba(239,68,68,0.04) !important; }
