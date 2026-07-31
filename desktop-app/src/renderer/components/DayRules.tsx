@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -35,6 +36,7 @@ const FRIDAY_DEFAULT: DayConfig = {
 };
 
 export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
+  const { theme } = useTheme();
   const [dayConfigs, setDayConfigs] = useState<Record<string, DayConfig>>({
     Monday: { ...DEFAULT_CONFIG },
     Tuesday: { ...DEFAULT_CONFIG },
@@ -95,24 +97,43 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
 
       {/* Day Selector */}
       <div className="flex gap-2 mb-6 animate-reveal">
-        {DAYS.map((day, i) => (
-          <button
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-[1px] transition-all press-scale ${
-              selectedDay === day
-                ? 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-white'
-                : dayConfigs[day].enabled
-                  ? 'bg-white/[0.03] border border-orange-400/15 text-orange-300/60'
-                  : 'bg-white/[0.02] border border-white/[0.04] text-white/25'
-            }`}
-          >
-            {SHORT_DAYS[i]}
-            {dayConfigs[day].enabled && (
-              <div className="w-1 h-1 rounded-full bg-orange-400 mx-auto mt-1.5 shadow-[0_0_4px_rgba(249,115,22,0.6)]" />
-            )}
-          </button>
-        ))}
+        {DAYS.map((day, i) => {
+          const isSelected = selectedDay === day;
+          const isEnabled = dayConfigs[day].enabled;
+          const isMidnight = theme === 'midnight';
+
+          return (
+            <div key={day} className={`flex-1 relative ${isMidnight && isSelected ? 'midnight-day-tab-selected' : ''}`}>
+              {/* Gradient border wrapper for midnight selected */}
+              {isMidnight && isSelected && (
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <div className="absolute inset-0 midnight-gradient-border-spin" />
+                </div>
+              )}
+              <button
+                onClick={() => setSelectedDay(day)}
+                className={`relative w-full py-3 rounded-xl text-xs font-bold uppercase tracking-[1px] transition-all press-scale z-10 ${
+                  isSelected
+                    ? isMidnight
+                      ? 'bg-black/90 border border-transparent text-white midnight-day-active'
+                      : 'bg-gradient-to-b from-cyan-400/10 to-purple-400/5 border border-cyan-400/20 text-white'
+                    : isEnabled
+                      ? 'bg-white/[0.03] border border-orange-400/15 text-orange-300/60'
+                      : 'bg-white/[0.02] border border-white/[0.04] text-white/25'
+                }`}
+              >
+                {SHORT_DAYS[i]}
+                {isEnabled && (
+                  <div className={`w-1 h-1 rounded-full mx-auto mt-1.5 ${
+                    isMidnight
+                      ? 'bg-white shadow-[0_0_4px_rgba(255,255,255,0.6)]'
+                      : 'bg-orange-400 shadow-[0_0_4px_rgba(249,115,22,0.6)]'
+                  }`} />
+                )}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       {/* Day Config */}

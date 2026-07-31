@@ -1583,9 +1583,34 @@ main > div {
 
 
 
-/* Midnight: day selector tabs - plain white, no colored backgrounds */
-[data-theme="midnight"] [class*="from-cyan-400\\/10"] { background: rgba(255,255,255,0.05) !important; }
-[data-theme="midnight"] [class*="border-cyan-400\\/20"] { border-color: rgba(255,255,255,0.15) !important; }
+/* Midnight: day selector tabs - proper animated gradient border */
+.midnight-day-tab-selected {
+  padding: 1px;
+  background: linear-gradient(135deg, #ef4444, #7c3aed, #3b82f6, #ef4444);
+  background-size: 300% 300%;
+  animation: midnightTabGradient 3s ease infinite;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(239,68,68,0.3), 0 0 12px rgba(59,130,246,0.3), 0 0 20px rgba(124,58,237,0.15);
+}
+.midnight-day-tab-selected:hover {
+  box-shadow: 0 0 18px rgba(239,68,68,0.4), 0 0 18px rgba(59,130,246,0.4), 0 0 28px rgba(124,58,237,0.2);
+}
+.midnight-day-active {
+  background: #000000 !important;
+  border: none !important;
+  margin: 1px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+.midnight-gradient-border-spin {
+  background: conic-gradient(from 0deg, #ef4444, #3b82f6, #ffffff, #ef4444, #3b82f6, #ffffff, #ef4444);
+  animation: midnightBorderSpin 3s linear infinite;
+  opacity: 0.6;
+}
+@keyframes midnightTabGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 [data-theme="midnight"] [class*="border-orange-400\\/15"] { border-color: rgba(255,255,255,0.08) !important; }
 [data-theme="midnight"] .text-orange-300\\/60 { color: rgba(255,255,255,0.4) !important; }
 [data-theme="midnight"] .bg-orange-400 { background-color: #ffffff !important; }
