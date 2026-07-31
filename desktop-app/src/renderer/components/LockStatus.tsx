@@ -155,9 +155,9 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
             <defs>
               <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ffffff' : '#fbbf24'} />
-                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#d4d4d8' : '#f59e0b'} />
-                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ffffff' : '#fbbf24'} />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : '#f59e0b'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#3b82f6' : '#fbbf24'} />
               </linearGradient>
             </defs>
           </svg>

@@ -56,6 +56,7 @@ export const DisciplineScore: React.FC = () => {
   };
 
   const getScoreRingColor = (score: number) => {
+    if (theme === 'midnight') return 'url(#disciplineGrad)';
     if (score >= 90) return themeColors.primary;
     if (score >= 70) return themeColors.secondary;
     if (score >= 50) return '#fbbf24';
@@ -115,8 +116,16 @@ export const DisciplineScore: React.FC = () => {
 
             {/* SVG Ring */}
             <svg width="200" height="200" className="absolute inset-0 transform -rotate-90">
+              {/* Gradient for Midnight */}
+              <defs>
+                <linearGradient id="disciplineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#ef4444" />
+                  <stop offset="50%" stopColor="#ffffff" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+              </defs>
               {/* Background track */}
-              <circle cx="100" cy="100" r={radius} fill="none" stroke={`${ringColor}12`} strokeWidth="6" />
+              <circle cx="100" cy="100" r={radius} fill="none" stroke={`${theme === 'midnight' ? '#ef4444' : ringColor}12`} strokeWidth="6" />
               {/* Inner ring */}
               <circle cx="100" cy="100" r={radius - 12} fill="none" stroke={`${ringColor}06`} strokeWidth="1" />
               {/* Main progress arc */}
