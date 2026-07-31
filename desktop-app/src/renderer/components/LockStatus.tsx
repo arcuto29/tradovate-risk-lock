@@ -231,8 +231,8 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
               className="w-full bg-white/[0.03] border rounded-lg px-4 py-3 text-white text-sm focus:outline-none transition-all placeholder:text-white/20 mb-4"
               style={{borderColor: `${colors.primary}20`}} />
             <button onClick={handleTrustedUnlock} disabled={submitting}
-              className="px-6 py-3 text-white text-xs font-bold uppercase tracking-[2px] rounded-lg transition-all disabled:opacity-20 press-scale"
-              style={{background: colors.primary, boxShadow: `0 0 15px ${colors.primary}30`}}>
+              className="px-6 py-3 text-xs font-bold uppercase tracking-[2px] rounded-lg transition-all disabled:opacity-20 press-scale"
+              style={{background: colors.primary, color: theme === 'midnight' ? '#000000' : '#ffffff', boxShadow: `0 0 15px ${colors.primary}30`}}>
               Unlock
             </button>
           </div>
@@ -255,8 +255,8 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
               <button onClick={() => setShowUnlockForm(false)}
                 className="px-5 py-2.5 border border-white/[0.08] text-white/30 text-xs font-semibold uppercase tracking-[1.5px] rounded-lg hover:border-white/20 hover:text-white/50 transition-all">Cancel</button>
               <button onClick={handleEarlyUnlock} disabled={submitting}
-                className="px-5 py-2.5 text-white text-xs font-bold uppercase tracking-[1.5px] rounded-lg transition-all disabled:opacity-20 press-scale"
-                style={{background: colors.primary, boxShadow: `0 0 12px ${colors.primary}30`}}>Submit</button>
+                className="px-5 py-2.5 text-xs font-bold uppercase tracking-[1.5px] rounded-lg transition-all disabled:opacity-20 press-scale"
+                style={{background: colors.primary, color: theme === 'midnight' ? '#000000' : '#ffffff', boxShadow: `0 0 12px ${colors.primary}30`}}>Submit</button>
             </div>
           </div>
         )}
