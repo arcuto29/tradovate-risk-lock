@@ -76,21 +76,21 @@ export function getThemeColors(theme: Theme) {
       };
     case 'midnight':
       return {
-        primary: '#c4b5fd',
-        secondary: '#818cf8',
-        accent: 'purple',
-        accentHover: 'purple-300',
-        gradient: 'from-violet-300 to-indigo-400',
-        gradientBg: 'from-violet-300/10 to-indigo-400/5',
-        border: 'border-violet-300/15',
-        borderHover: 'border-violet-300/30',
-        text: 'text-violet-300',
-        textSoft: 'text-violet-300/50',
-        bg: 'bg-violet-300/5',
-        glow: 'shadow-[0_0_15px_rgba(196,181,253,0.1)]',
-        dot: 'bg-violet-300',
-        dotGlow: 'shadow-[0_0_6px_rgba(196,181,253,0.4)]',
-        ring: '#c4b5fd',
+        primary: '#ffffff',
+        secondary: '#e4e4e7',
+        accent: 'white',
+        accentHover: 'white',
+        gradient: 'from-white to-zinc-300',
+        gradientBg: 'from-white/10 to-zinc-300/5',
+        border: 'border-white/12',
+        borderHover: 'border-white/25',
+        text: 'text-white',
+        textSoft: 'text-white/50',
+        bg: 'bg-white/5',
+        glow: 'shadow-[0_0_15px_rgba(255,255,255,0.08)]',
+        dot: 'bg-white',
+        dotGlow: 'shadow-[0_0_8px_rgba(255,255,255,0.5)]',
+        ring: '#ffffff',
       };
   }
 }
