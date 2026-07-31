@@ -1289,19 +1289,8 @@ main > div {
 
 /* ═══ MIDNIGHT THEME (Pure Black OLED) ═══ */
 [data-theme="midnight"] .nebula-bg { background: #000000; }
-[data-theme="midnight"] .nebula-bg::before {
-  background:
-    radial-gradient(ellipse 40% 30% at 30% 40%, rgba(255,255,255,0.02) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 40% at 70% 60%, rgba(150,150,255,0.015) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 25% at 50% 20%, rgba(255,200,150,0.01) 0%, transparent 50%);
-  animation: midnightPulse 15s ease-in-out infinite alternate;
-}
-[data-theme="midnight"] .nebula-bg::after {
-  background:
-    radial-gradient(ellipse 35% 35% at 60% 30%, rgba(100,100,255,0.015) 0%, transparent 50%),
-    radial-gradient(ellipse 25% 40% at 25% 70%, rgba(255,255,255,0.01) 0%, transparent 50%);
-  animation: midnightPulse 20s ease-in-out infinite alternate-reverse;
-}
+[data-theme="midnight"] .nebula-bg::before { display: none; }
+[data-theme="midnight"] .nebula-bg::after { display: none; }
 [data-theme="midnight"] .stars {
   display: block !important;
   background-image:
