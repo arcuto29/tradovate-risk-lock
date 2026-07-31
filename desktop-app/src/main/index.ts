@@ -28,8 +28,9 @@ const isDev = process.env.NODE_ENV === 'development';
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 800, height: 850, minWidth: 600, minHeight: 600,
+    icon: path.join(__dirname, '../../icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
-    title: 'Tradovate Risk Settings Lock', autoHideMenuBar: true,
+    title: 'Trading Guardian', autoHideMenuBar: true,
   });
   mainWindow.setMenu(null);
   if (isDev) { mainWindow.loadURL('http://localhost:5173'); }
