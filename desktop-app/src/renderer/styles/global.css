@@ -1336,9 +1336,9 @@ main > div {
 [data-theme="midnight"] .card-premium::before { background: conic-gradient(from 0deg, rgba(239,68,68,0.3), rgba(255,255,255,0.0), rgba(59,130,246,0.3), rgba(255,255,255,0.0), rgba(239,68,68,0.3)) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: midnightBorderSpin 6s linear infinite; }
 [data-theme="midnight"] .card-premium::after { background: none; }
 
-[data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 10px rgba(239,68,68,0.4), 0 0 10px rgba(59,130,246,0.4); }
-[data-theme="midnight"] .btn-premium { background: linear-gradient(135deg, #ef4444 0%, #7c3aed 50%, #3b82f6 100%); color: #ffffff !important; box-shadow: 0 0 12px rgba(239,68,68,0.25), 0 0 12px rgba(59,130,246,0.25); border: none; }
-[data-theme="midnight"] .btn-premium:hover { box-shadow: 0 0 20px rgba(239,68,68,0.4), 0 0 20px rgba(59,130,246,0.4); transform: translateY(-1px); }
+[data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+[data-theme="midnight"] .btn-premium { background: rgba(255,255,255,0.06) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; box-shadow: 0 0 10px rgba(255,255,255,0.04); }
+[data-theme="midnight"] .btn-premium:hover { background: rgba(255,255,255,0.1) !important; box-shadow: 0 0 15px rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3) !important; transform: translateY(-1px); }
 [data-theme="midnight"] .toggle-premium.active { background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(59,130,246,0.15)) !important; border-color: rgba(239,68,68,0.4) !important; box-shadow: -3px 0 10px rgba(239,68,68,0.2), 3px 0 10px rgba(59,130,246,0.2), inset 0 0 8px rgba(239,68,68,0.05) !important; }
 [data-theme="midnight"] .toggle-premium.active::after { background: linear-gradient(135deg, #ef4444, #3b82f6) !important; box-shadow: 0 0 8px rgba(239,68,68,0.5), 0 0 8px rgba(59,130,246,0.5), 0 0 16px rgba(239,68,68,0.2) !important; }
 [data-theme="midnight"] .sidebar-active { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.1) !important; }
@@ -1349,13 +1349,25 @@ main > div {
 [data-theme="midnight"] ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 [data-theme="midnight"] [style*="background: rgba(10,5,30"] { background: rgba(255,255,255,0.02) !important; }
 [data-theme="midnight"] [class*="text-cyan"] { color: #ffffff !important; }
-[data-theme="midnight"] [class*="text-emerald"] { color: #e4e4e7 !important; }
+[data-theme="midnight"] [class*="text-emerald"] { color: #ffffff !important; }
 [data-theme="midnight"] [class*="text-purple"] { color: #ffffff !important; }
+[data-theme="midnight"] [class*="text-indigo"] { color: #ffffff !important; }
+[data-theme="midnight"] [class*="text-amber"] { color: #ffffff !important; }
+[data-theme="midnight"] [class*="text-orange"] { color: #ffffff !important; }
+[data-theme="midnight"] [class*="text-pink"] { color: #ffffff !important; }
 [data-theme="midnight"] [class*="border-cyan"] { border-color: rgba(255,255,255,0.12) !important; }
 [data-theme="midnight"] [class*="border-emerald"] { border-color: rgba(255,255,255,0.1) !important; }
 [data-theme="midnight"] [class*="border-purple"] { border-color: rgba(255,255,255,0.1) !important; }
+[data-theme="midnight"] [class*="border-indigo"] { border-color: rgba(255,255,255,0.1) !important; }
+[data-theme="midnight"] [class*="border-amber"] { border-color: rgba(255,255,255,0.1) !important; }
+[data-theme="midnight"] [class*="border-orange"] { border-color: rgba(255,255,255,0.1) !important; }
+[data-theme="midnight"] [class*="border-pink"] { border-color: rgba(255,255,255,0.1) !important; }
 [data-theme="midnight"] [class*="bg-cyan"] { background-color: rgba(255,255,255,0.04) !important; }
-[data-theme="midnight"] [class*="bg-emerald"] { background-color: rgba(255,255,255,0.03) !important; }
+[data-theme="midnight"] [class*="bg-emerald"] { background-color: rgba(255,255,255,0.04) !important; }
+[data-theme="midnight"] [class*="bg-purple"] { background-color: rgba(255,255,255,0.04) !important; }
+[data-theme="midnight"] [class*="bg-indigo"] { background-color: rgba(255,255,255,0.04) !important; }
+[data-theme="midnight"] [class*="bg-amber"] { background-color: rgba(255,255,255,0.04) !important; }
+[data-theme="midnight"] [class*="bg-pink"] { background-color: rgba(255,255,255,0.04) !important; }
 /* Midnight checkboxes - red/blue gradient */
 [data-theme="midnight"] input[type="checkbox"] { accent-color: #ef4444; }
 [data-theme="midnight"] input[type="checkbox"]:checked { accent-color: #3b82f6; }
@@ -1534,16 +1546,15 @@ main > div {
   box-shadow: -3px 0 20px rgba(239,68,68,0.06), 3px 0 20px rgba(59,130,246,0.06), 0 0 1px rgba(255,255,255,0.15) !important;
 }
 
-/* Nav active tab - red/blue underline */
-[data-theme="midnight"] nav button span:last-child {
-  background: linear-gradient(90deg, #ef4444, #3b82f6) !important;
-}
-
+/* Nav active tab underline handled in JSX now */
 
 
 /* Midnight: clean white tabs, only underline is red/blue */
 [data-theme="midnight"] nav button { color: rgba(255,255,255,0.35) !important; background: transparent !important; }
 [data-theme="midnight"] nav button[style] { background: transparent !important; }
+/* Override sidebar active gradient on midnight */
+[data-theme="midnight"] .sidebar-active { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.1) !important; box-shadow: none !important; }
+[data-theme="midnight"] [class*="shadow-\\[0_0_15px_rgba\\(56"] { box-shadow: none !important; }
 
 
 
@@ -1579,14 +1590,14 @@ main > div {
 /* Midnight: day selector tabs - proper animated gradient border */
 .midnight-day-tab-selected {
   padding: 1px;
-  background: linear-gradient(135deg, #ef4444, #7c3aed, #3b82f6, #ef4444);
+  background: linear-gradient(135deg, #ef4444, #ffffff, #3b82f6, #ef4444);
   background-size: 300% 300%;
   animation: midnightTabGradient 3s ease infinite;
   border-radius: 12px;
-  box-shadow: 0 0 12px rgba(239,68,68,0.3), 0 0 12px rgba(59,130,246,0.3), 0 0 20px rgba(124,58,237,0.15);
+  box-shadow: 0 0 12px rgba(239,68,68,0.3), 0 0 12px rgba(59,130,246,0.3);
 }
 .midnight-day-tab-selected:hover {
-  box-shadow: 0 0 18px rgba(239,68,68,0.4), 0 0 18px rgba(59,130,246,0.4), 0 0 28px rgba(124,58,237,0.2);
+  box-shadow: 0 0 18px rgba(239,68,68,0.4), 0 0 18px rgba(59,130,246,0.4);
 }
 .midnight-day-active {
   background: #000000 !important;

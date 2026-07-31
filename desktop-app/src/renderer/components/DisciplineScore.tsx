@@ -56,11 +56,8 @@ export const DisciplineScore: React.FC = () => {
   };
 
   const getScoreRingColor = (score: number) => {
-    if (theme === 'midnight') return 'url(#disciplineGrad)';
-    if (score >= 90) return themeColors.primary;
-    if (score >= 70) return themeColors.secondary;
-    if (score >= 50) return '#fbbf24';
-    return '#f87171';
+    // All themes use gradient rings now
+    return 'url(#disciplineGrad)';
   };
 
   const getGrade = (score: number) => {
@@ -103,31 +100,31 @@ export const DisciplineScore: React.FC = () => {
 
             {/* Outer orbit particles */}
             <svg width="200" height="200" className="absolute inset-0" style={{animation: 'spin 10s linear infinite'}}>
-              <circle cx="100" cy="8" r="2" fill={ringColor} opacity="0.6" />
+              <circle cx="100" cy="8" r="2" fill={themeColors.primary} opacity="0.6" />
               <circle cx="192" cy="100" r="1.5" fill={themeColors.secondary} opacity="0.4" />
-              <circle cx="100" cy="192" r="2" fill={ringColor} opacity="0.5" />
+              <circle cx="100" cy="192" r="2" fill={themeColors.primary} opacity="0.5" />
               <circle cx="8" cy="100" r="1.5" fill={themeColors.secondary} opacity="0.3" />
             </svg>
 
             {/* Counter-rotating outer ring */}
             <svg width="200" height="200" className="absolute inset-0" style={{animation: 'spin 20s linear infinite reverse'}}>
-              <circle cx="100" cy="100" r="95" fill="none" stroke={`${ringColor}10`} strokeWidth="0.5" strokeDasharray="3 8" />
+              <circle cx="100" cy="100" r="95" fill="none" stroke={`${themeColors.primary}10`} strokeWidth="0.5" strokeDasharray="3 8" />
             </svg>
 
             {/* SVG Ring */}
             <svg width="200" height="200" className="absolute inset-0 transform -rotate-90">
-              {/* Gradient for Midnight */}
+              {/* Gradient for all themes */}
               <defs>
                 <linearGradient id="disciplineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ef4444" />
-                  <stop offset="50%" stopColor="#ffffff" />
-                  <stop offset="100%" stopColor="#3b82f6" />
+                  <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
+                  <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : '#f59e0b'} />
+                  <stop offset="100%" stopColor={theme === 'nebula' ? '#818cf8' : theme === 'aurora' ? '#34d399' : theme === 'sakura' ? '#fb7185' : theme === 'midnight' ? '#3b82f6' : '#ef4444'} />
                 </linearGradient>
               </defs>
               {/* Background track */}
-              <circle cx="100" cy="100" r={radius} fill="none" stroke={`${theme === 'midnight' ? '#ef4444' : ringColor}12`} strokeWidth="6" />
+              <circle cx="100" cy="100" r={radius} fill="none" stroke={`${themeColors.primary}12`} strokeWidth="6" />
               {/* Inner ring */}
-              <circle cx="100" cy="100" r={radius - 12} fill="none" stroke={`${ringColor}06`} strokeWidth="1" />
+              <circle cx="100" cy="100" r={radius - 12} fill="none" stroke={`${themeColors.primary}06`} strokeWidth="1" />
               {/* Main progress arc */}
               <circle
                 cx="100" cy="100" r={radius} fill="none"
@@ -137,7 +134,7 @@ export const DisciplineScore: React.FC = () => {
                 strokeDashoffset={strokeOffset}
                 strokeLinecap="round"
                 className="transition-all duration-1000"
-                style={{filter: `drop-shadow(0 0 10px ${ringColor}90) drop-shadow(0 0 25px ${ringColor}40)`}}
+                style={{filter: `drop-shadow(0 0 10px ${themeColors.primary}90) drop-shadow(0 0 25px ${themeColors.primary}40)`}}
               />
               {/* Secondary thin arc */}
               <circle
@@ -152,11 +149,11 @@ export const DisciplineScore: React.FC = () => {
             </svg>
 
             {/* Center glow backdrop */}
-            <div className="absolute inset-[20px] rounded-full" style={{background: `radial-gradient(circle at 50% 45%, ${ringColor}10 0%, transparent 60%)`}} />
+            <div className="absolute inset-[20px] rounded-full" style={{background: `radial-gradient(circle at 50% 45%, ${themeColors.primary}10 0%, transparent 60%)`}} />
 
             {/* Center Score */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-5xl font-black font-mono" style={{color: ringColor === 'url(#disciplineGrad)' ? '#ffffff' : ringColor, textShadow: `0 0 20px ${ringColor === 'url(#disciplineGrad)' ? 'rgba(239,68,68,0.4)' : ringColor + '60'}, 0 0 40px ${ringColor === 'url(#disciplineGrad)' ? 'rgba(59,130,246,0.3)' : ringColor + '20'}`, animation: 'timerPulse 3s ease-in-out infinite'}}>
+              <p className="text-5xl font-black font-mono" style={{color: theme === 'midnight' ? '#ffffff' : themeColors.primary, textShadow: `0 0 20px ${themeColors.primary}60, 0 0 40px ${themeColors.primary}20`, animation: 'timerPulse 3s ease-in-out infinite'}}>
                 {todayScore}
               </p>
               <p className="text-lg font-bold mt-1" style={{color: themeColors.secondary}}>
