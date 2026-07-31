@@ -1587,28 +1587,24 @@ main > div {
 
 
 
-/* Midnight: day selector tabs - proper animated gradient border */
+/* Midnight: day selector tabs - thin gradient border when selected */
 .midnight-day-tab-selected {
   padding: 1px;
   background: linear-gradient(135deg, #ef4444, #ffffff, #3b82f6, #ef4444);
   background-size: 300% 300%;
   animation: midnightTabGradient 3s ease infinite;
   border-radius: 12px;
-  box-shadow: 0 0 12px rgba(239,68,68,0.3), 0 0 12px rgba(59,130,246,0.3);
 }
 .midnight-day-tab-selected:hover {
-  box-shadow: 0 0 18px rgba(239,68,68,0.4), 0 0 18px rgba(59,130,246,0.4);
+  box-shadow: 0 0 8px rgba(239,68,68,0.2), 0 0 8px rgba(59,130,246,0.2);
 }
 .midnight-day-active {
   background: #000000 !important;
   border: none !important;
-  margin: 1px;
-  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  margin: 0;
 }
 .midnight-gradient-border-spin {
-  background: conic-gradient(from 0deg, #ef4444, #3b82f6, #ffffff, #ef4444, #3b82f6, #ffffff, #ef4444);
-  animation: midnightBorderSpin 3s linear infinite;
-  opacity: 0.6;
+  display: none;
 }
 @keyframes midnightTabGradient {
   0% { background-position: 0% 50%; }
