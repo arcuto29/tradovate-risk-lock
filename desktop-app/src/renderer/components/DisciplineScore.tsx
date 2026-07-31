@@ -156,10 +156,10 @@ export const DisciplineScore: React.FC = () => {
 
             {/* Center Score */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-5xl font-black font-mono" style={{color: ringColor, textShadow: `0 0 20px ${ringColor}60, 0 0 40px ${ringColor}20`, animation: 'timerPulse 3s ease-in-out infinite'}}>
+              <p className="text-5xl font-black font-mono" style={{color: ringColor === 'url(#disciplineGrad)' ? '#ffffff' : ringColor, textShadow: `0 0 20px ${ringColor === 'url(#disciplineGrad)' ? 'rgba(239,68,68,0.4)' : ringColor + '60'}, 0 0 40px ${ringColor === 'url(#disciplineGrad)' ? 'rgba(59,130,246,0.3)' : ringColor + '20'}`, animation: 'timerPulse 3s ease-in-out infinite'}}>
                 {todayScore}
               </p>
-              <p className="text-lg font-bold mt-1" style={{color: `${themeColors.secondary}cc`}}>
+              <p className="text-lg font-bold mt-1" style={{color: themeColors.secondary}}>
                 {getGrade(todayScore)}
               </p>
             </div>
