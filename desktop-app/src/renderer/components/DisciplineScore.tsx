@@ -116,9 +116,9 @@ export const DisciplineScore: React.FC = () => {
               {/* Gradient for all themes */}
               <defs>
                 <linearGradient id="disciplineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
-                  <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : '#f59e0b'} />
-                  <stop offset="100%" stopColor={theme === 'nebula' ? '#818cf8' : theme === 'aurora' ? '#34d399' : theme === 'sakura' ? '#fb7185' : theme === 'midnight' ? '#3b82f6' : '#ef4444'} />
+                  <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'hologram' ? '#00d4ff' : theme === 'void' ? '#00ff88' : theme === 'gold' ? '#ffd700' : '#fbbf24'} />
+                  <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : theme === 'hologram' ? '#0066ff' : theme === 'void' ? '#00ff88' : theme === 'gold' ? '#ffffff' : '#f59e0b'} />
+                  <stop offset="100%" stopColor={theme === 'nebula' ? '#818cf8' : theme === 'aurora' ? '#34d399' : theme === 'sakura' ? '#fb7185' : theme === 'midnight' ? '#3b82f6' : theme === 'hologram' ? '#00d4ff' : theme === 'void' ? '#00cc6a' : theme === 'gold' ? '#b8860b' : '#ef4444'} />
                 </linearGradient>
               </defs>
               {/* Background track */}
