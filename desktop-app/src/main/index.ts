@@ -28,7 +28,7 @@ const isDev = process.env.NODE_ENV === 'development';
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 800, height: 850, minWidth: 600, minHeight: 600,
-    icon: path.join(app.getAppPath(), 'icon.png'),
+    icon: path.join(app.getAppPath(), 'icon.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
     title: 'Trading Guardian', autoHideMenuBar: true,
   });
