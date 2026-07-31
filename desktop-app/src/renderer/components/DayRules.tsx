@@ -122,8 +122,15 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             </div>
             <div
               className={`toggle-premium ${config.enabled ? 'active' : ''}`}
-              onClick={() => !isLocked && updateDay(selectedDay, 'enabled', !config.enabled)}
-              style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
+              onClick={() => {
+                // Can't disable day rules on current day if blocked
+                if (selectedDay === today && config.enabled && config.blocked) return;
+                if (!isLocked) updateDay(selectedDay, 'enabled', !config.enabled);
+              }}
+              style={{
+                opacity: isLocked || (selectedDay === today && config.enabled && config.blocked) ? 0.3 : 1,
+                cursor: isLocked || (selectedDay === today && config.enabled && config.blocked) ? 'not-allowed' : 'pointer'
+              }}
             />
           </div>
 
@@ -134,14 +141,28 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                 <label className="flex items-center justify-between cursor-pointer group">
                   <div>
                     <span className="text-sm text-white/50 group-hover:text-white/70 transition-colors font-medium">Block all trading</span>
-                    <p className="text-[0.6rem] text-white/20 mt-0.5">No trades allowed this day. Complete day off.</p>
+                    <p className="text-[0.6rem] text-white/20 mt-0.5">
+                      {selectedDay === today && config.blocked
+                        ? "Locked for today. You set this rule - can't undo until tomorrow."
+                        : "No trades allowed this day. Complete day off."}
+                    </p>
                   </div>
                   <div
                     className={`toggle-premium ${config.blocked ? 'active' : ''}`}
-                    onClick={() => !isLocked && updateDay(selectedDay, 'blocked', !config.blocked)}
-                    style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                    onClick={() => {
+                      // Can't unblock on the current day
+                      if (selectedDay === today && config.blocked) return;
+                      if (!isLocked) updateDay(selectedDay, 'blocked', !config.blocked);
+                    }}
+                    style={{
+                      opacity: isLocked || (selectedDay === today && config.blocked) ? 0.3 : 1,
+                      cursor: isLocked || (selectedDay === today && config.blocked) ? 'not-allowed' : 'pointer'
+                    }}
                   />
                 </label>
+                {selectedDay === today && config.blocked && (
+                  <p className="text-[0.55rem] text-red-400/60 mt-2 font-medium">This cannot be changed until tomorrow.</p>
+                )}
               </div>
 
               {!config.blocked && (
