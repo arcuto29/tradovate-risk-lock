@@ -19,6 +19,7 @@ import { ActivationScreen } from './components/ActivationScreen';
 import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { TradingSimulator } from './components/TradingSimulator';
 import { Logo } from './components/Logo';
 import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
@@ -26,13 +27,13 @@ import { AdvancedProtection } from './components/AdvancedProtection';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings' | 'simulator';
 
 declare global {
   interface Window { electronAPI: any; }
 }
 
-const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string }[] = [
+const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string; devOnly?: boolean }[] = [
   { page: 'main', label: 'Risk', lockedLabel: 'Status', icon: '◆' },
   { page: 'session', label: 'Session', icon: '◷' },
   { page: 'coach', label: 'Coach', icon: '◈' },
@@ -41,6 +42,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'discipline', label: 'Score', icon: '◉' },
   { page: 'blocklist', label: 'Blocklist', icon: '◻' },
   { page: 'settings', label: 'Settings', icon: '◎' },
+  { page: 'simulator', label: 'Sim', icon: '▶', devOnly: true },
 ];
 
 export const App: React.FC = () => {
@@ -148,7 +150,7 @@ export const App: React.FC = () => {
 
         {/* Nav */}
         <nav className="flex justify-center gap-1">
-          {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => {
+          {NAV_ITEMS.filter(item => !item.devOnly || devMode).map(({ page, label, lockedLabel, icon }) => {
             // Block only Risk tab content if pre-market not done (let them access other tabs)
             const navBlocked = false; // Nav is always accessible
             const isMidnight = theme === 'midnight';
@@ -261,6 +263,7 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
+          {currentPage === 'simulator' && <TradingSimulator />}
         </div>
       </main>
 
