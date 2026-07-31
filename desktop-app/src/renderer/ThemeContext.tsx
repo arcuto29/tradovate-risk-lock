@@ -5,7 +5,7 @@ export type Theme = 'nebula' | 'aurora' | 'sakura' | 'sunset' | 'midnight';
 export const THEMES: { id: Theme; name: string; type: 'dark' | 'light'; description: string }[] = [
   { id: 'nebula', name: 'Nebula', type: 'dark', description: 'Deep space, stars, cyan & purple' },
   { id: 'aurora', name: 'Aurora', type: 'dark', description: 'Northern lights, green & teal' },
-  { id: 'midnight', name: 'Midnight', type: 'dark', description: 'Pure black, OLED, minimal white' },
+  { id: 'midnight', name: 'Midnight', type: 'dark', description: 'Pure black, red & blue, OLED' },
   { id: 'sakura', name: 'Sakura', type: 'light', description: 'Cherry blossom, pink & rose' },
   { id: 'sunset', name: 'Sunset', type: 'light', description: 'Golden hour, amber & orange' },
 ];

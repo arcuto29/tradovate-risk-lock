@@ -1333,16 +1333,16 @@ main > div {
 [data-theme="midnight"] .glass-strong { background: rgba(255,255,255,0.03); backdrop-filter: none; border: 1px solid rgba(255,255,255,0.08); }
 /* Midnight card border glow animation */
 [data-theme="midnight"] .card-premium { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); box-shadow: none; position: relative; overflow: hidden; }
-[data-theme="midnight"] .card-premium::before { background: conic-gradient(from 0deg, rgba(255,255,255,0.25), rgba(255,255,255,0.0), rgba(255,255,255,0.25), rgba(255,255,255,0.0)) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: midnightBorderSpin 6s linear infinite; }
+[data-theme="midnight"] .card-premium::before { background: conic-gradient(from 0deg, rgba(239,68,68,0.3), rgba(255,255,255,0.0), rgba(59,130,246,0.3), rgba(255,255,255,0.0), rgba(239,68,68,0.3)) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: midnightBorderSpin 6s linear infinite; }
 [data-theme="midnight"] .card-premium::after { background: none; }
 
-[data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.2); }
-[data-theme="midnight"] .btn-premium { background: #ffffff; color: #000000 !important; box-shadow: 0 0 25px rgba(255,255,255,0.15), 0 0 50px rgba(255,255,255,0.05); }
-[data-theme="midnight"] .btn-premium:hover { box-shadow: 0 0 35px rgba(255,255,255,0.25), 0 0 70px rgba(255,255,255,0.1); transform: translateY(-1px); }
-[data-theme="midnight"] .toggle-premium.active { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 12px rgba(255,255,255,0.1); }
-[data-theme="midnight"] .toggle-premium.active::after { background: #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.6); }
-[data-theme="midnight"] .sidebar-active { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.12) !important; }
-[data-theme="midnight"] .sidebar-active::before { background: #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.4); }
+[data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 10px rgba(239,68,68,0.4), 0 0 10px rgba(59,130,246,0.4); }
+[data-theme="midnight"] .btn-premium { background: linear-gradient(135deg, #ef4444, #3b82f6); color: #ffffff !important; box-shadow: 0 0 15px rgba(239,68,68,0.2), 0 0 15px rgba(59,130,246,0.2); }
+[data-theme="midnight"] .btn-premium:hover { box-shadow: 0 0 25px rgba(239,68,68,0.35), 0 0 25px rgba(59,130,246,0.35); transform: translateY(-1px); }
+[data-theme="midnight"] .toggle-premium.active { background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(59,130,246,0.15)); border-color: rgba(255,255,255,0.3); box-shadow: 0 0 8px rgba(239,68,68,0.15), 0 0 8px rgba(59,130,246,0.15); }
+[data-theme="midnight"] .toggle-premium.active::after { background: #ffffff; box-shadow: 0 0 6px rgba(239,68,68,0.4), 0 0 6px rgba(59,130,246,0.4); }
+[data-theme="midnight"] .sidebar-active { background: rgba(255,255,255,0.03) !important; border-color: rgba(255,255,255,0.1) !important; }
+[data-theme="midnight"] .sidebar-active::before { background: linear-gradient(180deg, #ef4444, #3b82f6); box-shadow: 0 0 8px rgba(239,68,68,0.3), 0 0 8px rgba(59,130,246,0.3); }
 [data-theme="midnight"] .text-glow-cyan { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
 [data-theme="midnight"] .btn-premium { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(161,161,170,0.9)); color: #000 !important; }
 [data-theme="midnight"] .btn-premium:hover { box-shadow: 0 0 25px rgba(255,255,255,0.15); }
@@ -1440,19 +1440,19 @@ main > div {
 
 /* Midnight: Trading Guardian header glow trace */
 [data-theme="midnight"] .text-gradient {
-  background: linear-gradient(135deg, #ffffff, #a1a1aa, #ffffff);
+  background: linear-gradient(135deg, #ef4444 0%, #ffffff 25%, #3b82f6 50%, #ffffff 75%, #ef4444 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  background-size: 200% 200%;
+  background-size: 300% 300%;
   animation: gradientX 4s ease infinite;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)) drop-shadow(0 0 20px rgba(255,255,255,0.2));
+  filter: drop-shadow(0 0 5px rgba(239,68,68,0.3)) drop-shadow(0 0 5px rgba(59,130,246,0.3));
 }
 
-/* Midnight: Shield logo glow */
+/* Midnight: Shield logo glow - red/blue split */
 [data-theme="midnight"] .shield-icon,
 [data-theme="midnight"] header svg {
-  filter: drop-shadow(0 0 6px rgba(255,255,255,0.6)) drop-shadow(0 0 15px rgba(255,255,255,0.3)) !important;
+  filter: drop-shadow(-3px 0 6px rgba(239,68,68,0.4)) drop-shadow(3px 0 6px rgba(59,130,246,0.4)) !important;
 }
 
 /* Midnight: Priisma visor effect - scanning light bar */
