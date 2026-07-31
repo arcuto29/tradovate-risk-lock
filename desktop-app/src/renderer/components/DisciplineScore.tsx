@@ -98,27 +98,59 @@ export const DisciplineScore: React.FC = () => {
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
         <div className="relative z-10">
           <p className="text-[0.55rem] font-bold tracking-[3px] uppercase text-white/25 mb-6">Today</p>
-          <div className="relative inline-block">
+          <div className="relative inline-block" style={{width: '200px', height: '200px'}}>
+
+            {/* Outer orbit particles */}
+            <svg width="200" height="200" className="absolute inset-0" style={{animation: 'spin 10s linear infinite'}}>
+              <circle cx="100" cy="8" r="2" fill={ringColor} opacity="0.6" />
+              <circle cx="192" cy="100" r="1.5" fill={themeColors.secondary} opacity="0.4" />
+              <circle cx="100" cy="192" r="2" fill={ringColor} opacity="0.5" />
+              <circle cx="8" cy="100" r="1.5" fill={themeColors.secondary} opacity="0.3" />
+            </svg>
+
+            {/* Counter-rotating outer ring */}
+            <svg width="200" height="200" className="absolute inset-0" style={{animation: 'spin 20s linear infinite reverse'}}>
+              <circle cx="100" cy="100" r="95" fill="none" stroke={`${ringColor}10`} strokeWidth="0.5" strokeDasharray="3 8" />
+            </svg>
+
             {/* SVG Ring */}
-            <svg width="180" height="180" className="transform -rotate-90">
-              <circle cx="90" cy="90" r={radius} fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="5" />
+            <svg width="200" height="200" className="absolute inset-0 transform -rotate-90">
+              {/* Background track */}
+              <circle cx="100" cy="100" r={radius} fill="none" stroke={`${ringColor}12`} strokeWidth="6" />
+              {/* Inner ring */}
+              <circle cx="100" cy="100" r={radius - 12} fill="none" stroke={`${ringColor}06`} strokeWidth="1" />
+              {/* Main progress arc */}
               <circle
-                cx="90" cy="90" r={radius} fill="none"
+                cx="100" cy="100" r={radius} fill="none"
                 stroke={ringColor}
-                strokeWidth="5"
+                strokeWidth="6"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeOffset}
                 strokeLinecap="round"
                 className="transition-all duration-1000"
-                style={{filter: `drop-shadow(0 0 10px ${ringColor}80)`}}
+                style={{filter: `drop-shadow(0 0 10px ${ringColor}90) drop-shadow(0 0 25px ${ringColor}40)`}}
+              />
+              {/* Secondary thin arc */}
+              <circle
+                cx="100" cy="100" r={radius + 8} fill="none"
+                stroke={`${themeColors.secondary}30`}
+                strokeWidth="1.5"
+                strokeDasharray={2 * Math.PI * (radius + 8)}
+                strokeDashoffset={2 * Math.PI * (radius + 8) * (1 - todayScore / 100 * 0.95)}
+                strokeLinecap="round"
+                className="transition-all duration-1000"
               />
             </svg>
+
+            {/* Center glow backdrop */}
+            <div className="absolute inset-[20px] rounded-full" style={{background: `radial-gradient(circle at 50% 45%, ${ringColor}10 0%, transparent 60%)`}} />
+
             {/* Center Score */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className={`text-5xl font-black font-mono ${getScoreColor(todayScore)}`} style={{textShadow: `0 0 20px ${ringColor}60`}}>
+              <p className="text-5xl font-black font-mono" style={{color: ringColor, textShadow: `0 0 20px ${ringColor}60, 0 0 40px ${ringColor}20`, animation: 'timerPulse 3s ease-in-out infinite'}}>
                 {todayScore}
               </p>
-              <p className={`text-lg font-bold mt-1 bg-gradient-to-r ${getScoreGradient(todayScore)} bg-clip-text text-transparent`}>
+              <p className="text-lg font-bold mt-1" style={{color: `${themeColors.secondary}cc`}}>
                 {getGrade(todayScore)}
               </p>
             </div>
