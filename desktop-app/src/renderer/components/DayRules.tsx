@@ -66,6 +66,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
 
   const today = DAYS[new Date().getDay() - 1] || 'Monday';
   const config = dayConfigs[selectedDay] || DEFAULT_CONFIG;
+  const devMode = localStorage.getItem('tg-dev-mode') === 'true';
 
   return (
     <div className="max-w-lg">
@@ -124,12 +125,12 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
               className={`toggle-premium ${config.enabled ? 'active' : ''}`}
               onClick={() => {
                 // Can't disable day rules on current day if blocked
-                if (selectedDay === today && config.enabled && config.blocked) return;
+                if (selectedDay === today && config.enabled && config.blocked && !devMode) return;
                 if (!isLocked) updateDay(selectedDay, 'enabled', !config.enabled);
               }}
               style={{
-                opacity: isLocked || (selectedDay === today && config.enabled && config.blocked) ? 0.3 : 1,
-                cursor: isLocked || (selectedDay === today && config.enabled && config.blocked) ? 'not-allowed' : 'pointer'
+                opacity: isLocked || (selectedDay === today && config.enabled && config.blocked && !devMode) ? 0.3 : 1,
+                cursor: isLocked || (selectedDay === today && config.enabled && config.blocked && !devMode) ? 'not-allowed' : 'pointer'
               }}
             />
           </div>
@@ -150,13 +151,13 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                   <div
                     className={`toggle-premium ${config.blocked ? 'active' : ''}`}
                     onClick={() => {
-                      // Can't unblock on the current day
-                      if (selectedDay === today && config.blocked) return;
+                      // Can't unblock on the current day (unless dev mode)
+                      if (selectedDay === today && config.blocked && !devMode) return;
                       if (!isLocked) updateDay(selectedDay, 'blocked', !config.blocked);
                     }}
                     style={{
-                      opacity: isLocked || (selectedDay === today && config.blocked) ? 0.3 : 1,
-                      cursor: isLocked || (selectedDay === today && config.blocked) ? 'not-allowed' : 'pointer'
+                      opacity: isLocked || (selectedDay === today && config.blocked && !devMode) ? 0.3 : 1,
+                      cursor: isLocked || (selectedDay === today && config.blocked && !devMode) ? 'not-allowed' : 'pointer'
                     }}
                   />
                 </label>

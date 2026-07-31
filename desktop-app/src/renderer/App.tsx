@@ -57,6 +57,7 @@ export const App: React.FC = () => {
   const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
   const [welcomeDone, setWelcomeDone] = useState(() => localStorage.getItem('tg-welcome-done') === 'true');
+  const [devMode, setDevMode] = useState(() => localStorage.getItem('tg-dev-mode') === 'true');
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
 
@@ -90,6 +91,12 @@ export const App: React.FC = () => {
           if (r?.success) refreshState();
         });
       }
+      // Ctrl+Shift+D to toggle dev mode
+      if (e.ctrlKey && e.shiftKey && e.key === "D") {
+        const nd = !JSON.parse(localStorage.getItem("tg-dev-mode") || "false");
+        localStorage.setItem("tg-dev-mode", String(nd));
+        window.location.reload();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -111,7 +118,7 @@ export const App: React.FC = () => {
     return <ActivationScreen onActivated={() => { setActivated(true); refreshState(); }} />;
   }
 
-  if (!welcomeDone) {
+  if (!welcomeDone && !devMode) {
     return <WelcomeScreen onComplete={() => { setWelcomeDone(true); localStorage.setItem('tg-welcome-done', 'true'); }} />;
   }
 
@@ -223,7 +230,7 @@ export const App: React.FC = () => {
                     Dev Exit Fullscreen
                   </button>
                 </>
-              : !preMarketPassed
+              : (!preMarketPassed && !devMode)
                 ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
                 : <>
                     {limitsTightened && (
