@@ -1363,7 +1363,9 @@ main > div {
 [data-theme="midnight"] [class*="border-purple"] { border-color: rgba(255,255,255,0.1) !important; }
 [data-theme="midnight"] [class*="bg-cyan"] { background-color: rgba(255,255,255,0.04) !important; }
 [data-theme="midnight"] [class*="bg-emerald"] { background-color: rgba(255,255,255,0.03) !important; }
-[data-theme="midnight"] input[type="checkbox"] { accent-color: #ffffff; }
+/* Midnight checkboxes - red/blue gradient */
+[data-theme="midnight"] input[type="checkbox"] { accent-color: #ef4444; }
+[data-theme="midnight"] input[type="checkbox"]:checked { accent-color: #3b82f6; }
 
 
 
@@ -1481,4 +1483,75 @@ main > div {
   10% { opacity: 1; }
   90% { opacity: 1; }
   100% { left: 160%; opacity: 0; }
+}
+
+
+
+/* ═══ MIDNIGHT: FORCE ALL DETAILS TO MATCH ═══ */
+
+/* Header icons - force red/blue glow instead of cyan/purple */
+[data-theme="midnight"] [class*="from-cyan"], [data-theme="midnight"] [class*="from-purple"],
+[data-theme="midnight"] [class*="from-indigo"], [data-theme="midnight"] [class*="from-emerald"],
+[data-theme="midnight"] [class*="from-orange"], [data-theme="midnight"] [class*="from-amber"],
+[data-theme="midnight"] [class*="from-pink"], [data-theme="midnight"] [class*="from-red"] {
+  background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(59,130,246,0.1)) !important;
+}
+
+/* Icon container borders */
+[data-theme="midnight"] [class*="border-cyan"], [data-theme="midnight"] [class*="border-purple"],
+[data-theme="midnight"] [class*="border-indigo"], [data-theme="midnight"] [class*="border-emerald"],
+[data-theme="midnight"] [class*="border-orange"], [data-theme="midnight"] [class*="border-amber"],
+[data-theme="midnight"] [class*="border-pink"] {
+  border-color: rgba(239,68,68,0.2) !important;
+}
+
+/* Emoji icon drop-shadows - red/blue split glow */
+[data-theme="midnight"] [style*="drop-shadow"] {
+  filter: drop-shadow(-2px 0 4px rgba(239,68,68,0.4)) drop-shadow(2px 0 4px rgba(59,130,246,0.4)) !important;
+}
+
+/* Section labels (COOLDOWN AFTER LOSS, LOSS STREAK, etc) */
+[data-theme="midnight"] [class*="text-cyan-400\\/"] { color: #ef4444 !important; }
+[data-theme="midnight"] [class*="text-red-400\\/"] { color: #ef4444 !important; }
+[data-theme="midnight"] [class*="text-emerald-400\\/"] { color: #3b82f6 !important; }
+[data-theme="midnight"] [class*="text-purple-400\\/"] { color: #3b82f6 !important; }
+[data-theme="midnight"] [class*="text-indigo-400\\/"] { color: #ef4444 !important; }
+[data-theme="midnight"] [class*="text-orange-400\\/"] { color: #ef4444 !important; }
+[data-theme="midnight"] [class*="text-amber-400\\/"] { color: #3b82f6 !important; }
+
+/* Accent line at top of cards */
+[data-theme="midnight"] [class*="via-cyan"] { --tw-gradient-via: rgba(239,68,68,0.3) !important; }
+[data-theme="midnight"] [class*="via-purple"] { --tw-gradient-via: rgba(59,130,246,0.3) !important; }
+[data-theme="midnight"] [class*="via-emerald"] { --tw-gradient-via: rgba(59,130,246,0.2) !important; }
+[data-theme="midnight"] [class*="via-red"] { --tw-gradient-via: rgba(239,68,68,0.3) !important; }
+[data-theme="midnight"] [class*="via-amber"] { --tw-gradient-via: rgba(59,130,246,0.2) !important; }
+[data-theme="midnight"] [class*="via-indigo"] { --tw-gradient-via: rgba(239,68,68,0.2) !important; }
+[data-theme="midnight"] [class*="via-orange"] { --tw-gradient-via: rgba(239,68,68,0.2) !important; }
+[data-theme="midnight"] [class*="via-pink"] { --tw-gradient-via: rgba(239,68,68,0.2) !important; }
+
+/* Background tints on sections */
+[data-theme="midnight"] [class*="bg-red-400"] { background-color: rgba(239,68,68,0.06) !important; }
+[data-theme="midnight"] [class*="bg-orange-400"] { background-color: rgba(239,68,68,0.05) !important; }
+[data-theme="midnight"] [class*="bg-amber-400"] { background-color: rgba(59,130,246,0.05) !important; }
+
+/* Status dots and indicators */
+[data-theme="midnight"] [class*="bg-emerald-400"] { background-color: #3b82f6 !important; }
+[data-theme="midnight"] [class*="bg-cyan-400"] { background-color: #ef4444 !important; }
+[data-theme="midnight"] [class*="shadow-\\[0_0"][class*="emerald"] { box-shadow: 0 0 6px rgba(59,130,246,0.6) !important; }
+[data-theme="midnight"] [class*="shadow-\\[0_0"][class*="cyan"] { box-shadow: 0 0 6px rgba(239,68,68,0.6) !important; }
+
+/* Focus states on inputs */
+[data-theme="midnight"] input:focus, [data-theme="midnight"] select:focus, [data-theme="midnight"] textarea:focus {
+  border-color: rgba(239,68,68,0.3) !important;
+  box-shadow: -2px 0 8px rgba(239,68,68,0.08), 2px 0 8px rgba(59,130,246,0.08) !important;
+}
+
+/* Hover on cards - red/blue split shadow */
+[data-theme="midnight"] .card-premium:hover {
+  box-shadow: -3px 0 20px rgba(239,68,68,0.06), 3px 0 20px rgba(59,130,246,0.06), 0 0 1px rgba(255,255,255,0.15) !important;
+}
+
+/* Nav active tab - red/blue underline */
+[data-theme="midnight"] nav button span:last-child {
+  background: linear-gradient(90deg, #ef4444, #3b82f6) !important;
 }
