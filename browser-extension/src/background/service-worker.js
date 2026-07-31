@@ -185,6 +185,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'tilt_update', score: msg.score, level: msg.level, blocked: msg.blocked }));
       sendResponse({ success: true });
       break;
+    case 'TRADE_FILL':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'trade_fill', symbol: msg.symbol, size: msg.size, direction: msg.direction, entryTime: msg.entryTime, exitTime: msg.exitTime, pnl: msg.pnl, result: msg.result }));
+      sendResponse({ success: true });
+      break;
     case 'REPORT_SETTINGS_ACCESS':
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'report_settings_access', url: msg.url }));
       sendResponse({ success: true });

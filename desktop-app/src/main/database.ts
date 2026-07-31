@@ -322,4 +322,161 @@ export class DatabaseManager {
     this.db.run('UPDATE app_settings SET advanced_config = ? WHERE id = 1', [configJson]);
     this.save();
   }
+
+  // ─── Trades Table (Analytics) ─────────────────────────────────────────────
+  initTradesTable(): void {
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS trades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        symbol TEXT NOT NULL,
+        size INTEGER NOT NULL DEFAULT 1,
+        direction TEXT NOT NULL DEFAULT 'Long',
+        entry_time TEXT NOT NULL,
+        exit_time TEXT NOT NULL,
+        pnl REAL NOT NULL DEFAULT 0,
+        result TEXT NOT NULL DEFAULT 'loss',
+        duration_seconds INTEGER DEFAULT 0
+      );
+    `);
+    this.save();
+  }
+
+  insertTrade(trade: { symbol: string; size: number; direction: string; entryTime: string; exitTime: string; pnl: number; result: string }): void {
+    this.initTradesTable();
+    // Calculate duration
+    let duration = 0;
+    try {
+      const entry = new Date(trade.entryTime).getTime();
+      const exit = new Date(trade.exitTime).getTime();
+      duration = Math.max(0, Math.floor((exit - entry) / 1000));
+    } catch {}
+    this.db.run(
+      'INSERT INTO trades (symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [trade.symbol, trade.size, trade.direction, trade.entryTime, trade.exitTime, trade.pnl, trade.result, duration]
+    );
+    this.save();
+  }
+
+  getTrades(limit: number = 500): any[] {
+    this.initTradesTable();
+    const results = this.db.exec('SELECT id, symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds FROM trades ORDER BY id DESC LIMIT ?', [limit]);
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => ({
+      id: row[0],
+      symbol: row[1],
+      size: row[2],
+      direction: row[3],
+      entryTime: row[4],
+      exitTime: row[5],
+      pnl: row[6],
+      result: row[7],
+      durationSeconds: row[8],
+    }));
+  }
+
+  getTradesByDateRange(startDate: string, endDate: string): any[] {
+    this.initTradesTable();
+    const results = this.db.exec(
+      'SELECT id, symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds FROM trades WHERE entry_time >= ? AND entry_time <= ? ORDER BY entry_time ASC',
+      [startDate, endDate + 'T23:59:59']
+    );
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => ({
+      id: row[0],
+      symbol: row[1],
+      size: row[2],
+      direction: row[3],
+      entryTime: row[4],
+      exitTime: row[5],
+      pnl: row[6],
+      result: row[7],
+      durationSeconds: row[8],
+    }));
+  }
+
+  getTradeStats(): any {
+    this.initTradesTable();
+    const all = this.getTrades(10000);
+    if (all.length === 0) return null;
+
+    const wins = all.filter(t => t.result === 'win');
+    const losses = all.filter(t => t.result === 'loss');
+    const totalPnl = all.reduce((s, t) => s + t.pnl, 0);
+    const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
+    const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
+    const avgWin = wins.length > 0 ? grossProfit / wins.length : 0;
+    const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0;
+    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 999 : 0;
+    const winRate = all.length > 0 ? (wins.length / all.length) * 100 : 0;
+    const avgDuration = all.length > 0 ? all.reduce((s, t) => s + (t.durationSeconds || 0), 0) / all.length : 0;
+    const largestWin = wins.length > 0 ? Math.max(...wins.map(t => t.pnl)) : 0;
+    const largestLoss = losses.length > 0 ? Math.min(...losses.map(t => t.pnl)) : 0;
+
+    // Daily P&L grouping
+    const byDate: Record<string, number> = {};
+    all.forEach(t => {
+      const date = t.entryTime?.split('T')[0] || '';
+      if (date) byDate[date] = (byDate[date] || 0) + t.pnl;
+    });
+    const dailyPnLs = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]));
+    const bestDay = dailyPnLs.length > 0 ? dailyPnLs.reduce((best, d) => d[1] > best[1] ? d : best) : ['', 0];
+    const worstDay = dailyPnLs.length > 0 ? dailyPnLs.reduce((worst, d) => d[1] < worst[1] ? d : worst) : ['', 0];
+
+    // By weekday
+    const byWeekday: Record<number, { pnl: number; count: number }> = {};
+    all.forEach(t => {
+      const d = new Date(t.entryTime);
+      const day = d.getDay();
+      if (!byWeekday[day]) byWeekday[day] = { pnl: 0, count: 0 };
+      byWeekday[day].pnl += t.pnl;
+      byWeekday[day].count++;
+    });
+
+    // By hour
+    const byHour: Record<number, { pnl: number; count: number; wins: number }> = {};
+    all.forEach(t => {
+      const d = new Date(t.entryTime);
+      const h = d.getHours();
+      if (!byHour[h]) byHour[h] = { pnl: 0, count: 0, wins: 0 };
+      byHour[h].pnl += t.pnl;
+      byHour[h].count++;
+      if (t.result === 'win') byHour[h].wins++;
+    });
+
+    // Consecutive wins/losses
+    let maxConsecWins = 0, maxConsecLosses = 0, curWins = 0, curLosses = 0;
+    all.reverse().forEach(t => {
+      if (t.result === 'win') { curWins++; curLosses = 0; maxConsecWins = Math.max(maxConsecWins, curWins); }
+      else { curLosses++; curWins = 0; maxConsecLosses = Math.max(maxConsecLosses, curLosses); }
+    });
+
+    // Equity curve (cumulative P&L over time)
+    let cumPnl = 0;
+    const equityCurve = all.reverse().map(t => { cumPnl += t.pnl; return { date: t.entryTime?.split('T')[0] || '', pnl: cumPnl }; });
+
+    return {
+      totalTrades: all.length,
+      wins: wins.length,
+      losses: losses.length,
+      winRate: Math.round(winRate * 10) / 10,
+      totalPnl: Math.round(totalPnl * 100) / 100,
+      grossProfit: Math.round(grossProfit * 100) / 100,
+      grossLoss: Math.round(grossLoss * 100) / 100,
+      avgWin: Math.round(avgWin * 100) / 100,
+      avgLoss: Math.round(avgLoss * 100) / 100,
+      profitFactor: Math.round(profitFactor * 100) / 100,
+      largestWin: Math.round(largestWin * 100) / 100,
+      largestLoss: Math.round(largestLoss * 100) / 100,
+      avgDurationSeconds: Math.round(avgDuration),
+      maxConsecWins,
+      maxConsecLosses,
+      bestDay: { date: bestDay[0], pnl: Math.round((bestDay[1] as number) * 100) / 100 },
+      worstDay: { date: worstDay[0], pnl: Math.round((worstDay[1] as number) * 100) / 100 },
+      byWeekday,
+      byHour,
+      dailyPnLs: dailyPnLs.map(([date, pnl]) => ({ date, pnl: Math.round(pnl * 100) / 100 })),
+      equityCurve,
+      tradesPerDay: dailyPnLs.length > 0 ? Math.round((all.length / dailyPnLs.length) * 10) / 10 : 0,
+    };
+  }
 }

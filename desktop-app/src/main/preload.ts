@@ -33,6 +33,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Advanced protection
   getAdvancedConfig: () => ipcRenderer.invoke('get-advanced-config'),
   updateAdvancedConfig: (config: any) => ipcRenderer.invoke('update-advanced-config', config),
+  // Trade analytics
+  getTrades: (limit?: number) => ipcRenderer.invoke('get-trades', limit),
+  getTradeStats: () => ipcRenderer.invoke('get-trade-stats'),
+  getTradesByDate: (startDate: string, endDate: string) => ipcRenderer.invoke('get-trades-by-date', startDate, endDate),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),

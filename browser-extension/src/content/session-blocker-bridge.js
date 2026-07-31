@@ -97,6 +97,10 @@
     if (event.data && event.data.type === 'TRL_TILT_UPDATE') {
       chrome.runtime.sendMessage({ type: 'TILT_UPDATE', score: event.data.score, level: event.data.level, blocked: event.data.blocked });
     }
+
+    if (event.data && event.data.type === 'TRL_TRADE_FILL') {
+      chrome.runtime.sendMessage({ type: 'TRADE_FILL', symbol: event.data.symbol, size: event.data.size, direction: event.data.direction, entryTime: event.data.entryTime, exitTime: event.data.exitTime, pnl: event.data.pnl, result: event.data.result });
+    }
   });
 
   // ─── Overlays ──────────────────────────────────────────────────────────────

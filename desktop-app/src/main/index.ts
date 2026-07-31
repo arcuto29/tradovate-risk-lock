@@ -673,6 +673,19 @@ function setupIPC(): void {
     db.logActivity('advanced_config_updated', 'Advanced protection settings updated');
     return { success: true };
   });
+
+  // Trade Analytics
+  ipcMain.handle('get-trades', (_e, limit?) => {
+    return db.getTrades(limit || 500);
+  });
+
+  ipcMain.handle('get-trade-stats', () => {
+    return db.getTradeStats();
+  });
+
+  ipcMain.handle('get-trades-by-date', (_e, startDate, endDate) => {
+    return db.getTradesByDateRange(startDate, endDate);
+  });
 }
 
 app.whenReady().then(async () => {

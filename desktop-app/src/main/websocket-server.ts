@@ -89,6 +89,18 @@ export class WebSocketServer {
       case 'tilt_update':
         if (this.onTiltUpdate) this.onTiltUpdate(message);
         break;
+      case 'trade_fill':
+        // Store trade in database for analytics
+        this.db.insertTrade({
+          symbol: message.symbol || 'UNKNOWN',
+          size: message.size || 1,
+          direction: message.direction || 'Long',
+          entryTime: message.entryTime || new Date().toISOString(),
+          exitTime: message.exitTime || new Date().toISOString(),
+          pnl: message.pnl || 0,
+          result: message.result || (message.pnl >= 0 ? 'win' : 'loss'),
+        });
+        break;
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));
         break;

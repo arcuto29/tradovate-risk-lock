@@ -428,7 +428,16 @@
 
       // Order passed all checks — notify tilt meter
       var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
-      window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize }, '*');
+      var orderSymbol = body ? (body.symbolId || body.symbol || body.instrument || '') : '';
+      var orderDirection = 'Long';
+      if (body) {
+        var action = (body.action || body.orderAction || body.side || '').toLowerCase();
+        if (action === 'sell' || action === 'short' || action === 'sellshort') orderDirection = 'Short';
+        if ((body.positionSize || body.qty || body.quantity || body.size || 0) < 0) orderDirection = 'Short';
+      }
+      lastOrderSymbol = orderSymbol.toUpperCase() || lastOrderSymbol;
+      lastOrderDirection = orderDirection;
+      window.postMessage({ type: 'TRL_ORDER_PLACED', size: Math.abs(orderSize), symbol: lastOrderSymbol, direction: orderDirection }, '*');
     }
 
     return origFetch.apply(this, arguments);
@@ -583,6 +592,69 @@
       }
     }
   }, 2000); // Check every 2 seconds
+
+  // ─── Trade Fill Logger ─────────────────────────────────────────────────────
+  // Tracks individual trades for the analytics dashboard
+  var openTrades = {}; // { symbol: { entryTime, size, direction, entryPnL } }
+  var tradeIdCounter = 0;
+
+  // When an order is placed successfully, log the entry
+  window.addEventListener('message', function(event) {
+    if (event.source !== window) return;
+    if (event.data && event.data.type === 'TRL_ORDER_PLACED' && event.data.size > 0) {
+      // An order went through - log as trade entry
+      // We know symbol + size from the last order body we parsed
+      var symbol = event.data.symbol || lastOrderSymbol || 'UNKNOWN';
+      var size = event.data.size || 1;
+      var direction = event.data.direction || lastOrderDirection || 'Long';
+      
+      if (!openTrades[symbol]) {
+        openTrades[symbol] = {
+          entryTime: new Date().toISOString(),
+          size: size,
+          direction: direction,
+          entryPnL: lastKnownPnL || 0,
+          id: ++tradeIdCounter,
+        };
+      }
+    }
+
+    // When a trade result comes in (win/loss), calculate and send to desktop
+    if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
+      var pnl = event.data.pnl || 0;
+      var result = event.data.result || (pnl >= 0 ? 'win' : 'loss');
+      
+      // Find the open trade to close
+      var closedSymbol = lastOrderSymbol || Object.keys(openTrades)[0] || 'UNKNOWN';
+      var openTrade = openTrades[closedSymbol];
+      var entryTime = openTrade ? openTrade.entryTime : new Date(Date.now() - 60000).toISOString();
+      var size = openTrade ? openTrade.size : 1;
+      var direction = openTrade ? openTrade.direction : 'Long';
+      
+      var tradeFill = {
+        type: 'trade_fill',
+        symbol: closedSymbol,
+        size: size,
+        direction: direction,
+        entryTime: entryTime,
+        exitTime: new Date().toISOString(),
+        pnl: pnl,
+        result: result,
+      };
+
+      // Send to desktop app via bridge
+      window.postMessage({ type: 'TRL_TRADE_FILL', ...tradeFill }, '*');
+      
+      // Clear the open trade
+      if (openTrades[closedSymbol]) {
+        delete openTrades[closedSymbol];
+      }
+    }
+  });
+
+  // Track last order details for logging
+  var lastOrderSymbol = '';
+  var lastOrderDirection = 'Long';
 
   // Also monitor fetch responses for order fills
   var origFetchForPnL = window.fetch;
