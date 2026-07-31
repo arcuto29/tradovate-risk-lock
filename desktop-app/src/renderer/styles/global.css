@@ -1580,3 +1580,13 @@ main > div {
 [data-theme="midnight"] [class*="bg-orange-400\\/10"] { background: rgba(255,255,255,0.05) !important; }
 [data-theme="midnight"] [class*="border-orange-400\\/20"] { border-color: rgba(255,255,255,0.15) !important; }
 [data-theme="midnight"] .text-orange-300 { color: #ffffff !important; }
+
+
+
+/* Midnight: day selector tabs - plain white, no colored backgrounds */
+[data-theme="midnight"] [class*="from-cyan-400\\/10"] { background: rgba(255,255,255,0.05) !important; }
+[data-theme="midnight"] [class*="border-cyan-400\\/20"] { border-color: rgba(255,255,255,0.15) !important; }
+[data-theme="midnight"] [class*="border-orange-400\\/15"] { border-color: rgba(255,255,255,0.08) !important; }
+[data-theme="midnight"] .text-orange-300\\/60 { color: rgba(255,255,255,0.4) !important; }
+[data-theme="midnight"] .bg-orange-400 { background-color: #ffffff !important; }
+[data-theme="midnight"] [class*="shadow-\\[0_0_4px_rgba\\(249"] { box-shadow: 0 0 4px rgba(255,255,255,0.4) !important; }
