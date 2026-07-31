@@ -92,5 +92,23 @@ export function getThemeColors(theme: Theme) {
         dotGlow: 'shadow-[0_0_6px_rgba(239,68,68,0.4)]',
         ring: '#ef4444',
       };
+    case 'optimus':
+      return {
+        primary: '#dc2626',
+        secondary: '#1e3a5f',
+        accent: 'red',
+        accentHover: 'red-300',
+        gradient: 'from-red-600 to-blue-900',
+        gradientBg: 'from-red-600/10 to-blue-900/10',
+        border: 'border-slate-400/20',
+        borderHover: 'border-slate-300/40',
+        text: 'text-slate-200',
+        textSoft: 'text-slate-400/60',
+        bg: 'bg-slate-400/5',
+        glow: 'shadow-[0_0_15px_rgba(220,38,38,0.15)]',
+        dot: 'bg-slate-300',
+        dotGlow: 'shadow-[0_0_6px_rgba(220,38,38,0.5)]',
+        ring: '#dc2626',
+      };
   }
 }

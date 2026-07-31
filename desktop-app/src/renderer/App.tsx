@@ -151,7 +151,7 @@ export const App: React.FC = () => {
           {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => {
             // Block only Risk tab content if pre-market not done (let them access other tabs)
             const navBlocked = false; // Nav is always accessible
-            const isMidnight = theme === 'midnight';
+            const isMidnight = theme === 'midnight' || theme === 'optimus';
             return (
             <button
               key={page}
@@ -166,11 +166,11 @@ export const App: React.FC = () => {
               style={currentPage === page && !isMidnight ? {background: `${colors.primary}08`} : undefined}
             >
               <span className="flex items-center gap-2">
-                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#ffffff' : colors.primary) : undefined}}>{icon}</span>
+                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#c0c0c0' : colors.primary) : undefined}}>{icon}</span>
                 <span>{page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}</span>
               </span>
               {currentPage === page && (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{background: isMidnight ? 'linear-gradient(90deg, #ef4444, #3b82f6)' : `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, boxShadow: isMidnight ? '0 0 8px rgba(239,68,68,0.5), 0 0 8px rgba(59,130,246,0.5)' : `0 0 8px ${colors.primary}80`}} />
+                <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, boxShadow: `0 0 8px ${colors.primary}80`}} />
               )}
             </button>
             );
