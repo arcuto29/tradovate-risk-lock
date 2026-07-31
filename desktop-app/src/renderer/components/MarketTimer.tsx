@@ -133,6 +133,8 @@ function formatCountdown(seconds: number): string {
 }
 
 export const MarketTimer: React.FC = () => {
+  const { theme } = useTheme();
+  const colors = getThemeColors(theme);
   const [session, setSession] = useState(getSessionInfo());
 
   useEffect(() => {
@@ -140,26 +142,35 @@ export const MarketTimer: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const isActive = session.active.length > 0;
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="w-1.5 h-1.5 rounded-full" style={{
-        background: session.color,
-        boxShadow: session.active.length > 0 ? `0 0 4px ${session.color}80` : 'none',
-        animation: session.active.length > 0 ? 'pulseGlow 2s ease-in-out infinite' : 'none',
-      }} />
-      <span className="text-[0.55rem] font-bold tracking-[1px] uppercase" style={{ color: `${session.color}dd` }}>
-        {session.label}
-      </span>
+    <div className="flex items-center gap-2.5">
+      {/* Session badge */}
+      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{
+        background: `${session.color}10`,
+        border: `1px solid ${session.color}25`,
+      }}>
+        <span className="w-2 h-2 rounded-full" style={{
+          background: session.color,
+          boxShadow: isActive ? `0 0 6px ${session.color}90, 0 0 12px ${session.color}40` : 'none',
+          animation: isActive ? 'pulseGlow 2s ease-in-out infinite' : 'none',
+        }} />
+        <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase" style={{ color: session.color }}>
+          {session.label}
+        </span>
+      </div>
+
+      {/* Countdown */}
       {session.timeLeft > 0 && (
-        <>
-          <span className="text-[0.45rem] text-white/15">|</span>
-          <span className="text-[0.5rem] text-white/25 font-medium">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[0.5rem] font-medium" style={{color: `${colors.primary}50`}}>
             {session.nextSession}
           </span>
-          <span className="text-[0.5rem] font-mono text-white/30">
+          <span className="text-[0.55rem] font-mono font-bold" style={{color: `${colors.primary}70`}}>
             {formatCountdown(session.timeLeft)}
           </span>
-        </>
+        </div>
       )}
     </div>
   );
