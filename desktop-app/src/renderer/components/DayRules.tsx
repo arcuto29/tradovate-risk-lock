@@ -6,6 +6,7 @@ const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 interface DayConfig {
   enabled: boolean;
   blocked: boolean;
+  blockedUntil: string; // HH:mm - block until this time (empty = all day)
   maxTrades: number;
   lossLimit: number;
   sessionEnd: string;
@@ -15,6 +16,7 @@ interface DayConfig {
 const DEFAULT_CONFIG: DayConfig = {
   enabled: false,
   blocked: false,
+  blockedUntil: '',
   maxTrades: 0,
   lossLimit: 0,
   sessionEnd: '',
@@ -25,6 +27,7 @@ const DEFAULT_CONFIG: DayConfig = {
 const FRIDAY_DEFAULT: DayConfig = {
   enabled: true,
   blocked: false,
+  blockedUntil: '',
   maxTrades: 2,
   lossLimit: 0,
   sessionEnd: '',
@@ -163,6 +166,22 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                 </label>
                 {selectedDay === today && config.blocked && (
                   <p className="text-[0.55rem] text-red-400/60 mt-2 font-medium">This cannot be changed until tomorrow.</p>
+                )}
+                {config.blocked && (
+                  <div className="mt-3 pt-3 border-t border-white/[0.04]">
+                    <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">Unblock at (empty = all day blocked)</label>
+                    <input
+                      type="time"
+                      value={config.blockedUntil}
+                      onChange={(e) => updateDay(selectedDay, 'blockedUntil', e.target.value)}
+                      disabled={isLocked || (selectedDay === today && !devMode)}
+                      placeholder="e.g. 11:00"
+                      className="w-32 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm font-medium focus:outline-none transition-all disabled:opacity-30 input-premium"
+                    />
+                    <p className="text-[0.55rem] text-white/15 mt-1.5">
+                      {config.blockedUntil ? `Trading blocked until ${config.blockedUntil} ET, then allowed.` : 'Blocked for the entire day.'}
+                    </p>
+                  </div>
                 )}
               </div>
 
