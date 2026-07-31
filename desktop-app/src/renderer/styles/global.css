@@ -1457,25 +1457,15 @@ main > div {
   filter: drop-shadow(-3px 0 6px rgba(239,68,68,0.4)) drop-shadow(3px 0 6px rgba(59,130,246,0.4)) !important;
 }
 
-/* Midnight: Priisma visor effect - scanning light bar */
+/* Midnight: Priisma same as Trading Guardian branding */
 [data-theme="midnight"] footer .text-gradient {
-  position: relative;
-  background: linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #ef4444 0%, #ffffff 25%, #3b82f6 50%, #ffffff 75%, #ef4444 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
-}
-
-[data-theme="midnight"] footer .text-gradient::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-  animation: visorScan 3s ease-in-out infinite;
+  background-size: 300% 300%;
+  animation: gradientX 4s ease infinite;
+  filter: drop-shadow(0 0 5px rgba(239,68,68,0.3)) drop-shadow(0 0 5px rgba(59,130,246,0.3));
 }
 
 @keyframes visorScan {
