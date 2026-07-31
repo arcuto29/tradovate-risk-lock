@@ -151,7 +151,7 @@ export const App: React.FC = () => {
           {NAV_ITEMS.map(({ page, label, lockedLabel, icon }) => {
             // Block only Risk tab content if pre-market not done (let them access other tabs)
             const navBlocked = false; // Nav is always accessible
-            const isMidnight = theme === 'midnight' || theme === 'optimus';
+            const isMidnight = theme === 'midnight';
             return (
             <button
               key={page}
@@ -166,7 +166,7 @@ export const App: React.FC = () => {
               style={currentPage === page && !isMidnight ? {background: `${colors.primary}08`} : undefined}
             >
               <span className="flex items-center gap-2">
-                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#c0c0c0' : colors.primary) : undefined}}>{icon}</span>
+                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#ffffff' : colors.primary) : undefined}}>{icon}</span>
                 <span>{page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}</span>
               </span>
               {currentPage === page && (

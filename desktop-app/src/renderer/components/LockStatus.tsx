@@ -73,9 +73,9 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
           <svg width="52" height="52" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="shield-icon">
             <defs>
               <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'optimus' ? '#dc2626' : '#fbbf24'} />
-                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#3b82f6' : theme === 'optimus' ? '#c0c0c0' : '#f59e0b'} />
-                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'optimus' ? '#1e3a5f' : '#fbbf24'} />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#3b82f6' : '#f59e0b'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
               </linearGradient>
             </defs>
             <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" fill="url(#shieldGrad)" stroke="none" />
@@ -155,9 +155,9 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
             <defs>
               <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'optimus' ? '#dc2626' : '#fbbf24'} />
-                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : theme === 'optimus' ? '#c0c0c0' : '#f59e0b'} />
-                <stop offset="100%" stopColor={theme === 'nebula' ? '#818cf8' : theme === 'aurora' ? '#34d399' : theme === 'sakura' ? '#fb7185' : theme === 'midnight' ? '#3b82f6' : theme === 'optimus' ? '#1e3a5f' : '#ef4444'} />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : '#fbbf24'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#ffffff' : '#f59e0b'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#818cf8' : theme === 'aurora' ? '#34d399' : theme === 'sakura' ? '#fb7185' : theme === 'midnight' ? '#3b82f6' : '#ef4444'} />
               </linearGradient>
             </defs>
           </svg>

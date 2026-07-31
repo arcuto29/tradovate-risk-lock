@@ -815,292 +815,6 @@
 
 
 
-/* ═══ OPTIMUS THEME (Dark Metallic + Red/Navy/Chrome) ═══ */
-[data-theme="optimus"] .nebula-bg {
-  background: #0a0e14;
-}
-[data-theme="optimus"] .nebula-bg::before {
-  background:
-    radial-gradient(ellipse 70% 30% at 20% 20%, rgba(220,38,38,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(30,58,95,0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 20% at 50% 80%, rgba(148,163,184,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 40% at 70% 15%, rgba(220,38,38,0.05) 0%, transparent 50%);
-  animation: optimusAmbient 20s ease-in-out infinite alternate;
-}
-[data-theme="optimus"] .nebula-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: none;
-  /* The mech shape is handled via the later ::after override with box-shadows */
-}
-
-/* Optimus stars - metallic sparks */
-[data-theme="optimus"] .stars {
-  display: block !important;
-  background-image:
-    radial-gradient(1px 1px at 15% 22%, rgba(192,192,192,0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 32% 48%, rgba(192,192,192,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 48% 15%, rgba(220,38,38,0.4) 0%, transparent 100%),
-    radial-gradient(2px 2px at 65% 42%, rgba(192,192,192,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 80% 58%, rgba(30,58,95,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 25% 75%, rgba(192,192,192,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 55% 88%, rgba(220,38,38,0.3) 0%, transparent 100%),
-    radial-gradient(2px 2px at 90% 25%, rgba(192,192,192,0.9) 0%, transparent 100%),
-    radial-gradient(1px 1px at 10% 60%, rgba(148,163,184,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 72% 80%, rgba(192,192,192,0.6) 0%, transparent 100%);
-  animation: optimusSparks 5s ease-in-out infinite alternate;
-}
-[data-theme="optimus"] .stars::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1px 1px at 8% 35%, rgba(192,192,192,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 42% 62%, rgba(220,38,38,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 58% 30%, rgba(192,192,192,0.7) 0%, transparent 100%),
-    radial-gradient(2px 2px at 85% 70%, rgba(30,58,95,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 35% 90%, rgba(192,192,192,0.4) 0%, transparent 100%);
-  animation: optimusSparks 7s ease-in-out infinite alternate-reverse;
-}
-[data-theme="optimus"] .stars::after { display: none; }
-[data-theme="optimus"] .sakura-petals { display: none; }
-
-/* Optimus glass - dark steel */
-[data-theme="optimus"] .glass {
-  background: rgba(10,14,20,0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148,163,184,0.1);
-}
-[data-theme="optimus"] .glass-strong {
-  background: rgba(10,14,20,0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(148,163,184,0.12);
-}
-
-/* Optimus cards - gunmetal with chrome edge */
-[data-theme="optimus"] .card-premium {
-  background: rgba(15,20,28,0.8);
-  border: 1px solid rgba(148,163,184,0.12);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(192,192,192,0.05);
-}
-[data-theme="optimus"] .card-premium::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  background: conic-gradient(from 0deg, rgba(220,38,38,0.25), transparent, rgba(148,163,184,0.3), transparent, rgba(30,58,95,0.25), transparent, rgba(220,38,38,0.25));
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  border-radius: inherit;
-  animation: cardBorderSpin 6s linear infinite;
-  padding: 1px;
-}
-[data-theme="optimus"] .card-premium::after { background: none; }
-[data-theme="optimus"] .card-premium:hover {
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(220,38,38,0.06), 0 0 20px rgba(30,58,95,0.06), inset 0 1px 0 rgba(192,192,192,0.08);
-}
-
-/* Optimus text */
-[data-theme="optimus"] .text-gradient {
-  background: linear-gradient(135deg, #dc2626 0%, #c0c0c0 30%, #1e3a5f 60%, #c0c0c0 80%, #dc2626 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 300% 300%;
-  animation: gradientX 4s ease infinite;
-  filter: drop-shadow(0 0 3px rgba(220,38,38,0.2));
-}
-[data-theme="optimus"] .text-glow-cyan { color: #c0c0c0; text-shadow: 0 0 8px rgba(192,192,192,0.4); }
-
-/* Optimus buttons - chrome with red accent */
-[data-theme="optimus"] .btn-premium {
-  background: linear-gradient(135deg, rgba(192,192,192,0.15), rgba(148,163,184,0.1)) !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(192,192,192,0.3) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
-}
-[data-theme="optimus"] .btn-premium:hover {
-  background: linear-gradient(135deg, rgba(192,192,192,0.2), rgba(148,163,184,0.15)) !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 15px rgba(220,38,38,0.15), 0 0 15px rgba(30,58,95,0.1), inset 0 1px 0 rgba(255,255,255,0.12) !important;
-  transform: translateY(-1px);
-}
-
-/* Optimus toggle */
-[data-theme="optimus"] .toggle-premium { background: rgba(148,163,184,0.08); border-color: rgba(148,163,184,0.15); }
-[data-theme="optimus"] .toggle-premium::after { background: rgba(148,163,184,0.4); }
-[data-theme="optimus"] .toggle-premium.active {
-  background: linear-gradient(135deg, rgba(220,38,38,0.12), rgba(30,58,95,0.12)) !important;
-  border-color: rgba(220,38,38,0.35) !important;
-  box-shadow: -3px 0 8px rgba(220,38,38,0.15), 3px 0 8px rgba(30,58,95,0.15) !important;
-}
-[data-theme="optimus"] .toggle-premium.active::after {
-  background: linear-gradient(135deg, #dc2626, #c0c0c0) !important;
-  box-shadow: 0 0 8px rgba(220,38,38,0.5), 0 0 4px rgba(192,192,192,0.3) !important;
-}
-
-/* Optimus sidebar */
-[data-theme="optimus"] .sidebar-active {
-  background: rgba(220,38,38,0.04) !important;
-  border-color: rgba(148,163,184,0.12) !important;
-  box-shadow: 0 0 10px rgba(220,38,38,0.04) !important;
-}
-[data-theme="optimus"] .sidebar-active::before {
-  background: linear-gradient(180deg, #dc2626, #c0c0c0, #1e3a5f);
-  box-shadow: 0 0 6px rgba(220,38,38,0.4), 0 0 6px rgba(30,58,95,0.3);
-}
-
-/* Optimus inputs */
-[data-theme="optimus"] input, [data-theme="optimus"] select, [data-theme="optimus"] textarea {
-  background: rgba(15,20,28,0.6) !important;
-  border-color: rgba(148,163,184,0.15) !important;
-  color: #e2e8f0 !important;
-}
-[data-theme="optimus"] input::placeholder { color: rgba(148,163,184,0.4) !important; }
-[data-theme="optimus"] input:focus, [data-theme="optimus"] select:focus {
-  border-color: rgba(220,38,38,0.4) !important;
-  box-shadow: 0 0 0 3px rgba(220,38,38,0.06), -2px 0 8px rgba(220,38,38,0.08), 2px 0 8px rgba(30,58,95,0.06) !important;
-}
-
-/* Optimus nav */
-[data-theme="optimus"] nav button { color: rgba(148,163,184,0.5) !important; }
-[data-theme="optimus"] header { border-bottom: 1px solid rgba(148,163,184,0.08); }
-[data-theme="optimus"] footer { background: rgba(10,14,20,0.95); border-top: 1px solid rgba(148,163,184,0.08); }
-
-/* Optimus scrollbar */
-[data-theme="optimus"] ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.1); }
-[data-theme="optimus"] ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.2); }
-
-/* Optimus text overrides */
-[data-theme="optimus"] [class*="text-white"] { color: rgba(226,232,240,0.7) !important; }
-[data-theme="optimus"] h1[class*="text-white"], [data-theme="optimus"] h2[class*="text-white"], [data-theme="optimus"] h3[class*="text-white"],
-[data-theme="optimus"] [class*="font-bold"][class*="text-white"], [data-theme="optimus"] [class*="font-black"][class*="text-white"] { color: #f1f5f9 !important; }
-[data-theme="optimus"] [class*="text-cyan"] { color: #c0c0c0 !important; }
-[data-theme="optimus"] [class*="text-emerald"] { color: #94a3b8 !important; }
-[data-theme="optimus"] [class*="text-purple"] { color: #c0c0c0 !important; }
-[data-theme="optimus"] [class*="text-orange"] { color: #dc2626 !important; }
-[data-theme="optimus"] [class*="text-amber"] { color: #dc2626 !important; }
-[data-theme="optimus"] [class*="text-indigo"] { color: #94a3b8 !important; }
-
-/* Optimus border/bg overrides */
-[data-theme="optimus"] [class*="border-cyan"], [data-theme="optimus"] [class*="border-emerald"],
-[data-theme="optimus"] [class*="border-purple"], [data-theme="optimus"] [class*="border-orange"],
-[data-theme="optimus"] [class*="border-amber"], [data-theme="optimus"] [class*="border-indigo"],
-[data-theme="optimus"] [class*="border-pink"] { border-color: rgba(148,163,184,0.12) !important; }
-[data-theme="optimus"] [class*="bg-cyan"], [data-theme="optimus"] [class*="bg-emerald"],
-[data-theme="optimus"] [class*="bg-purple"], [data-theme="optimus"] [class*="bg-indigo"],
-[data-theme="optimus"] [class*="bg-amber"], [data-theme="optimus"] [class*="bg-orange"],
-[data-theme="optimus"] [class*="bg-pink"] { background-color: rgba(148,163,184,0.04) !important; }
-
-/* Optimus icon glow - red/chrome split */
-[data-theme="optimus"] [style*="drop-shadow"] {
-  filter: drop-shadow(-2px 0 4px rgba(220,38,38,0.3)) drop-shadow(2px 0 4px rgba(148,163,184,0.3)) !important;
-}
-
-/* Optimus gradient line overrides */
-[data-theme="optimus"] [class*="via-cyan"] { --tw-gradient-via: rgba(220,38,38,0.2) !important; }
-[data-theme="optimus"] [class*="via-purple"] { --tw-gradient-via: rgba(148,163,184,0.2) !important; }
-[data-theme="optimus"] [class*="via-emerald"] { --tw-gradient-via: rgba(30,58,95,0.2) !important; }
-[data-theme="optimus"] [class*="via-orange"] { --tw-gradient-via: rgba(220,38,38,0.2) !important; }
-[data-theme="optimus"] [class*="via-red"] { --tw-gradient-via: rgba(220,38,38,0.25) !important; }
-[data-theme="optimus"] [class*="via-amber"] { --tw-gradient-via: rgba(148,163,184,0.15) !important; }
-
-/* Optimus checkbox */
-[data-theme="optimus"] input[type="checkbox"] { accent-color: #dc2626; }
-[data-theme="optimus"] input[type="checkbox"]:checked { accent-color: #dc2626; }
-
-/* Optimus stat cards */
-[data-theme="optimus"] [style*="background: rgba(10,5,30"] { background: rgba(15,20,28,0.7) !important; border: 1px solid rgba(148,163,184,0.1) !important; }
-
-/* Optimus hover */
-[data-theme="optimus"] .hover-lift:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 1px rgba(192,192,192,0.2); transform: translateY(-2px); }
-
-@keyframes optimusAmbient {
-  0% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.02); }
-  100% { opacity: 0.7; transform: scale(1.01); }
-}
-
-@keyframes optimusSparks {
-  0% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.01); }
-  100% { opacity: 0.6; transform: scale(0.99); }
-}
-
-/* Optimus: Animated mech silhouette background */
-[data-theme="optimus"] .nebula-bg::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 400px;
-  height: 500px;
-  transform: translate(-50%, -50%);
-  opacity: 0.035;
-  background: none;
-  animation: mechBreath 8s ease-in-out infinite;
-  /* Geometric mech face made with box-shadows */
-  box-shadow:
-    /* Head - top block */
-    0 -180px 0 20px #c0c0c0,
-    /* Helmet sides */
-    -50px -160px 0 10px #dc2626,
-    50px -160px 0 10px #dc2626,
-    /* Eyes */
-    -25px -150px 0 6px #60a5fa,
-    25px -150px 0 6px #60a5fa,
-    /* Face plate center */
-    0 -130px 0 15px #94a3b8,
-    /* Chin/jaw */
-    -30px -110px 0 8px #64748b,
-    30px -110px 0 8px #64748b,
-    0 -105px 0 12px #475569,
-    /* Neck */
-    0 -80px 0 8px #334155,
-    /* Shoulders */
-    -90px -50px 0 20px #dc2626,
-    90px -50px 0 20px #dc2626,
-    -110px -45px 0 12px #94a3b8,
-    110px -45px 0 12px #94a3b8,
-    /* Chest plate */
-    0 -20px 0 35px #1e3a5f,
-    0 -25px 0 28px #dc2626,
-    /* Windows/vents */
-    -25px 0px 0 10px #60a5fa,
-    25px 0px 0 10px #60a5fa,
-    /* Torso */
-    0 30px 0 30px #334155,
-    -20px 50px 0 8px #475569,
-    20px 50px 0 8px #475569,
-    /* Arms */
-    -100px 10px 0 12px #94a3b8,
-    100px 10px 0 12px #94a3b8,
-    -95px 50px 0 10px #64748b,
-    95px 50px 0 10px #64748b,
-    /* Fists */
-    -90px 80px 0 8px #dc2626,
-    90px 80px 0 8px #dc2626,
-    /* Waist */
-    0 70px 0 20px #1e3a5f,
-    /* Legs */
-    -30px 120px 0 14px #94a3b8,
-    30px 120px 0 14px #94a3b8,
-    -30px 160px 0 12px #64748b,
-    30px 160px 0 12px #64748b,
-    /* Feet */
-    -35px 190px 0 10px #dc2626,
-    35px 190px 0 10px #dc2626;
-}
-
-@keyframes mechBreath {
-  0% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
-  25% { opacity: 0.05; transform: translate(-50%, -50%) scale(1.01); }
-  50% { opacity: 0.04; transform: translate(-50%, -50%) scale(1.02); }
-  75% { opacity: 0.05; transform: translate(-50%, -50%) scale(1.01); }
-  100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
-}
-
-
 
 /* ═══ SUNSET THEME (Light + Amber/Orange) ═══ */
 [data-theme="sunset"] body { background: #faf6ef; color: #422006; }
@@ -1955,15 +1669,6 @@ main > div {
 }
 .sunset-day-tab-selected .day-tab-active { color: #422006 !important; }
 
-/* Optimus - red→chrome→navy gradient border */
-.optimus-day-tab-selected {
-  padding: 1px;
-  background: linear-gradient(135deg, #dc2626, #c0c0c0, #1e3a5f, #dc2626);
-  background-size: 300% 300%;
-  animation: themeTabGradient 3s ease infinite;
-  border-radius: 12px;
-}
-
 @keyframes themeTabGradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -2070,12 +1775,6 @@ main > div {
   box-shadow: 0 0 8px rgba(217,119,6,0.5), 0 0 12px rgba(239,68,68,0.3) !important;
 }
 
-/* Optimus toggle override */
-[data-theme="optimus"] .toggle-premium.active::after {
-  background: linear-gradient(135deg, #dc2626, #c0c0c0) !important;
-  box-shadow: 0 0 8px rgba(220,38,38,0.5), 0 0 12px rgba(192,192,192,0.3) !important;
-}
-
 
 /* ═══ ALL THEMES: ENHANCED BUTTON HOVER ═══ */
 
@@ -2103,12 +1802,6 @@ main > div {
   transform: translateY(-1px);
 }
 
-/* Optimus button glow */
-[data-theme="optimus"] .btn-premium:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 15px rgba(220,38,38,0.15), 0 0 15px rgba(148,163,184,0.1), inset 0 1px 0 rgba(255,255,255,0.12) !important;
-  transform: translateY(-1px);
-}
-
 
 /* ═══ ALL THEMES: ENHANCED SIDEBAR ACTIVE ═══ */
 
@@ -2130,11 +1823,6 @@ main > div {
 /* Sunset sidebar glow */
 [data-theme="sunset"] .sidebar-active {
   box-shadow: 0 0 12px rgba(245,158,11,0.06) !important;
-}
-
-/* Optimus sidebar glow */
-[data-theme="optimus"] .sidebar-active {
-  box-shadow: 0 0 12px rgba(220,38,38,0.04), 0 0 8px rgba(148,163,184,0.04) !important;
 }
 
 
