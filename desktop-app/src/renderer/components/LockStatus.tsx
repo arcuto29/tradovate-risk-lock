@@ -91,57 +91,95 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
         </p>
       </div>
 
-      {/* Circular Countdown Ring */}
+      {/* Circular Countdown Ring - THE CENTERPIECE */}
       <div className="flex justify-center mb-10 animate-reveal">
-        <div className="relative" style={{width: '240px', height: '240px'}}>
-          {/* Outer ambient glow */}
-          <div className="absolute inset-[-20px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}12 0%, ${colors.primary}05 40%, transparent 70%)`}} />
-          
-          {/* Rotating outer orbit ring */}
-          <svg width="240" height="240" className="absolute inset-0" style={{animation: 'spin 30s linear infinite'}}>
-            <circle cx="120" cy="120" r="115" fill="none" stroke={`${colors.primary}12`} strokeWidth="0.5" strokeDasharray="4 8" />
+        <div className="relative" style={{width: '280px', height: '280px'}}>
+          {/* Outer pulsing ambient glow */}
+          <div className="absolute inset-[-40px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}18 0%, ${colors.primary}08 30%, transparent 65%)`, animation: 'breathe 4s ease-in-out infinite'}} />
+
+          {/* Particle orbit ring 1 - fast, small dots */}
+          <svg width="280" height="280" className="absolute inset-0" style={{animation: 'spin 12s linear infinite'}}>
+            <circle cx="140" cy="25" r="2" fill={colors.primary} opacity="0.6" />
+            <circle cx="255" cy="140" r="1.5" fill={colors.primary} opacity="0.4" />
+            <circle cx="140" cy="255" r="2" fill={colors.secondary} opacity="0.5" />
+            <circle cx="25" cy="140" r="1.5" fill={colors.primary} opacity="0.3" />
           </svg>
 
-          {/* Second orbit - counter rotation */}
-          <svg width="240" height="240" className="absolute inset-0" style={{animation: 'spin 20s linear infinite reverse'}}>
-            <circle cx="120" cy="120" r="108" fill="none" stroke={`${colors.secondary}10`} strokeWidth="0.5" strokeDasharray="2 12" />
+          {/* Particle orbit ring 2 - slow, counter-rotate */}
+          <svg width="280" height="280" className="absolute inset-0" style={{animation: 'spin 25s linear infinite reverse'}}>
+            <circle cx="140" cy="15" r="1" fill={colors.secondary} opacity="0.4" />
+            <circle cx="265" cy="140" r="1.5" fill={colors.primary} opacity="0.3" />
+            <circle cx="140" cy="265" r="1" fill={colors.primary} opacity="0.5" />
+            <circle cx="15" cy="140" r="1.5" fill={colors.secondary} opacity="0.3" />
           </svg>
 
-          {/* Main SVG Ring */}
-          <svg width="240" height="240" className="absolute inset-0 transform -rotate-90">
-            {/* Background track */}
-            <circle cx="120" cy="120" r="95" fill="none" stroke={`${colors.primary}10`} strokeWidth="3" />
-            {/* Inner subtle ring */}
-            <circle cx="120" cy="120" r="85" fill="none" stroke={`${colors.primary}06`} strokeWidth="1" />
-            {/* Outer subtle ring */}
-            <circle cx="120" cy="120" r="100" fill="none" stroke={`${colors.primary}06`} strokeWidth="0.5" />
-            {/* Progress arc */}
+          {/* Outer dashed orbit track */}
+          <svg width="280" height="280" className="absolute inset-0" style={{animation: 'spin 40s linear infinite'}}>
+            <circle cx="140" cy="140" r="135" fill="none" stroke={`${colors.primary}08`} strokeWidth="0.5" strokeDasharray="3 10" />
+          </svg>
+
+          {/* Middle orbit track - counter */}
+          <svg width="280" height="280" className="absolute inset-0" style={{animation: 'spin 30s linear infinite reverse'}}>
+            <circle cx="140" cy="140" r="125" fill="none" stroke={`${colors.secondary}06`} strokeWidth="0.5" strokeDasharray="2 15" />
+          </svg>
+
+          {/* Main ring container */}
+          <svg width="280" height="280" className="absolute inset-0 transform -rotate-90">
+            {/* Outer background track */}
+            <circle cx="140" cy="140" r="110" fill="none" stroke={`${colors.primary}06`} strokeWidth="1" />
+            {/* Main background track */}
+            <circle cx="140" cy="140" r="100" fill="none" stroke={`${colors.primary}12`} strokeWidth="5" strokeLinecap="round" />
+            {/* Inner background track */}
+            <circle cx="140" cy="140" r="88" fill="none" stroke={`${colors.primary}06`} strokeWidth="1" />
+
+            {/* MAIN PROGRESS ARC - thick, glowing */}
             <circle
-              cx="120" cy="120" r="95" fill="none"
-              stroke="url(#timerGradient)" strokeWidth="4"
-              strokeDasharray={2 * Math.PI * 95}
-              strokeDashoffset={2 * Math.PI * 95 * (1 - progress)}
+              cx="140" cy="140" r="100" fill="none"
+              stroke="url(#timerGradient)" strokeWidth="6"
+              strokeDasharray={2 * Math.PI * 100}
+              strokeDashoffset={2 * Math.PI * 100 * (1 - progress)}
               strokeLinecap="round"
               className="transition-all duration-1000"
-              style={{filter: `drop-shadow(0 0 8px ${colors.primary}60) drop-shadow(0 0 20px ${colors.primary}25)`}}
+              style={{filter: `drop-shadow(0 0 12px ${colors.primary}80) drop-shadow(0 0 30px ${colors.primary}30)`}}
             />
+
+            {/* Secondary thin progress arc - slightly ahead */}
+            <circle
+              cx="140" cy="140" r="108" fill="none"
+              stroke={`${colors.secondary}40`} strokeWidth="1.5"
+              strokeDasharray={2 * Math.PI * 108}
+              strokeDashoffset={2 * Math.PI * 108 * (1 - progress * 0.98)}
+              strokeLinecap="round"
+              className="transition-all duration-1000"
+            />
+
             <defs>
               <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : '#fbbf24'} />
-                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : '#f59e0b'} />
-                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : '#fbbf24'} />
+                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ffffff' : '#fbbf24'} />
+                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#d4d4d8' : '#f59e0b'} />
+                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ffffff' : '#fbbf24'} />
               </linearGradient>
             </defs>
           </svg>
 
-          {/* Center glass backdrop */}
-          <div className="absolute inset-[25px] rounded-full" style={{background: `radial-gradient(circle, ${colors.primary}04 0%, transparent 70%)`}} />
+          {/* Inner glass circle */}
+          <div className="absolute inset-[32px] rounded-full" style={{
+            background: `radial-gradient(circle at 50% 40%, ${colors.primary}08 0%, transparent 60%)`,
+            border: `1px solid ${colors.primary}08`,
+          }} />
 
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[0.5rem] font-bold tracking-[4px] uppercase mb-3" style={{color: `${colors.primary}60`}}>Unlocks in</p>
-            <p className="font-mono text-[2.2rem] font-black tracking-tight leading-none" style={{color: colors.primary, textShadow: `0 0 30px ${colors.primary}30, 0 0 60px ${colors.primary}10`}}>
+            <p className="text-[0.45rem] font-bold tracking-[5px] uppercase mb-3" style={{color: `${colors.primary}50`, animation: 'breathe 4s ease-in-out infinite'}}>Unlocks in</p>
+            <p className="font-mono text-[2.5rem] font-black tracking-tight leading-none" style={{
+              color: colors.primary,
+              textShadow: `0 0 20px ${colors.primary}50, 0 0 40px ${colors.primary}20, 0 0 80px ${colors.primary}08`,
+              animation: 'timerPulse 2s ease-in-out infinite',
+            }}>
               {formatTime(lockState.timeRemaining)}
+            </p>
+            <p className="text-[0.45rem] font-medium tracking-[2px] uppercase mt-3" style={{color: `${colors.primary}30`}}>
+              {progress > 0.5 ? 'Almost there' : 'Stay disciplined'}
             </p>
           </div>
         </div>
