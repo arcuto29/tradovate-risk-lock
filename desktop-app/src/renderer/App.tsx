@@ -267,9 +267,12 @@ export const App: React.FC = () => {
       {/* Footer */}
       <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}10`}}>
         <MarketTimer />
-        <span className="text-[0.5rem] font-bold tracking-[4px] uppercase text-gradient opacity-40">
-          Priisma
-        </span>
+        <div className="flex items-center gap-2">
+          <Logo size={14} />
+          <span className="text-[0.5rem] font-bold tracking-[3px] uppercase text-gradient">
+            Priisma
+          </span>
+        </div>
       </footer>
     </div>
   );
