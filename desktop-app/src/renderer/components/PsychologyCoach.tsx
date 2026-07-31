@@ -1,31 +1,33 @@
 import React, { useState, useEffect } from 'react';
 
 export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(120);
-  const [escalatingCooldown, setEscalatingCooldown] = useState(true);
-  const [lossStreakEnabled, setLossStreakEnabled] = useState(true);
-  const [profitLockEnabled, setProfitLockEnabled] = useState(true);
+  const [escalatingCooldown, setEscalatingCooldown] = useState(false);
+  const [lossStreakEnabled, setLossStreakEnabled] = useState(false);
+  const [profitLockEnabled, setProfitLockEnabled] = useState(false);
   const [profitLockThreshold, setProfitLockThreshold] = useState(500);
   const [drawdownFromHigh, setDrawdownFromHigh] = useState(200);
-  const [scalingLockEnabled, setScalingLockEnabled] = useState(true);
+  const [scalingLockEnabled, setScalingLockEnabled] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const c = await window.electronAPI.getCoachConfig();
         if (c) {
-          setEnabled(c.enabled !== false);
+          setEnabled(c.enabled === true);
           setCooldownSeconds(c.cooldownSeconds || 120);
-          setEscalatingCooldown(c.escalatingCooldown !== false);
-          setLossStreakEnabled(c.lossStreakEnabled !== false);
-          setProfitLockEnabled(c.profitLockEnabled !== false);
+          setEscalatingCooldown(c.escalatingCooldown === true);
+          setLossStreakEnabled(c.lossStreakEnabled === true);
+          setProfitLockEnabled(c.profitLockEnabled === true);
           setProfitLockThreshold(c.profitLockThreshold || 500);
           setDrawdownFromHigh(c.drawdownFromHigh || 200);
-          setScalingLockEnabled(c.scalingLockEnabled !== false);
+          setScalingLockEnabled(c.scalingLockEnabled === true);
         }
       } catch {}
+      setLoaded(true);
     })();
   }, []);
 
@@ -35,6 +37,8 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
   };
 
   const numInput = "w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all input-premium";
+
+  if (!loaded) return <span className="text-white/20 text-sm animate-pulse">Loading...</span>;
 
   return (
     <div className="max-w-lg">
