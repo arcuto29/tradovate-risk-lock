@@ -38,42 +38,6 @@ export function getThemeColors(theme: Theme) {
         dotGlow: 'shadow-[0_0_6px_rgba(16,185,129,0.6)]',
         ring: '#10b981',
       };
-    case 'sakura':
-      return {
-        primary: '#ec4899',
-        secondary: '#f43f5e',
-        accent: 'pink',
-        accentHover: 'pink-300',
-        gradient: 'from-pink-400 to-rose-400',
-        gradientBg: 'from-pink-500/20 to-rose-500/10',
-        border: 'border-pink-400/20',
-        borderHover: 'border-pink-400/40',
-        text: 'text-pink-500',
-        textSoft: 'text-pink-400/60',
-        bg: 'bg-pink-400/10',
-        glow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]',
-        dot: 'bg-pink-400',
-        dotGlow: 'shadow-[0_0_6px_rgba(236,72,153,0.6)]',
-        ring: '#ec4899',
-      };
-    case 'sunset':
-      return {
-        primary: '#d97706',
-        secondary: '#ea580c',
-        accent: 'amber',
-        accentHover: 'amber-300',
-        gradient: 'from-amber-400 to-orange-400',
-        gradientBg: 'from-amber-500/20 to-orange-500/10',
-        border: 'border-amber-400/20',
-        borderHover: 'border-amber-400/40',
-        text: 'text-amber-500',
-        textSoft: 'text-amber-400/60',
-        bg: 'bg-amber-400/10',
-        glow: 'shadow-[0_0_15px_rgba(217,119,6,0.15)]',
-        dot: 'bg-amber-400',
-        dotGlow: 'shadow-[0_0_6px_rgba(217,119,6,0.6)]',
-        ring: '#d97706',
-      };
     case 'midnight':
       return {
         primary: '#ef4444',
@@ -91,6 +55,42 @@ export function getThemeColors(theme: Theme) {
         dot: 'bg-white',
         dotGlow: 'shadow-[0_0_6px_rgba(239,68,68,0.4)]',
         ring: '#ef4444',
+      };
+    case 'neon':
+      return {
+        primary: '#f472b6',
+        secondary: '#a855f7',
+        accent: 'pink',
+        accentHover: 'pink-300',
+        gradient: 'from-pink-400 to-purple-500',
+        gradientBg: 'from-pink-400/10 to-purple-500/10',
+        border: 'border-pink-400/20',
+        borderHover: 'border-pink-400/40',
+        text: 'text-pink-300',
+        textSoft: 'text-pink-400/60',
+        bg: 'bg-pink-400/5',
+        glow: 'shadow-[0_0_15px_rgba(244,114,182,0.15)]',
+        dot: 'bg-pink-400',
+        dotGlow: 'shadow-[0_0_6px_rgba(244,114,182,0.6)]',
+        ring: '#f472b6',
+      };
+    case 'frost':
+      return {
+        primary: '#94a3b8',
+        secondary: '#60a5fa',
+        accent: 'slate',
+        accentHover: 'slate-300',
+        gradient: 'from-slate-300 to-blue-400',
+        gradientBg: 'from-slate-300/10 to-blue-400/10',
+        border: 'border-slate-400/20',
+        borderHover: 'border-slate-300/40',
+        text: 'text-slate-200',
+        textSoft: 'text-slate-400/60',
+        bg: 'bg-slate-400/5',
+        glow: 'shadow-[0_0_15px_rgba(148,163,184,0.15)]',
+        dot: 'bg-slate-300',
+        dotGlow: 'shadow-[0_0_6px_rgba(148,163,184,0.6)]',
+        ring: '#94a3b8',
       };
     case 'hologram':
       return {

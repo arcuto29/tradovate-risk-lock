@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type Theme = 'nebula' | 'aurora' | 'sakura' | 'sunset' | 'midnight' | 'hologram' | 'void' | 'gold';
+export type Theme = 'nebula' | 'aurora' | 'midnight' | 'hologram' | 'void' | 'gold' | 'neon' | 'frost';
 
 export const THEMES: { id: Theme; name: string; type: 'dark' | 'light'; description: string }[] = [
   { id: 'nebula', name: 'Nebula', type: 'dark', description: 'Deep space, stars, cyan & purple' },
@@ -9,8 +9,8 @@ export const THEMES: { id: Theme; name: string; type: 'dark' | 'light'; descript
   { id: 'hologram', name: 'Hologram', type: 'dark', description: 'Iron Man HUD, electric blue wireframe' },
   { id: 'void', name: 'Void', type: 'dark', description: 'Pitch black, single neon green accent' },
   { id: 'gold', name: 'Gold', type: 'dark', description: 'Luxury dark, real gold & charcoal' },
-  { id: 'sakura', name: 'Sakura', type: 'light', description: 'Cherry blossom, pink & rose' },
-  { id: 'sunset', name: 'Sunset', type: 'light', description: 'Golden hour, amber & orange' },
+  { id: 'neon', name: 'Neon', type: 'dark', description: 'Hot pink & electric purple, nightclub' },
+  { id: 'frost', name: 'Frost', type: 'dark', description: 'Icy blue-white & silver on slate' },
 ];
 
 interface ThemeContextType {
@@ -26,11 +26,11 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('tg-theme') as Theme;
-    if (['nebula', 'aurora', 'sakura', 'sunset', 'midnight', 'hologram', 'void', 'gold'].includes(saved)) return saved;
+    if (['nebula', 'aurora', 'midnight', 'hologram', 'void', 'gold', 'neon', 'frost'].includes(saved)) return saved;
     return 'nebula';
   });
 
-  const isDark = theme === 'nebula' || theme === 'aurora' || theme === 'midnight' || theme === 'hologram' || theme === 'void' || theme === 'gold';
+  const isDark = true; // All themes are dark now
 
   useEffect(() => {
     localStorage.setItem('tg-theme', theme);
