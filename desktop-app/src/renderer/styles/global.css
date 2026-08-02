@@ -2462,68 +2462,11 @@ header nav button span[style*="linear-gradient"] {
 
 
 
-/* ═══ NEBULA: FORCE ALL COLORS TO CYAN/PURPLE (same treatment as other themes) ═══ */
-
-/* Nebula: Section labels - all cyan or purple, no random orange/red/green */
-[data-theme="nebula"] [class*="text-orange-400\\/"] { color: #22d3ee !important; }
-[data-theme="nebula"] [class*="text-red-400\\/60"] { color: #a78bfa !important; }
-[data-theme="nebula"] [class*="text-red-400\\/70"] { color: #a78bfa !important; }
-[data-theme="nebula"] [class*="text-emerald-400\\/"] { color: #22d3ee !important; }
-[data-theme="nebula"] [class*="text-amber-400\\/"] { color: #a78bfa !important; }
-[data-theme="nebula"] [class*="text-indigo-400\\/"] { color: #22d3ee !important; }
-[data-theme="nebula"] [class*="text-purple-400\\/"] { color: #a78bfa !important; }
-
-/* Nebula: Force ALL text colors to cyan/purple family */
-[data-theme="nebula"] [class*="text-orange"] { color: #22d3ee !important; }
-[data-theme="nebula"] [class*="text-amber"] { color: #a78bfa !important; }
-[data-theme="nebula"] [class*="text-indigo"] { color: #a78bfa !important; }
-
-/* Nebula: Icon containers - all cyan/purple tint, not random colors */
-[data-theme="nebula"] [class*="bg-orange"] { background-color: rgba(34,211,238,0.08) !important; }
-[data-theme="nebula"] [class*="bg-amber"] { background-color: rgba(167,139,250,0.08) !important; }
-[data-theme="nebula"] [class*="bg-indigo"] { background-color: rgba(167,139,250,0.08) !important; }
-[data-theme="nebula"] [class*="bg-red-500"] { background-color: rgba(167,139,250,0.08) !important; }
-[data-theme="nebula"] [class*="bg-emerald-500"] { background-color: rgba(34,211,238,0.08) !important; }
-[data-theme="nebula"] [class*="bg-purple-500"] { background-color: rgba(167,139,250,0.08) !important; }
-[data-theme="nebula"] [class*="bg-amber-500"] { background-color: rgba(167,139,250,0.08) !important; }
-[data-theme="nebula"] [class*="bg-indigo-500"] { background-color: rgba(34,211,238,0.08) !important; }
-[data-theme="nebula"] [class*="bg-cyan-500"] { background-color: rgba(34,211,238,0.08) !important; }
-
-/* Nebula: Borders - all cyan/purple */
-[data-theme="nebula"] [class*="border-orange"] { border-color: rgba(34,211,238,0.15) !important; }
-[data-theme="nebula"] [class*="border-amber"] { border-color: rgba(167,139,250,0.15) !important; }
-[data-theme="nebula"] [class*="border-indigo"] { border-color: rgba(167,139,250,0.15) !important; }
-[data-theme="nebula"] [class*="border-red-500"] { border-color: rgba(167,139,250,0.15) !important; }
-[data-theme="nebula"] [class*="border-emerald-500"] { border-color: rgba(34,211,238,0.15) !important; }
-[data-theme="nebula"] [class*="border-purple-500"] { border-color: rgba(167,139,250,0.15) !important; }
-
-/* Nebula: Gradient via stops */
-[data-theme="nebula"] [class*="via-orange"] { --tw-gradient-via: rgba(34,211,238,0.3) !important; }
-[data-theme="nebula"] [class*="via-red"] { --tw-gradient-via: rgba(167,139,250,0.3) !important; }
-[data-theme="nebula"] [class*="via-amber"] { --tw-gradient-via: rgba(167,139,250,0.2) !important; }
-[data-theme="nebula"] [class*="via-indigo"] { --tw-gradient-via: rgba(34,211,238,0.2) !important; }
-
-/* Nebula: Fix shadow colors */
-[data-theme="nebula"] [class*="shadow-\\[0_0"][class*="orange"] { box-shadow: 0 0 6px rgba(34,211,238,0.4) !important; }
-[data-theme="nebula"] [class*="shadow-\\[0_0"][class*="amber"] { box-shadow: 0 0 6px rgba(167,139,250,0.4) !important; }
+/* ═══ NEBULA: MINIMAL FIXES (keep original variety, just fix visibility) ═══ */
 
 /* Nebula: Score numbers visibility - make them brighter */
-[data-theme="nebula"] .font-mono { color: #22d3ee !important; }
+[data-theme="nebula"] .font-mono { color: #67e8f9 !important; }
 
-/* Nebula: Icon drop shadows all cyan/purple */
-[data-theme="nebula"] [style*="drop-shadow"] { filter: drop-shadow(0 0 4px rgba(34,211,238,0.5)) drop-shadow(0 0 8px rgba(167,139,250,0.3)) !important; }
-
-/* Nebula: Today indicator - cyan not green */
-[data-theme="nebula"] [class*="bg-cyan-400"] { background-color: #22d3ee !important; }
-[data-theme="nebula"] [class*="text-cyan-300"] { color: #22d3ee !important; }
-
-/* Nebula: Stat cards text readable */
-[data-theme="nebula"] [class*="text-white\\/25"] { color: rgba(34,211,238,0.45) !important; }
-[data-theme="nebula"] [class*="text-white\\/30"] { color: rgba(34,211,238,0.5) !important; }
-
-/* Nebula: Button text */
-[data-theme="nebula"] button { color: rgba(34,211,238,0.5) !important; }
-[data-theme="nebula"] .btn-premium { color: white !important; }
-
-/* Nebula: Keep red for actual warnings/errors only */
-[data-theme="nebula"] [class*="text-red-4"]:not([class*="text-red-400/"]) { color: #f87171 !important; }
+/* Nebula: Stat card text minimum visibility */
+[data-theme="nebula"] [class*="text-white\\/15"] { color: rgba(255,255,255,0.3) !important; }
+[data-theme="nebula"] [class*="text-white\\/20"] { color: rgba(255,255,255,0.35) !important; }

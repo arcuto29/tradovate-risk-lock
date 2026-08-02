@@ -279,71 +279,71 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             </div>
           </div>
 
-          {/* Custom Events */}
-          <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-3">
-            <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Custom Events</p>
-                {!isLocked && (
-                  <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-3 py-1.5 text-[0.6rem] font-bold rounded-lg press-scale transition-all"
-                    style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}25`, color: `${colors.primary}cc`}}
-                  >
-                    {showAddForm ? 'Cancel' : '+ Add Event'}
-                  </button>
-                )}
-              </div>
-
-              {showAddForm && (
-                <div className="mb-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-3 animate-reveal">
-                  <input
-                    type="text" value={newEventName} onChange={(e) => setNewEventName(e.target.value)}
-                    placeholder="Event name (e.g. Fed Chair Speech)"
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none transition-all placeholder:text-white/15 input-premium"
-                  />
-                  <div className="flex gap-3">
-                    <input
-                      type="date" value={newEventDate} onChange={(e) => setNewEventDate(e.target.value)}
-                      className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none transition-all input-premium"
-                    />
-                    <input
-                      type="time" value={newEventTime} onChange={(e) => setNewEventTime(e.target.value)}
-                      className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm focus:outline-none transition-all input-premium"
-                    />
-                  </div>
-                  <button
-                    onClick={addCustomEvent}
-                    disabled={!newEventName.trim() || !newEventDate}
-                    className="w-full py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale disabled:opacity-30"
-                  >
-                    Add Event
-                  </button>
-                </div>
-              )}
-
-              {customEvents.length === 0 && !showAddForm && (
-                <p className="text-xs text-white/15 text-center py-3">No custom events. Add dates you want to avoid trading.</p>
-              )}
-
-              {customEvents.map((event) => (
-                <div key={event.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04] mb-2">
-                  <div>
-                    <span className="text-xs text-white/60 font-medium">{event.name}</span>
-                    <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET</p>
-                  </div>
-                  {!isLocked && (
-                    <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Block window config ends here */}
         </div>
       )}
 
-      {/* Save */}
+      {/* Custom Events - ALWAYS visible regardless of blocker toggle */}
+      <div className="relative rounded-xl p-6 overflow-hidden card-premium mt-4 animate-reveal">
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Custom Events</p>
+            {!isLocked && (
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="px-3 py-1.5 text-[0.6rem] font-bold rounded-lg press-scale transition-all"
+                style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}25`, color: `${colors.primary}cc`}}
+              >
+                {showAddForm ? 'Cancel' : '+ Add Event'}
+              </button>
+            )}
+          </div>
+
+          {showAddForm && (
+            <div className="mb-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-3 animate-reveal">
+              <input
+                type="text" value={newEventName} onChange={(e) => setNewEventName(e.target.value)}
+                placeholder="Event name (e.g. Fed Chair Speech)"
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none transition-all placeholder:text-white/15 input-premium"
+              />
+              <div className="flex gap-3">
+                <input
+                  type="date" value={newEventDate} onChange={(e) => setNewEventDate(e.target.value)}
+                  className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none transition-all input-premium"
+                />
+                <input
+                  type="time" value={newEventTime} onChange={(e) => setNewEventTime(e.target.value)}
+                  className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm focus:outline-none transition-all input-premium"
+                />
+              </div>
+              <button
+                onClick={addCustomEvent}
+                disabled={!newEventName.trim() || !newEventDate}
+                className="w-full py-3 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale disabled:opacity-30"
+              >
+                Add Event
+              </button>
+            </div>
+          )}
+
+          {customEvents.length === 0 && !showAddForm && (
+            <p className="text-xs text-white/15 text-center py-3">No custom events. Add dates you want to avoid trading.</p>
+          )}
+
+          {customEvents.map((event) => (
+            <div key={event.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04] mb-2">
+              <div>
+                <span className="text-xs text-white/60 font-medium">{event.name}</span>
+                <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET</p>
+              </div>
+              {!isLocked && (
+                <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
       {saved && (
         <div className="mt-6 px-5 py-3.5 rounded-xl border text-xs font-medium animate-reveal flex items-center gap-2" style={{borderColor: `${colors.primary}25`, background: `${colors.primary}06`, color: `${colors.primary}cc`}}>
           <span className="w-1.5 h-1.5 rounded-full" style={{background: colors.primary, boxShadow: `0 0 6px ${colors.primary}60`}} />
