@@ -165,7 +165,7 @@
     inset: 0;
     border-radius: 16px;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(168,85,247,0.2), rgba(56,189,248,0.1));
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03), rgba(255,255,255,0.06));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -179,7 +179,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.4), rgba(168,85,247,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.08), transparent);
     animation: topLineShimmer 3s ease-in-out infinite;
   }
 
@@ -1948,6 +1948,14 @@ header nav button span[style*="linear-gradient"] {
 /* Hologram: Force all colors to electric blue */
 [data-theme="hologram"] body { color: #b8e6f0 !important; }
 [data-theme="hologram"] .font-mono { color: #00d4ff !important; }
+
+/* Hologram: Force day tabs + low-opacity text readable */
+[data-theme="hologram"] button { color: rgba(0,212,255,0.5) !important; }
+[data-theme="hologram"] [class*="text-white\\/25"] { color: rgba(0,212,255,0.45) !important; }
+[data-theme="hologram"] [class*="text-white\\/30"] { color: rgba(0,212,255,0.5) !important; }
+[data-theme="hologram"] [class*="text-orange-300"] { color: rgba(0,212,255,0.6) !important; }
+[data-theme="hologram"] [class*="text-orange-400"] { color: rgba(0,212,255,0.7) !important; }
+[data-theme="hologram"] [class*="text-red"] { color: #ff6b6b !important; }
 [data-theme="hologram"] [class*="text-red"] { color: #ff6b6b !important; }
 [data-theme="hologram"] [class*="bg-gradient-to"] { background: rgba(0,212,255,0.03) !important; }
 [data-theme="hologram"] [class*="from-cyan"], [data-theme="hologram"] [class*="from-purple"],
@@ -2025,6 +2033,14 @@ header nav button span[style*="linear-gradient"] {
 [data-theme="void"] h1[class*="text-white"], [data-theme="void"] h2[class*="text-white"], [data-theme="void"] h3[class*="text-white"] { color: #d0ffe8 !important; }
 [data-theme="void"] .font-mono { color: #00ff88 !important; }
 [data-theme="void"] [class*="text-red"] { color: #ff6b6b !important; }
+
+/* Void: Force day tabs + all low-opacity text readable */
+[data-theme="void"] button { color: rgba(0,255,136,0.6) !important; }
+[data-theme="void"] button[class*="text-white\\/25"] { color: rgba(0,255,136,0.5) !important; }
+[data-theme="void"] [class*="text-white\\/25"] { color: rgba(0,255,136,0.5) !important; }
+[data-theme="void"] [class*="text-white\\/30"] { color: rgba(0,255,136,0.55) !important; }
+[data-theme="void"] [class*="text-orange-300"] { color: rgba(0,255,136,0.6) !important; }
+[data-theme="void"] [class*="text-orange-400"] { color: rgba(0,255,136,0.7) !important; }
 [data-theme="void"] [class*="bg-gradient-to"] { background: rgba(0,255,136,0.03) !important; }
 [data-theme="void"] [class*="from-cyan"], [data-theme="void"] [class*="from-purple"],
 [data-theme="void"] [class*="from-indigo"], [data-theme="void"] [class*="from-emerald"],
@@ -2110,6 +2126,13 @@ header nav button span[style*="linear-gradient"] {
 [data-theme="gold"] body { color: #f5e6b0 !important; }
 [data-theme="gold"] .font-mono { color: #ffd700 !important; }
 [data-theme="gold"] [class*="text-red"] { color: #ff6b6b !important; }
+
+/* Gold: Force day tabs + low-opacity text readable */
+[data-theme="gold"] button { color: rgba(255,215,0,0.5) !important; }
+[data-theme="gold"] [class*="text-white\\/25"] { color: rgba(245,230,176,0.45) !important; }
+[data-theme="gold"] [class*="text-white\\/30"] { color: rgba(245,230,176,0.5) !important; }
+[data-theme="gold"] [class*="text-orange-300"] { color: rgba(255,215,0,0.6) !important; }
+[data-theme="gold"] [class*="text-orange-400"] { color: rgba(255,215,0,0.7) !important; }
 [data-theme="gold"] [class*="bg-gradient-to"] { background: rgba(255,215,0,0.03) !important; }
 [data-theme="gold"] [class*="from-cyan"], [data-theme="gold"] [class*="from-purple"],
 [data-theme="gold"] [class*="from-indigo"], [data-theme="gold"] [class*="from-emerald"],
