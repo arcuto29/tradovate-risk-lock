@@ -357,7 +357,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                     <option value="">Select symbol...</option>
                     {filteredContractSymbols.map((f) => (<option key={f.symbol} value={f.symbol}>{f.label}</option>))}
                   </select>
-                  <input type="number" className={inputClass + ' !w-24'} value={selectedContractMax} onChange={(e) => setSelectedContractMax(e.target.value)} placeholder="Max" disabled={isLocked} />
+                  <input type="number" min="1" max="100" className={inputClass + ' !w-24'} value={selectedContractMax} onChange={(e) => setSelectedContractMax(e.target.value)} placeholder="Max" disabled={isLocked} />
                   <button className="px-5 py-2 bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-xs font-bold rounded-xl hover:bg-cyan-400/20 hover:border-cyan-400/40 transition-all disabled:opacity-30 press-scale" onClick={addContractLimit} disabled={isLocked || !selectedContractSymbol || !selectedContractMax}>Add</button>
                 </div>
                 <div className="space-y-2">
@@ -365,7 +365,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
                     <div key={cl.symbol} className="flex items-center justify-between py-3 px-4 bg-white/[0.02] rounded-xl border border-white/[0.04] hover:border-cyan-400/20 transition-all group">
                       <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">{cl.label}</span>
                       <div className="flex items-center gap-3">
-                        <input type="number" className="w-16 bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1.5 text-white text-sm text-center focus:border-cyan-400/50 focus:outline-none disabled:opacity-30 font-mono font-bold" value={cl.maxSize} onChange={(e) => updateContractMax(cl.symbol, e.target.value)} disabled={isLocked} />
+                        <input type="number" min="1" max="100" className="w-16 bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1.5 text-white text-sm text-center focus:border-cyan-400/50 focus:outline-none disabled:opacity-30 font-mono font-bold" value={cl.maxSize} onChange={(e) => updateContractMax(cl.symbol, e.target.value)} disabled={isLocked} />
                         {!isLocked && (
                           <button className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale" onClick={() => removeContractLimit(cl.symbol)}>✕</button>
                         )}
