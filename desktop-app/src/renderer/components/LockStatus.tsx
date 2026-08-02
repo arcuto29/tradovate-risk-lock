@@ -68,18 +68,22 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
         </div>
         )}
 
-        {/* Shield icon - solid with gradient fill, matches current theme */}
+        {/* Lock icon - gradient filled, distinct from shield logo */}
         <div className="mb-4 flex justify-center" style={{animation: 'float 6s ease-in-out infinite'}}>
-          <svg width="52" height="52" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="shield-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="shield-icon">
             <defs>
-              <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'hologram' ? '#00d4ff' : theme === 'void' ? '#00ff88' : theme === 'gold' ? '#ffd700' : '#fbbf24'} />
-                <stop offset="50%" stopColor={theme === 'nebula' ? '#a78bfa' : theme === 'aurora' ? '#06b6d4' : theme === 'sakura' ? '#ec4899' : theme === 'midnight' ? '#3b82f6' : theme === 'hologram' ? '#0066ff' : theme === 'void' ? '#00cc6a' : theme === 'gold' ? '#ffffff' : '#f59e0b'} />
-                <stop offset="100%" stopColor={theme === 'nebula' ? '#22d3ee' : theme === 'aurora' ? '#10b981' : theme === 'sakura' ? '#f472b6' : theme === 'midnight' ? '#ef4444' : theme === 'hologram' ? '#00d4ff' : theme === 'void' ? '#00ff88' : theme === 'gold' ? '#b8860b' : '#fbbf24'} />
+              <linearGradient id="lockIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={colors.primary} />
+                <stop offset="100%" stopColor={colors.secondary} />
               </linearGradient>
             </defs>
-            <path d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" fill="url(#shieldGrad)" stroke="none" />
-            <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" fill="none" />
+            {/* Lock body */}
+            <rect x="5" y="11" width="14" height="10" rx="2.5" fill="url(#lockIconGrad)" />
+            {/* Lock shackle */}
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="url(#lockIconGrad)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            {/* Keyhole */}
+            <circle cx="12" cy="15.5" r="1.5" fill="white" opacity="0.9" />
+            <rect x="11.4" y="16.5" width="1.2" height="2.5" rx="0.6" fill="white" opacity="0.9" />
           </svg>
         </div>
         <h2 className="text-5xl font-black tracking-tighter leading-none mb-4 text-gradient">
