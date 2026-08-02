@@ -7,10 +7,10 @@ export const THEMES: { id: Theme; name: string; type: 'dark' | 'light'; descript
   { id: 'aurora', name: 'Aurora', type: 'dark', description: 'Northern lights, green & teal' },
   { id: 'midnight', name: 'Midnight', type: 'dark', description: 'Pure black, red & blue, OLED' },
   { id: 'hologram', name: 'Hologram', type: 'dark', description: 'Iron Man HUD, electric blue wireframe' },
-  { id: 'void', name: 'Void', type: 'dark', description: 'Pitch black, single neon green accent' },
-  { id: 'gold', name: 'Gold', type: 'dark', description: 'Luxury dark, real gold & charcoal' },
-  { id: 'neon', name: 'Neon', type: 'dark', description: 'Hot pink & electric purple, nightclub' },
-  { id: 'frost', name: 'Frost', type: 'dark', description: 'Icy blue-white & silver on slate' },
+  { id: 'void', name: 'Matrix', type: 'dark', description: 'Pitch black, single neon green accent' },
+  { id: 'gold', name: 'Luxe', type: 'dark', description: 'Luxury dark, real gold & charcoal' },
+  { id: 'neon', name: 'Rosé', type: 'dark', description: 'Hot pink & electric purple, feminine premium' },
+  { id: 'frost', name: 'Arctic', type: 'dark', description: 'Icy blue-white & silver on slate' },
 ];
 
 interface ThemeContextType {
