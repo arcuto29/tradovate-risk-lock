@@ -108,23 +108,12 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   };
 
   const handleSyncFF = async () => {
+    // FF blocks automated requests with Cloudflare (403)
+    // Keeping function stub in case a free API becomes available
     setSyncing(true);
-    setSyncStatus('');
-    try {
-      const result = await (window as any).electronAPI?.syncForexFactory?.();
-      if (result?.success && result.events?.length > 0) {
-        setFfEvents(result.events);
-        setSyncStatus(`Synced ${result.count} high-impact events`);
-      } else if (result?.success && result.events?.length === 0) {
-        setSyncStatus('No high-impact USD events found this week');
-      } else {
-        setSyncStatus(result?.error || 'Sync failed - check internet connection');
-      }
-    } catch (err) {
-      setSyncStatus('Failed to connect to Forex Factory');
-    }
+    setSyncStatus('Forex Factory blocks automated requests. Use the built-in events below or add custom dates.');
     setSyncing(false);
-    setTimeout(() => setSyncStatus(''), 5000);
+    setTimeout(() => setSyncStatus(''), 8000);
   };
 
   const addCustomEvent = () => {
@@ -213,46 +202,17 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
         )}
       </div>
 
-      {/* Forex Factory Sync */}
+      {/* Built-in Events Info */}
       <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5 animate-reveal">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <span className="text-sm">🏭</span>
-              <div>
-                <p className="text-[0.6rem] font-bold tracking-[2px] uppercase" style={{color: `${colors.primary}80`}}>Forex Factory</p>
-                <p className="text-[0.55rem] text-white/20 mt-0.5">Pull high-impact USD events from this week's calendar</p>
-              </div>
-            </div>
-            <button
-              onClick={handleSyncFF}
-              disabled={syncing}
-              className="px-4 py-2 text-[0.6rem] font-bold rounded-lg press-scale transition-all disabled:opacity-30"
-              style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}25`, color: `${colors.primary}cc`}}
-            >
-              {syncing ? 'Syncing...' : 'Sync Now'}
-            </button>
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-sm">📅</span>
+            <p className="text-[0.6rem] font-bold tracking-[2px] uppercase" style={{color: `${colors.primary}80`}}>Auto-Included Events</p>
           </div>
-          {syncStatus && (
-            <p className={`text-[0.6rem] mt-2 ${syncStatus.includes('Synced') ? 'text-emerald-400/70' : syncStatus.includes('fail') || syncStatus.includes('Failed') ? 'text-red-400/70' : 'text-white/30'}`}>
-              {syncStatus}
-            </p>
-          )}
-          {ffEvents.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-white/[0.04]">
-              <p className="text-[0.55rem] text-white/20 mb-2">{ffEvents.length} events synced from FF:</p>
-              <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                {ffEvents.map((event) => (
-                  <div key={event.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-white/[0.02]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400/80" />
-                    <span className="text-[0.6rem] text-white/50">{event.name}</span>
-                    <span className="text-[0.5rem] text-white/20 ml-auto">{event.date} {event.time}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <p className="text-[0.6rem] text-white/35 leading-relaxed">
+            FOMC Rate Decisions, Non-Farm Payrolls (NFP), CPI Inflation, and PPI Producer Prices are built-in for all of 2026. Add any other events below using custom dates.
+          </p>
         </div>
       </div>
 
