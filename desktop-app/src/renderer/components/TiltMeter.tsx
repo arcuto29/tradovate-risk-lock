@@ -42,12 +42,13 @@ export const TiltMeter: React.FC = () => {
         </div>
 
         {/* Gradient Progress Bar */}
-        <div className="w-full h-4 bg-white/[0.08] rounded-full overflow-hidden border border-white/[0.06]">
+        <div className="w-full h-4 rounded-full overflow-hidden" style={{background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.06)'}}>
           <div
-            className={`h-full rounded-full bg-gradient-to-r ${colors.bar} transition-all duration-700`}
+            className="h-full rounded-full transition-all duration-700"
             style={{
               width: `${score}%`,
-              boxShadow: level === 'red' ? '0 0 16px rgba(239,68,68,0.7), 0 0 30px rgba(239,68,68,0.3)' : level === 'yellow' ? '0 0 12px rgba(251,191,36,0.6), 0 0 25px rgba(251,191,36,0.2)' : '0 0 10px rgba(52,211,153,0.4)'
+              background: level === 'red' ? 'linear-gradient(90deg, #ef4444, #f43f5e)' : level === 'yellow' ? 'linear-gradient(90deg, #facc15, #f59e0b)' : 'linear-gradient(90deg, #34d399, #4ade80)',
+              boxShadow: level === 'red' ? '0 0 16px rgba(239,68,68,0.7), 0 0 30px rgba(239,68,68,0.3)' : level === 'yellow' ? '0 0 12px rgba(250,204,21,0.7), 0 0 25px rgba(250,204,21,0.3)' : '0 0 10px rgba(52,211,153,0.5), 0 0 20px rgba(74,222,128,0.2)'
             }}
           />
         </div>
