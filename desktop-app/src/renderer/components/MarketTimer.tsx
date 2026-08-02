@@ -2,18 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
-// Major trading sessions (all times in ET)
-// Asian/Tokyo: 7:00 PM - 4:00 AM ET
-// London: 3:00 AM - 12:00 PM ET
-// New York: 9:30 AM - 4:00 PM ET
-// Overlap (London+NY): 9:30 AM - 12:00 PM ET
-
 interface SessionInfo {
-  active: string[];      // currently active sessions
-  label: string;         // primary display label
-  nextSession: string;   // what's coming next
-  timeLeft: number;      // seconds until next change
-  color: string;         // dot color
+  active: string[];
+  label: string;
+  nextSession: string;
+  timeLeft: number;
+  color: string;
 }
 
 function getSessionInfo(): SessionInfo {
@@ -22,114 +16,91 @@ function getSessionInfo(): SessionInfo {
   const day = et.getDay();
   const hours = et.getHours();
   const minutes = et.getMinutes();
+  const seconds = et.getSeconds();
   const totalMin = hours * 60 + minutes;
+  const totalSec = totalMin * 60 + seconds;
 
-  // Weekend check
   if (day === 6 || (day === 0 && totalMin < 17 * 60) || (day === 5 && totalMin >= 17 * 60)) {
     return { active: [], label: 'Markets Closed', nextSession: 'Sun 6pm ET', timeLeft: 0, color: '#6b7280' };
   }
 
-  // Daily maintenance break: 5:00 PM - 6:00 PM ET
   if (totalMin >= 17 * 60 && totalMin < 18 * 60) {
-    const left = (18 * 60 - totalMin) * 60;
-    return { active: [], label: 'Daily Break', nextSession: 'Asian Open', timeLeft: left, color: '#6b7280' };
+    const left = (18 * 60 * 60) - totalSec;
+    return { active: [], label: 'Daily Break', nextSession: 'Asian Open', timeLeft: Math.max(0, left), color: '#6b7280' };
   }
 
   const active: string[] = [];
-
-  // Asian: 7:00 PM - 4:00 AM ET (evening + overnight)
   const isAsian = totalMin >= 19 * 60 || totalMin < 4 * 60;
-  if (isAsian) active.push('Asian');
-
-  // London: 3:00 AM - 12:00 PM ET
   const isLondon = totalMin >= 3 * 60 && totalMin < 12 * 60;
-  if (isLondon) active.push('London');
-
-  // New York: 9:30 AM - 4:00 PM ET
   const isNY = totalMin >= 9 * 60 + 30 && totalMin < 16 * 60;
+
+  if (isAsian) active.push('Asian');
+  if (isLondon) active.push('London');
   if (isNY) active.push('New York');
 
-  // Determine primary label and next event
   let label = '';
   let nextSession = '';
   let timeLeft = 0;
 
   if (isNY && isLondon) {
     label = 'NY + London';
-    const londonClose = 12 * 60;
-    timeLeft = (londonClose - totalMin) * 60;
+    timeLeft = (12 * 60 * 60) - totalSec;
     nextSession = 'London Close';
   } else if (isNY) {
     label = 'New York';
-    const nyClose = 16 * 60;
-    timeLeft = (nyClose - totalMin) * 60;
+    timeLeft = (16 * 60 * 60) - totalSec;
     nextSession = 'NY Close';
   } else if (isLondon && isAsian) {
     label = 'London + Asian';
-    const asianClose = 4 * 60;
-    if (totalMin < asianClose) {
-      timeLeft = (asianClose - totalMin) * 60;
-      nextSession = 'Asian Close';
-    } else {
-      timeLeft = (12 * 60 - totalMin) * 60;
-      nextSession = 'London Close';
-    }
+    timeLeft = (4 * 60 * 60) - totalSec;
+    nextSession = 'Asian Close';
   } else if (isLondon) {
-    label = 'London';
     if (totalMin < 9 * 60 + 30) {
-      timeLeft = (9 * 60 + 30 - totalMin) * 60;
+      label = 'London';
+      timeLeft = ((9 * 60 + 30) * 60) - totalSec;
       nextSession = 'NY Open';
     } else {
-      timeLeft = (12 * 60 - totalMin) * 60;
+      label = 'London';
+      timeLeft = (12 * 60 * 60) - totalSec;
       nextSession = 'London Close';
     }
   } else if (isAsian) {
     label = 'Asian';
     if (totalMin >= 19 * 60) {
-      // Evening - next is London open at 3am
-      timeLeft = ((24 * 60 - totalMin) + 3 * 60) * 60;
+      timeLeft = ((24 * 60 + 3 * 60) * 60) - totalSec;
       nextSession = 'London Open';
     } else {
-      // Early morning - Asian closes at 4am
-      timeLeft = (4 * 60 - totalMin) * 60;
+      timeLeft = (4 * 60 * 60) - totalSec;
       nextSession = 'Asian Close';
     }
   } else if (totalMin >= 16 * 60 && totalMin < 17 * 60) {
-    // After NY close, before daily break
     label = 'After Hours';
-    timeLeft = (17 * 60 - totalMin) * 60;
+    timeLeft = (17 * 60 * 60) - totalSec;
     nextSession = 'Daily Break';
   } else if (totalMin >= 18 * 60 && totalMin < 19 * 60) {
-    // After break, before Asian
     label = 'Pre-Asian';
-    timeLeft = (19 * 60 - totalMin) * 60;
+    timeLeft = (19 * 60 * 60) - totalSec;
     nextSession = 'Asian Open';
-  } else if (totalMin >= 4 * 60 && totalMin < 3 * 60) {
-    // Gap between Asian close and London
-    label = 'Quiet';
-    timeLeft = (3 * 60 - totalMin) * 60;
-    nextSession = 'London Open';
   } else {
     label = 'Open';
     nextSession = '';
     timeLeft = 0;
   }
 
-  // Color based on primary session
   let color = '#6b7280';
-  if (isNY) color = '#10b981';       // green for NY
-  else if (isLondon) color = '#3b82f6'; // blue for London
-  else if (isAsian) color = '#f59e0b';  // amber for Asian
+  if (isNY) color = '#10b981';
+  else if (isLondon) color = '#3b82f6';
+  else if (isAsian) color = '#f59e0b';
 
-  return { active, label, nextSession, timeLeft, color };
+  return { active, label, nextSession, timeLeft: Math.max(0, timeLeft), color };
 }
 
 function formatCountdown(seconds: number): string {
-  if (seconds <= 0) return '';
+  if (seconds <= 0) return '00:00:00';
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
+  const s = seconds % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
 export const MarketTimer: React.FC = () => {
@@ -138,45 +109,46 @@ export const MarketTimer: React.FC = () => {
   const [session, setSession] = useState(getSessionInfo());
 
   useEffect(() => {
-    const interval = setInterval(() => setSession(getSessionInfo()), 30000);
+    const interval = setInterval(() => setSession(getSessionInfo()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   const isActive = session.active.length > 0;
 
-  // Brighten colors for Midnight theme (dark colors hard to see on black)
+  // Use theme colors for display
   let displayColor = session.color;
-  if (theme === 'midnight') {
-    if (session.color === '#10b981') displayColor = '#4ade80'; // brighter green
-    else if (session.color === '#3b82f6') displayColor = '#60a5fa'; // brighter blue
-    else if (session.color === '#f59e0b') displayColor = '#fbbf24'; // brighter amber
-    else if (session.color === '#6b7280') displayColor = '#9ca3af'; // brighter grey
+  const isDarkTheme = ['midnight', 'void', 'hologram', 'gold', 'nebula', 'aurora'].includes(theme);
+  if (isDarkTheme) {
+    if (session.color === '#10b981') displayColor = '#4ade80';
+    else if (session.color === '#3b82f6') displayColor = '#60a5fa';
+    else if (session.color === '#f59e0b') displayColor = '#fbbf24';
+    else if (session.color === '#6b7280') displayColor = '#9ca3af';
   }
 
   return (
-    <div className="flex items-center gap-2.5">
-      {/* Session badge */}
-      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{
-        background: `${displayColor}15`,
-        border: `1px solid ${displayColor}30`,
+    <div className="flex items-center gap-3">
+      {/* Session dot + label */}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{
+        background: `${displayColor}10`,
+        border: `1px solid ${displayColor}20`,
       }}>
         <span className="w-2 h-2 rounded-full" style={{
           background: displayColor,
           boxShadow: isActive ? `0 0 6px ${displayColor}90, 0 0 12px ${displayColor}40` : 'none',
           animation: isActive ? 'pulseGlow 2s ease-in-out infinite' : 'none',
         }} />
-        <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase" style={{ color: displayColor, textShadow: theme === 'midnight' ? `0 0 8px ${displayColor}50` : 'none' }}>
+        <span className="text-[0.55rem] font-bold tracking-[1.5px] uppercase" style={{ color: displayColor }}>
           {session.label}
         </span>
       </div>
 
-      {/* Countdown */}
+      {/* Countdown with seconds */}
       {session.timeLeft > 0 && (
         <div className="flex items-center gap-1.5">
-          <span className="text-[0.5rem] font-medium" style={{color: `${colors.primary}50`}}>
+          <span className="text-[0.5rem] font-medium" style={{color: `${displayColor}80`}}>
             {session.nextSession}
           </span>
-          <span className="text-[0.55rem] font-mono font-bold" style={{color: `${colors.primary}70`}}>
+          <span className="text-[0.55rem] font-mono font-bold" style={{color: displayColor, opacity: 0.8}}>
             {formatCountdown(session.timeLeft)}
           </span>
         </div>

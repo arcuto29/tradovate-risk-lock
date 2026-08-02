@@ -1968,6 +1968,24 @@ header nav button span[style*="linear-gradient"] {
 [data-theme="hologram"] .card-premium:hover { box-shadow: 0 0 20px rgba(0,212,255,0.06), 0 0 1px rgba(0,212,255,0.2) !important; }
 [data-theme="hologram"] .hover-lift:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 1px rgba(0,212,255,0.15) !important; }
 
+/* Hologram: Kill mismatched shadows + fix selects */
+[data-theme="hologram"] [class*="shadow-\\[0_0"] { box-shadow: 0 0 6px rgba(0,212,255,0.4) !important; }
+[data-theme="hologram"] [class*="focus:border-cyan"] { border-color: rgba(0,212,255,0.5) !important; }
+[data-theme="hologram"] [class*="via-orange"] { --tw-gradient-via: rgba(0,212,255,0.2) !important; }
+[data-theme="hologram"] [class*="via-red"] { --tw-gradient-via: rgba(0,212,255,0.15) !important; }
+[data-theme="hologram"] [class*="via-cyan"] { --tw-gradient-via: rgba(0,212,255,0.25) !important; }
+[data-theme="hologram"] [class*="via-emerald"] { --tw-gradient-via: rgba(0,212,255,0.2) !important; }
+[data-theme="hologram"] [class*="bg-red-400"] { background-color: rgba(0,212,255,0.05) !important; }
+[data-theme="hologram"] [class*="border-red-400"] { border-color: rgba(0,212,255,0.12) !important; }
+[data-theme="hologram"] [class*="text-red-400\\/"] { color: rgba(0,212,255,0.7) !important; }
+[data-theme="hologram"] [class*="text-emerald-300"] { color: #00d4ff !important; }
+[data-theme="hologram"] select option { background: #020810; color: #00d4ff; }
+[data-theme="hologram"] input[type="time"], [data-theme="hologram"] input[type="date"] { color-scheme: dark; }
+[data-theme="hologram"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="hologram"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(170deg) !important;
+}
+
 
 
 /* ═══ VOID THEME (Pitch Black + Single Neon Green) ═══ */
@@ -2052,6 +2070,34 @@ header nav button span[style*="linear-gradient"] {
 [data-theme="void"] [style*="background: rgba(10,5,30"] { background: rgba(0,0,0,0.9) !important; }
 [data-theme="void"] .card-premium:hover { box-shadow: 0 0 20px rgba(0,255,136,0.06), 0 0 1px rgba(0,255,136,0.2) !important; }
 [data-theme="void"] .hover-lift:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.8), 0 0 1px rgba(0,255,136,0.15) !important; }
+
+/* Void: Kill ALL hardcoded blue/cyan/red/orange shadows and borders */
+[data-theme="void"] [class*="shadow-\\[0_0"] { box-shadow: 0 0 6px rgba(0,255,136,0.4) !important; }
+[data-theme="void"] [class*="focus:border-cyan"] { border-color: rgba(0,255,136,0.4) !important; }
+[data-theme="void"] [class*="via-orange"] { --tw-gradient-via: rgba(0,255,136,0.2) !important; }
+[data-theme="void"] [class*="via-red"] { --tw-gradient-via: rgba(0,255,136,0.15) !important; }
+[data-theme="void"] [class*="via-cyan"] { --tw-gradient-via: rgba(0,255,136,0.2) !important; }
+[data-theme="void"] [class*="via-emerald"] { --tw-gradient-via: rgba(0,255,136,0.2) !important; }
+[data-theme="void"] [class*="via-purple"] { --tw-gradient-via: rgba(0,255,136,0.15) !important; }
+[data-theme="void"] [class*="bg-red-400"] { background-color: rgba(0,255,136,0.05) !important; }
+[data-theme="void"] [class*="border-red-400"] { border-color: rgba(0,255,136,0.12) !important; }
+[data-theme="void"] [class*="text-red-400\\/"] { color: rgba(0,255,136,0.7) !important; }
+[data-theme="void"] [class*="text-red-400\\/70"] { color: rgba(0,255,136,0.7) !important; }
+[data-theme="void"] [class*="text-emerald-300"] { color: #00ff88 !important; }
+
+/* Void: Select/dropdown + time picker visibility */
+[data-theme="void"] select { background: rgba(0,0,0,0.9) !important; border-color: rgba(0,255,136,0.2) !important; color: #00ff88 !important; -webkit-appearance: none; }
+[data-theme="void"] select option { background: #000000; color: #00ff88; }
+[data-theme="void"] input[type="time"], [data-theme="void"] input[type="date"], [data-theme="void"] input[type="number"] {
+  background: rgba(0,0,0,0.9) !important;
+  border-color: rgba(0,255,136,0.15) !important;
+  color: #00ff88 !important;
+  color-scheme: dark;
+}
+[data-theme="void"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="void"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(100deg) !important;
+}
 
 
 
@@ -2143,6 +2189,24 @@ header nav button span[style*="linear-gradient"] {
 [data-theme="gold"] [style*="background: rgba(10,5,30"] { background: rgba(15,12,6,0.8) !important; }
 [data-theme="gold"] .card-premium:hover { box-shadow: 0 0 20px rgba(255,215,0,0.06), 0 0 1px rgba(255,215,0,0.15) !important; }
 [data-theme="gold"] .hover-lift:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 1px rgba(255,215,0,0.15) !important; }
+
+/* Gold: Kill mismatched shadows + fix selects */
+[data-theme="gold"] [class*="shadow-\\[0_0"] { box-shadow: 0 0 6px rgba(255,215,0,0.3) !important; }
+[data-theme="gold"] [class*="focus:border-cyan"] { border-color: rgba(255,215,0,0.4) !important; }
+[data-theme="gold"] [class*="via-orange"] { --tw-gradient-via: rgba(255,215,0,0.2) !important; }
+[data-theme="gold"] [class*="via-red"] { --tw-gradient-via: rgba(184,134,11,0.15) !important; }
+[data-theme="gold"] [class*="via-cyan"] { --tw-gradient-via: rgba(255,215,0,0.2) !important; }
+[data-theme="gold"] [class*="via-emerald"] { --tw-gradient-via: rgba(255,215,0,0.15) !important; }
+[data-theme="gold"] [class*="bg-red-400"] { background-color: rgba(255,215,0,0.05) !important; }
+[data-theme="gold"] [class*="border-red-400"] { border-color: rgba(255,215,0,0.12) !important; }
+[data-theme="gold"] [class*="text-red-400\\/"] { color: rgba(255,215,0,0.7) !important; }
+[data-theme="gold"] [class*="text-emerald-300"] { color: #ffd700 !important; }
+[data-theme="gold"] select option { background: #0c0a06; color: #ffd700; }
+[data-theme="gold"] input[type="time"], [data-theme="gold"] input[type="date"] { color-scheme: dark; }
+[data-theme="gold"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="gold"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(3) hue-rotate(10deg) !important;
+}
 
 
 
