@@ -128,27 +128,27 @@ export const MarketTimer: React.FC = () => {
   return (
     <div className="flex items-center gap-3">
       {/* Session dot + label */}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{
-        background: `${displayColor}10`,
-        border: `1px solid ${displayColor}20`,
+      <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg" style={{
+        background: `${displayColor}12`,
+        border: `1px solid ${displayColor}25`,
       }}>
-        <span className="w-2 h-2 rounded-full" style={{
+        <span className="w-2.5 h-2.5 rounded-full" style={{
           background: displayColor,
-          boxShadow: isActive ? `0 0 6px ${displayColor}90, 0 0 12px ${displayColor}40` : 'none',
+          boxShadow: isActive ? `0 0 8px ${displayColor}90, 0 0 14px ${displayColor}50` : 'none',
           animation: isActive ? 'pulseGlow 2s ease-in-out infinite' : 'none',
         }} />
-        <span className="text-[0.55rem] font-bold tracking-[1.5px] uppercase" style={{ color: displayColor }}>
+        <span className="text-[0.7rem] font-bold tracking-[1.5px] uppercase" style={{ color: displayColor }}>
           {session.label}
         </span>
       </div>
 
       {/* Countdown with seconds */}
       {session.timeLeft > 0 && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-[0.5rem] font-medium" style={{color: `${displayColor}80`}}>
+        <div className="flex items-center gap-2">
+          <span className="text-[0.65rem] font-medium" style={{color: `${displayColor}90`}}>
             {session.nextSession}
           </span>
-          <span className="text-[0.55rem] font-mono font-bold" style={{color: displayColor, opacity: 0.8}}>
+          <span className="text-[0.75rem] font-mono font-bold" style={{color: displayColor}}>
             {formatCountdown(session.timeLeft)}
           </span>
         </div>
