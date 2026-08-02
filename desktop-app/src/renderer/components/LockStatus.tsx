@@ -170,7 +170,7 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[0.45rem] font-bold tracking-[5px] uppercase mb-3" style={{color: `${colors.primary}50`, animation: 'breathe 4s ease-in-out infinite'}}>Unlocks in</p>
+            <p className="text-[0.45rem] font-bold tracking-[5px] uppercase mb-3" style={{color: `${colors.primary}90`, animation: 'breathe 4s ease-in-out infinite'}}>Unlocks in</p>
             <p className="font-mono text-[2.5rem] font-black tracking-tight leading-none" style={{
               color: colors.primary,
               textShadow: `0 0 20px ${colors.primary}50, 0 0 40px ${colors.primary}20, 0 0 80px ${colors.primary}08`,
@@ -178,7 +178,7 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
             }}>
               {formatTime(lockState.timeRemaining)}
             </p>
-            <p className="text-[0.45rem] font-medium tracking-[2px] uppercase mt-3" style={{color: `${colors.primary}30`}}>
+            <p className="text-[0.45rem] font-medium tracking-[2px] uppercase mt-3" style={{color: `${colors.primary}70`}}>
               {progress > 0.5 ? 'Almost there' : 'Stay disciplined'}
             </p>
           </div>
@@ -187,37 +187,33 @@ export const LockStatus: React.FC<LockStatusProps> = ({ lockState, onRefresh }) 
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 mb-8 animate-reveal">
-        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.primary}25`}} />
+        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group card-premium">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}80`}}>Loss Limit</p>
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}`}}>Loss Limit</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.dailyLossLimit > 0 ? formatCurrency(lockState.settings.dailyLossLimit) : '—'}
           </p>
         </div>
 
-        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.secondary}25`}} />
+        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group card-premium">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}30, transparent)`}} />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.secondary}80`}}>Profit Target</p>
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.secondary}`}}>Profit Target</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.dailyProfitTarget > 0 ? formatCurrency(lockState.settings.dailyProfitTarget) : '—'}
           </p>
         </div>
 
-        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${colors.primary}25`}} />
+        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group card-premium">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}80`}}>Max Contracts</p>
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: `${colors.primary}`}}>Max Contracts</p>
           <p className="font-mono text-xl font-bold text-white relative">
             {lockState.settings?.maxContracts > 0 ? lockState.settings.maxContracts : '—'}
           </p>
         </div>
 
-        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group" style={{background: 'rgba(10,5,30,0.5)', backdropFilter: 'blur(16px)'}}>
-          <div className="absolute inset-0 rounded-xl transition-colors" style={{border: `1px solid ${lockState.bypassAttempts > 0 ? '#f8717125' : colors.primary + '25'}`}} />
+        <div className="relative rounded-xl p-5 overflow-hidden hover-lift group card-premium">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${lockState.bypassAttempts > 0 ? '#f8717130' : colors.primary + '30'}, transparent)`}} />
-          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: lockState.bypassAttempts > 0 ? '#f87171' : `${colors.primary}80`}}>Bypass Attempts</p>
+          <p className="text-[0.55rem] font-semibold tracking-[1.5px] uppercase mb-2 relative" style={{color: lockState.bypassAttempts > 0 ? '#f87171' : colors.primary}}>Bypass Attempts</p>
           <p className={`font-mono text-xl font-bold relative ${lockState.bypassAttempts > 0 ? 'text-glow-red' : 'text-white'}`}>{lockState.bypassAttempts}</p>
         </div>
       </div>

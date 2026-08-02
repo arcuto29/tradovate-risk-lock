@@ -34,7 +34,7 @@ export const TiltMeter: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className={`w-2.5 h-2.5 rounded-full ${colors.dot} ${colors.glow} animate-pulse`} />
-            <span className="text-[0.6rem] font-bold tracking-[2px] uppercase text-white/40">Tilt Meter</span>
+            <span className="text-[0.6rem] font-bold tracking-[2px] uppercase text-white/60">Tilt Meter</span>
           </div>
           <span className={`text-[0.6rem] font-bold uppercase tracking-[2px] ${colors.text}`}>
             {colors.label}
@@ -53,9 +53,9 @@ export const TiltMeter: React.FC = () => {
         </div>
 
         <div className="flex justify-between mt-2.5">
-          <span className="text-[0.55rem] text-white/15 font-medium">0</span>
+          <span className="text-[0.55rem] text-white/35 font-medium">0</span>
           <span className={`text-[0.65rem] font-mono font-bold ${colors.text}`}>{score}</span>
-          <span className="text-[0.55rem] text-white/15 font-medium">100</span>
+          <span className="text-[0.55rem] text-white/35 font-medium">100</span>
         </div>
 
         {level === 'red' && (
