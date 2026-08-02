@@ -47,7 +47,7 @@
   },
   "build": {
     "appId": "com.tradovate-risk-lock.app",
-    "productName": "Trading Guardian",
+    "productName": "Sentinel",
     "publish": {
       "provider": "github",
       "owner": "arcuto29",
@@ -90,7 +90,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Trading Guardian",
+      "shortcutName": "Sentinel",
       "runAfterFinish": true
     },
     "portable": {

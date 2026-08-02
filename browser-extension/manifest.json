@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Trading Guardian",
+  "name": "Sentinel",
   "version": "2.0.0",
   "description": "Locks risk settings and blocks trading outside session hours.",
   "permissions": ["activeTab", "storage", "declarativeNetRequest", "tabs"],

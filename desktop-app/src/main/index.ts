@@ -30,7 +30,7 @@ function createWindow(): void {
     width: 800, height: 850, minWidth: 600, minHeight: 600,
     icon: path.join(app.getAppPath(), 'icon.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
-    title: 'Trading Guardian', autoHideMenuBar: true,
+    title: 'Sentinel', autoHideMenuBar: true,
   });
   mainWindow.setMenu(null);
   if (isDev) { mainWindow.loadURL('http://localhost:5173'); }
@@ -251,7 +251,7 @@ function setupIPC(): void {
   // Shutdown PC
   ipcMain.handle('shutdown-pc', () => {
     const { exec } = require('child_process');
-    exec('shutdown /s /t 3 /c "Trading Guardian: Stepping away from charts."', () => {});
+    exec('shutdown /s /t 3 /c "Sentinel: Stepping away from charts."', () => {});
     return { success: true };
   });
   ipcMain.handle('request-early-unlock', (_e, reason) => lockManager.requestEarlyUnlock(reason));

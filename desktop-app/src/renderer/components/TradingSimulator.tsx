@@ -42,7 +42,7 @@ export const TradingSimulator: React.FC = () => {
       ws.onopen = () => {
         setConnected(true);
         ws.send(JSON.stringify({ type: 'check_lock' }));
-        setLastAction('Connected to Trading Guardian');
+        setLastAction('Connected to Sentinel');
       };
       ws.onmessage = (event) => {
         try {

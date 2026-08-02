@@ -34,7 +34,7 @@ export const WelcomeScreen: React.FC<Props> = ({ onComplete }) => {
 
         {/* Brand name */}
         <h1 className="text-3xl font-black tracking-tight mb-3 text-gradient">
-          Trading Guardian
+          Sentinel
         </h1>
 
         {/* Tagline */}

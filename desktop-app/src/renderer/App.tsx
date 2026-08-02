@@ -145,7 +145,7 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-3">
             <Logo size={24} />
             <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
-              Trading Guardian
+              Sentinel
             </p>
           </div>
         </div>

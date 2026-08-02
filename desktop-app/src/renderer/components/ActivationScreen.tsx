@@ -37,7 +37,7 @@ export const ActivationScreen: React.FC<Props> = ({ onActivated }) => {
       <div className="relative z-10 text-center max-w-md px-8">
         {/* Logo */}
         <p className="text-[0.62rem] font-bold tracking-[6px] uppercase text-glow-cyan mb-12 animate-breathe">
-          Trading Guardian
+          Sentinel
         </p>
 
         {/* Title */}

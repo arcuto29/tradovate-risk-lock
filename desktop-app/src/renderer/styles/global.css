@@ -1446,7 +1446,7 @@ main > div {
 
 
 
-/* Midnight: Trading Guardian header glow trace */
+/* Midnight: Sentinel header glow trace */
 [data-theme="midnight"] .text-gradient {
   background: linear-gradient(135deg, #ef4444 0%, #ffffff 25%, #3b82f6 50%, #ffffff 75%, #ef4444 100%);
   -webkit-background-clip: text;
@@ -1463,7 +1463,7 @@ main > div {
   filter: drop-shadow(-3px 0 6px rgba(239,68,68,0.4)) drop-shadow(3px 0 6px rgba(59,130,246,0.4)) !important;
 }
 
-/* Midnight: Priisma same as Trading Guardian branding */
+/* Midnight: Priisma same as Sentinel branding */
 [data-theme="midnight"] footer .text-gradient {
   background: linear-gradient(135deg, #ef4444 0%, #ffffff 25%, #3b82f6 50%, #ffffff 75%, #ef4444 100%);
   -webkit-background-clip: text;
