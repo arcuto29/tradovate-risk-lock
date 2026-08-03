@@ -2503,8 +2503,8 @@ input[type="time"], input[type="date"] {
 }
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(0.3) saturate(2) hue-rotate(170deg);
-  opacity: 0.7;
+  filter: invert(1) brightness(2);
+  opacity: 0.9;
   cursor: pointer;
 }
 input[type="time"]::-webkit-calendar-picker-indicator:hover,
@@ -2523,20 +2523,23 @@ select option {
 [data-theme="aurora"] input[type="time"], [data-theme="aurora"] input[type="date"] { color-scheme: dark; }
 [data-theme="aurora"] input[type="time"]::-webkit-calendar-picker-indicator,
 [data-theme="aurora"] input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(100deg) !important;
+  filter: invert(1) brightness(2) sepia(1) saturate(3) hue-rotate(100deg) !important;
+  opacity: 0.9;
 }
 
 /* Midnight: white picker icon on pure black */
 [data-theme="midnight"] select option { background: #000000; color: #ffffff; }
 [data-theme="midnight"] input[type="time"]::-webkit-calendar-picker-indicator,
 [data-theme="midnight"] input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) !important;
+  filter: invert(1) brightness(2) !important;
+  opacity: 0.9;
 }
 
 /* Neon: pink-tinted picker */
 [data-theme="neon"] input[type="time"]::-webkit-calendar-picker-indicator,
 [data-theme="neon"] input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(280deg) !important;
+  filter: invert(1) brightness(2) sepia(1) saturate(3) hue-rotate(280deg) !important;
+  opacity: 0.9;
 }
 
 /* Light themes: dark picker icons (no filter needed) */
