@@ -27,6 +27,7 @@
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
     if (msg.type === 'LOCK_STATE_UPDATE') { window.postMessage({ type: 'TRL_LOCK_STATE', locked: msg.locked }, '*'); }
+    if (msg.type === 'EMERGENCY_FALLBACK') { window.postMessage({ type: 'TRL_EMERGENCY_FALLBACK', locked: true, settings: msg.settings }, '*'); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }

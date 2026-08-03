@@ -73,6 +73,11 @@
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
       fullDayBlocked = true;
     }
+    if (event.data && event.data.type === 'TRL_EMERGENCY_FALLBACK') {
+      // Desktop disconnected while locked - keep enforcement active
+      lockActive = true;
+      console.log('[Sentinel] EMERGENCY FALLBACK: Desktop disconnected while locked. Keeping protection active. Exits allowed.');
+    }
     if (event.data && event.data.type === 'TRL_APP_DISCONNECTED') {
       // Desktop app is not running — disable ALL enforcement
       sessionBlocked = false;
@@ -181,6 +186,34 @@
 
   function isPostOrPut(method) {
     return method === 'POST' || method === 'PUT';
+  }
+
+  // ─── Order Classifier: NEVER block exits ──────────────────────────────────
+  // Determines if an order INCREASES risk (should be checked) or REDUCES risk (always allow)
+  var CLOSE_URLS = ['/Order/close', '/order/close', '/Position/close', '/position/close', '/Order/flatten', '/order/flatten', '/Position/flatten'];
+  var CANCEL_URLS = ['/Order/cancel', '/order/cancel', '/Order/delete', '/order/delete'];
+
+  function classifyOrder(url, body) {
+    if (!url) return 'UNKNOWN';
+    var lower = url.toLowerCase();
+    // Explicit close/flatten URLs
+    if (CLOSE_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return 'CLOSE_POSITION';
+    // Explicit cancel URLs
+    if (CANCEL_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return 'CANCEL_ORDER';
+    // Check body for close/reduce signals
+    if (body) {
+      var action = (body.action || body.orderAction || body.type || '').toLowerCase();
+      if (action === 'close' || action === 'flatten' || action === 'closeposition') return 'CLOSE_POSITION';
+      if (action === 'cancel' || action === 'cancelorder') return 'CANCEL_ORDER';
+      if (body.isClose === true || body.closePosition === true || body.flatten === true) return 'CLOSE_POSITION';
+      if (body.reduceOnly === true || body.isReduceOnly === true) return 'REDUCE_POSITION';
+    }
+    return 'OPEN_POSITION';
+  }
+
+  function isRiskReducing(url, body) {
+    var classification = classifyOrder(url, body);
+    return classification === 'CLOSE_POSITION' || classification === 'REDUCE_POSITION' || classification === 'CANCEL_ORDER';
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
@@ -317,6 +350,12 @@
 
       // Skip coach/size checks for order modifications (moving SL/TP, canceling orders)
       if (isModifyOrCancel(url, body)) {
+        return origFetch.apply(this, arguments);
+      }
+
+      // CRITICAL SAFETY: NEVER block risk-reducing orders (closing, reducing, canceling)
+      if (isRiskReducing(url, body)) {
+        console.log('[Sentinel] ALLOWING risk-reducing order (exit/close/cancel)');
         return origFetch.apply(this, arguments);
       }
 

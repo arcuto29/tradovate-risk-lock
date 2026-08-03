@@ -34,6 +34,38 @@ function scheduleReconnect() { if (reconnectTimer) return; reconnectTimer = setT
 
 // Clear all cached state and tell content scripts to disable when app disconnects
 function clearAllState() {
+  // CRITICAL SAFETY: If we were LOCKED when disconnected, keep enforcing last known rules
+  // Only go fail-open if we were UNLOCKED (safe to disable)
+  if (lockState.locked) {
+    // LOCKED DISCONNECT - keep protection active with last known rules
+    console.log('[Sentinel] Desktop disconnected while LOCKED - keeping emergency protection active');
+    chrome.storage.local.set({
+      [STORAGE_KEYS.CONNECTION_STATUS]: false,
+      sentinel_emergency_mode: true,
+      sentinel_last_lock_state: lockState,
+    });
+    
+    // Tell content scripts we're in emergency fallback mode (still enforce, but show warning)
+    const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+    urls.forEach(pattern => {
+      chrome.tabs.query({ url: pattern }, (tabs) => {
+        tabs.forEach(tab => {
+          chrome.tabs.sendMessage(tab.id, { type: 'EMERGENCY_FALLBACK', locked: true, settings: lockState.settings }).catch(() => {});
+        });
+      });
+    });
+    
+    // Keep DNR rules active
+    updateRules(true);
+    chrome.action.setBadgeText({ text: 'EMR' });
+    chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' });
+    
+    // Schedule reconnect but do NOT disable enforcement
+    scheduleReconnect();
+    return;
+  }
+
+  // UNLOCKED DISCONNECT - safe to disable everything
   lockState = { locked: false, settings: null };
   sessionState = { blocked: false, sessionHours: null, enabled: false };
   chrome.storage.local.set({
@@ -43,6 +75,7 @@ function clearAllState() {
     position_limits: null,
     full_day_blocked: false,
     ghost_mode: false,
+    sentinel_emergency_mode: false,
   });
   // Tell all content scripts the app is disconnected - disable everything
   const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
