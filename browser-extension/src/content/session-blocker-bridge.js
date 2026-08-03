@@ -77,12 +77,12 @@
 
     if (event.data && event.data.type === 'TRL_ORDER_BLOCKED') {
       showOverlay(event.data.reason);
-      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `BLOCKED on ${window.location.hostname}: ${event.data.reason}` });
+      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `BLOCKED on ${window.location.hostname}: ${event.data.reason}` }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_COACH_WARN') {
       showWarning(event.data.reason, event.data.message);
-      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH WARN: ${event.data.reason}` });
+      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH WARN: ${event.data.reason}` }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_COACH_BLOCK') {
@@ -91,15 +91,15 @@
       if (!isCooldown) {
         showBlock(event.data.reason, event.data.message);
       }
-      chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}` });
+      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}` }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_TILT_UPDATE') {
-      chrome.runtime.sendMessage({ type: 'TILT_UPDATE', score: event.data.score, level: event.data.level, blocked: event.data.blocked });
+      try { chrome.runtime.sendMessage({ type: 'TILT_UPDATE', score: event.data.score, level: event.data.level, blocked: event.data.blocked }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_TRADE_FILL') {
-      chrome.runtime.sendMessage({ type: 'TRADE_FILL', symbol: event.data.symbol, size: event.data.size, direction: event.data.direction, entryTime: event.data.entryTime, exitTime: event.data.exitTime, pnl: event.data.pnl, result: event.data.result });
+      try { chrome.runtime.sendMessage({ type: 'TRADE_FILL', symbol: event.data.symbol, size: event.data.size, direction: event.data.direction, entryTime: event.data.entryTime, exitTime: event.data.exitTime, pnl: event.data.pnl, result: event.data.result }); } catch(e) {}
     }
   });
 
