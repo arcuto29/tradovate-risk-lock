@@ -29,29 +29,25 @@ import { AdvancedProtection } from './components/AdvancedProtection';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings' | 'simulator' | 'analytics' | 'replay';
+type Page = 'home' | 'protection' | 'news' | 'insights' | 'review' | 'settings' | 'simulator';
 
 declare global {
   interface Window { electronAPI: any; }
 }
 
-const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string; devOnly?: boolean }[] = [
-  { page: 'main', label: 'Risk', lockedLabel: 'Status', icon: '◆' },
-  { page: 'session', label: 'Session', icon: '◷' },
-  { page: 'coach', label: 'Coach', icon: '◈' },
-  { page: 'advanced', label: 'Advanced', icon: '◇' },
+const NAV_ITEMS: { page: Page; label: string; icon: string; devOnly?: boolean }[] = [
+  { page: 'home', label: 'Home', icon: '◆' },
+  { page: 'protection', label: 'Protection', icon: '◈' },
   { page: 'news', label: 'News', icon: '◌' },
-  { page: 'discipline', label: 'Score', icon: '◉' },
-  { page: 'analytics', label: 'Insights', icon: '◫' },
-  { page: 'replay', label: 'Replay', icon: '◧' },
-  { page: 'blocklist', label: 'Blocklist', icon: '◻' },
+  { page: 'insights', label: 'Insights', icon: '◫' },
+  { page: 'review', label: 'Review', icon: '◧' },
   { page: 'settings', label: 'Settings', icon: '◎' },
   { page: 'simulator', label: 'Test Lab', icon: '▶', devOnly: true },
 ];
 
 export const App: React.FC = () => {
   const [lockState, setLockState] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('main');
+  const [currentPage, setCurrentPage] = useState<Page>('home');
   const [loading, setLoading] = useState(true);
   const [preMarketPassed, setPreMarketPassed] = useState(() => {
     // Only ask once per day
@@ -154,17 +150,14 @@ export const App: React.FC = () => {
 
         {/* Nav */}
         <nav className="flex justify-center gap-1">
-          {NAV_ITEMS.filter(item => !item.devOnly || devMode).map(({ page, label, lockedLabel, icon }) => {
-            // Block only Risk tab content if pre-market not done (let them access other tabs)
-            const navBlocked = false; // Nav is always accessible
+          {NAV_ITEMS.filter(item => !item.devOnly || devMode).map(({ page, label, icon }) => {
             const isMidnight = theme === 'midnight';
             return (
             <button
               key={page}
-              onClick={() => !navBlocked && setCurrentPage(page)}
+              onClick={() => setCurrentPage(page)}
               className={`
                 relative px-4 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200 group
-                ${navBlocked ? 'opacity-30 cursor-not-allowed' : ''}
                 ${currentPage === page
                   ? 'text-white'
                   : 'text-white/25 hover:text-white/50 hover:bg-white/[0.02]'}
@@ -173,7 +166,7 @@ export const App: React.FC = () => {
             >
               <span className="flex items-center gap-2">
                 <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#ffffff' : colors.primary) : undefined}}>{icon}</span>
-                <span>{page === 'main' && lockState?.isLocked ? (lockedLabel || label) : label}</span>
+                <span>{label}</span>
               </span>
               {currentPage === page && (
                 <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, boxShadow: `0 0 8px ${colors.primary}80`}} />
@@ -188,7 +181,7 @@ export const App: React.FC = () => {
       {/* Main */}
       <main className="relative z-10 flex-1 px-8 py-8 overflow-y-auto">
         <div className="animate-reveal max-w-2xl mx-auto" key={currentPage}>
-          {currentPage === 'main' && (
+          {currentPage === 'home' && (
             lockState?.isLocked
               ? <>
                   <TiltMeter />
@@ -249,25 +242,24 @@ export const App: React.FC = () => {
                     <RiskSettings isLocked={false} onLocked={refreshState} />
                   </>
           )}
-          {currentPage === 'session' && <SessionHours isLocked={lockState?.isLocked} />}
-          {currentPage === 'coach' && <PsychologyCoach isLocked={lockState?.isLocked} />}
-          {currentPage === 'discipline' && (
+          {currentPage === 'protection' && (
+            <>
+              <SessionHours isLocked={lockState?.isLocked} />
+              <div className="mt-8"><PsychologyCoach isLocked={lockState?.isLocked} /></div>
+              <div className="mt-8"><AdvancedProtection isLocked={lockState?.isLocked} /></div>
+              <div className="mt-8"><DayRules isLocked={lockState?.isLocked} /></div>
+              <div className="mt-8"><Blocklist isLocked={lockState?.isLocked} /></div>
+            </>
+          )}
+          {currentPage === 'news' && <NewsBlocker isLocked={lockState?.isLocked} />}
+          {currentPage === 'insights' && (
             <>
               <DisciplineScore />
               <StreakRewards streak={0} monthlyAvg={0} />
+              <div className="mt-8"><Analytics /></div>
             </>
           )}
-          {currentPage === 'blocklist' && <Blocklist isLocked={lockState?.isLocked} />}
-          {currentPage === 'news' && <NewsBlocker isLocked={lockState?.isLocked} />}
-          {currentPage === 'advanced' && (
-            <>
-              <AdvancedProtection isLocked={lockState?.isLocked} />
-              <div className="mt-8"><DayRules isLocked={lockState?.isLocked} /></div>
-            </>
-          )}
-          {currentPage === 'log' && <ActivityLog />}
-          {currentPage === 'analytics' && <Analytics />}
-          {currentPage === 'replay' && <RuleReplay />}
+          {currentPage === 'review' && <RuleReplay />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
           {currentPage === 'simulator' && <TradingSimulator />}
         </div>

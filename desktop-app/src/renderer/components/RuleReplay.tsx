@@ -4,11 +4,9 @@ import { getThemeColors } from '../themeColors';
 import { TemptationTracker } from './TemptationTracker';
 import { RecoveryScore } from './RecoveryScore';
 import { RuleEffectiveness } from './RuleEffectiveness';
-import { DailyMission } from './DailyMission';
 import { ConsistencyMeter } from './ConsistencyMeter';
 import { BehavioralHeatmap } from './BehavioralHeatmap';
 import { TriggerDetector } from './TriggerDetector';
-import { DisciplineRisk } from './DisciplineRisk';
 import { WhatIf } from './WhatIf';
 
 interface ReplayEvent {
@@ -20,7 +18,7 @@ interface ReplayEvent {
   detail?: string;
 }
 
-type ReplayTab = 'timeline' | 'temptations' | 'recovery' | 'effectiveness' | 'mission' | 'consistency' | 'heatmap' | 'triggers' | 'risk' | 'whatif';
+type ReplayTab = 'timeline' | 'recovery' | 'temptations' | 'heatmap' | 'triggers' | 'consistency' | 'effects' | 'whatif';
 
 /**
  * Rule Replay - Shows a timeline of today's session events + Temptation Tracker
@@ -159,12 +157,21 @@ export const RuleReplay: React.FC = () => {
   return (
     <div className="max-w-lg">
       {/* Sub-tab switcher */}
-      <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯'], ['recovery', 'Recovery', '💪'], ['effectiveness', 'Effects', '📊'], ['mission', 'Mission', '🎖'], ['consistency', 'Consistency', '📏'], ['heatmap', 'Heatmap', '🗺'], ['triggers', 'Triggers', '🔍'], ['risk', 'Risk', '🎚'], ['whatif', 'What If', '🔮']] as const).map(([tab, label, icon]) => (
+      <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04] overflow-x-auto">
+        {([
+          ['timeline', 'Timeline', '⏱'],
+          ['recovery', 'Recovery', '💪'],
+          ['temptations', 'Temptations', '🎯'],
+          ['heatmap', 'Heatmap', '🗺'],
+          ['triggers', 'Triggers', '🔍'],
+          ['consistency', 'Consistency', '📏'],
+          ['effects', 'Effects', '📊'],
+          ['whatif', 'What If', '🔮'],
+        ] as const).map(([tab, label, icon]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 px-3 py-2 rounded-lg text-[0.65rem] font-bold uppercase tracking-[1.5px] transition-all"
+            className="flex-1 px-3 py-2 rounded-lg text-[0.65rem] font-bold uppercase tracking-[1.5px] transition-all shrink-0"
             style={{
               background: activeTab === tab ? `${colors.primary}15` : 'transparent',
               border: activeTab === tab ? `1px solid ${colors.primary}25` : '1px solid transparent',
@@ -180,18 +187,14 @@ export const RuleReplay: React.FC = () => {
         <TemptationTracker />
       ) : activeTab === 'recovery' ? (
         <RecoveryScore />
-      ) : activeTab === 'effectiveness' ? (
+      ) : activeTab === 'effects' ? (
         <RuleEffectiveness />
-      ) : activeTab === 'mission' ? (
-        <DailyMission />
       ) : activeTab === 'consistency' ? (
         <ConsistencyMeter />
       ) : activeTab === 'heatmap' ? (
         <BehavioralHeatmap />
       ) : activeTab === 'triggers' ? (
         <TriggerDetector />
-      ) : activeTab === 'risk' ? (
-        <DisciplineRisk />
       ) : activeTab === 'whatif' ? (
         <WhatIf />
       ) : (
