@@ -31,7 +31,7 @@ export const UpdateBanner: React.FC = () => {
         </span>
         <button
           onClick={() => window.electronAPI.installUpdate()}
-          className="px-4 py-1.5 bg-cyan-400 text-black text-[0.65rem] font-bold uppercase tracking-[1.5px] rounded hover:bg-cyan-300 transition-all"
+          className="px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-[1.5px] rounded transition-all btn-premium"
         >
           Restart & Update
         </button>

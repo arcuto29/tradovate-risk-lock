@@ -140,7 +140,7 @@ export const SettingsForm: React.FC<{ onLocked: () => void }> = ({ onLocked }) =
       <button
         onClick={handleLock}
         disabled={locking || !confirmed}
-        className="w-full mt-6 py-4.5 bg-cyan-400 text-black text-xs font-bold uppercase tracking-[3px] rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] transition-all disabled:opacity-10 disabled:cursor-not-allowed btn-glow"
+        className="w-full mt-6 py-4.5 text-xs font-bold uppercase tracking-[3px] rounded-lg transition-all disabled:opacity-10 disabled:cursor-not-allowed btn-premium"
       >
         {locking ? 'Locking...' : 'Lock for Today'}
       </button>

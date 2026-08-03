@@ -66,7 +66,7 @@ export const ActivationScreen: React.FC<Props> = ({ onActivated }) => {
         <button
           onClick={handleActivate}
           disabled={loading || !key.trim()}
-          className="w-full py-4 bg-cyan-400 text-black text-xs font-bold uppercase tracking-[3px] rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] transition-all disabled:opacity-20 disabled:cursor-not-allowed btn-glow"
+          className="w-full py-4 bg-cyan-400 text-white text-xs font-bold uppercase tracking-[3px] rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] transition-all disabled:opacity-20 disabled:cursor-not-allowed btn-glow btn-premium"
         >
           {loading ? 'Activating...' : 'Activate'}
         </button>

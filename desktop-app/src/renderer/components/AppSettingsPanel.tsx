@@ -54,7 +54,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
     } else { setTpError(r.error || 'Failed'); }
   };
 
-  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 input-premium";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none transition-all placeholder:text-white/15 input-premium";
 
   return (
     <div className="max-w-lg">

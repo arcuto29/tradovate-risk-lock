@@ -9,7 +9,7 @@ export const TrustedPerson: React.FC<Props> = ({ isLocked, trustedPersonEnabled 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_12px_rgba(56,189,248,0.12)] focus:outline-none transition-all placeholder:text-white/15";
+  const inputClass = "w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3.5 text-white text-sm font-medium focus:outline-none transition-all placeholder:text-white/15 input-premium";
 
   const handleSet = async () => {
     setError('');

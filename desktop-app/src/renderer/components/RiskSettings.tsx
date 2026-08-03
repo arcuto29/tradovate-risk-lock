@@ -243,9 +243,9 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
 
 
   const inputClass =
-    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 input-premium';
+    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 input-premium';
   const selectClass =
-    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 appearance-none cursor-pointer [&>option]:bg-[#0a0a1a] [&>option]:text-white input-premium';
+    'w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none transition-all placeholder:text-white/15 disabled:opacity-30 appearance-none cursor-pointer input-premium';
 
   const sidebarPages: { key: SettingPage; label: string; enabled: boolean; icon: string }[] = [
     { key: 'loss_limit', label: 'Loss Limit', enabled: lossLimitEnabled, icon: '↓' },
