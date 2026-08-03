@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Timer, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 import { TemptationTracker } from './TemptationTracker';
@@ -59,34 +60,34 @@ export const RuleReplay: React.FC = () => {
 
         switch (entry.type) {
           case 'lock_activated':
-            timeline.push({ timestamp: time, type: 'lock', icon: '🔒', color: colors.primary, description: 'Lock activated', detail: 'Risk settings locked' });
+            timeline.push({ timestamp: time, type: 'lock', icon: '⊞', color: colors.primary, description: 'Lock activated', detail: 'Risk settings locked' });
             break;
           case 'auto_reset':
-            timeline.push({ timestamp: time, type: 'unlock', icon: '🔓', color: colors.secondary, description: 'Session ended', detail: 'Lock timer expired' });
+            timeline.push({ timestamp: time, type: 'unlock', icon: '⊟', color: colors.secondary, description: 'Session ended', detail: 'Lock timer expired' });
             break;
           case 'size_blocked':
             blocked++;
             riskPrevented += estimateBlockedRisk(details);
-            timeline.push({ timestamp: time, type: 'blocked', icon: '🚫', color: '#ef4444', description: 'Oversized order blocked', detail: details });
+            timeline.push({ timestamp: time, type: 'blocked', icon: '⊘', color: '#ef4444', description: 'Oversized order blocked', detail: details });
             break;
           case 'session_blocked':
             blocked++;
-            timeline.push({ timestamp: time, type: 'blocked', icon: '⏰', color: '#f59e0b', description: 'Session block', detail: 'Traded outside allowed hours' });
+            timeline.push({ timestamp: time, type: 'blocked', icon: '◷', color: '#f59e0b', description: 'Session block', detail: 'Traded outside allowed hours' });
             break;
           case 'coach_blocked':
             blocked++;
-            timeline.push({ timestamp: time, type: 'blocked', icon: '⏸', color: '#f59e0b', description: 'Cooldown block', detail: details });
+            timeline.push({ timestamp: time, type: 'blocked', icon: '‖', color: '#f59e0b', description: 'Cooldown block', detail: details });
             break;
           case 'stacking_blocked':
             blocked++;
-            timeline.push({ timestamp: time, type: 'blocked', icon: '📐', color: '#f59e0b', description: 'Stacking blocked', detail: 'Tried to add to position' });
+            timeline.push({ timestamp: time, type: 'blocked', icon: '▱', color: '#f59e0b', description: 'Stacking blocked', detail: 'Tried to add to position' });
             break;
           case 'symbol_blocked':
             blocked++;
             timeline.push({ timestamp: time, type: 'blocked', icon: '⊘', color: '#ef4444', description: 'Symbol blocked', detail: details });
             break;
           case 'kill_switch':
-            timeline.push({ timestamp: time, type: 'killswitch', icon: '💀', color: '#ef4444', description: 'Kill switch activated', detail: 'All trading blocked for 24h' });
+            timeline.push({ timestamp: time, type: 'killswitch', icon: '⊗', color: '#ef4444', description: 'Kill switch activated', detail: 'All trading blocked for 24h' });
             break;
           case 'bypass_attempt':
             blocked++;
@@ -94,10 +95,10 @@ export const RuleReplay: React.FC = () => {
             timeline.push({ timestamp: time, type: 'bypass', icon: '⚠', color: '#ef4444', description: 'Bypass attempt', detail: details });
             break;
           case 'early_unlock_request':
-            timeline.push({ timestamp: time, type: 'unlock_request', icon: '🔑', color: '#f59e0b', description: 'Early unlock requested', detail: details });
+            timeline.push({ timestamp: time, type: 'unlock_request', icon: '◉', color: '#f59e0b', description: 'Early unlock requested', detail: details });
             break;
           case 'full_day_block':
-            timeline.push({ timestamp: time, type: 'dayblock', icon: '🛑', color: '#ef4444', description: 'Full day block', detail: 'Pre-market check: blocked for the day' });
+            timeline.push({ timestamp: time, type: 'dayblock', icon: '⬡', color: '#ef4444', description: 'Full day block', detail: 'Pre-market check: blocked for the day' });
             break;
           case 'app_started':
             timeline.push({ timestamp: time, type: 'start', icon: '▶', color: colors.primary, description: 'Sentinel started' });
@@ -159,14 +160,14 @@ export const RuleReplay: React.FC = () => {
       {/* Sub-tab switcher */}
       <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04] overflow-x-auto">
         {([
-          ['timeline', 'Timeline', '⏱'],
-          ['recovery', 'Recovery', '💪'],
-          ['temptations', 'Temptations', '🎯'],
-          ['heatmap', 'Heatmap', '🗺'],
-          ['triggers', 'Triggers', '🔍'],
-          ['consistency', 'Consistency', '📏'],
-          ['effects', 'Effects', '📊'],
-          ['whatif', 'What If', '🔮'],
+          ['timeline', 'Timeline', '◷'],
+          ['recovery', 'Recovery', '↑'],
+          ['temptations', 'Temptations', '◎'],
+          ['heatmap', 'Heatmap', '▦'],
+          ['triggers', 'Triggers', '⊙'],
+          ['consistency', 'Consistency', '▬'],
+          ['effects', 'Effects', '▥'],
+          ['whatif', 'What If', '⑂'],
         ] as const).map(([tab, label, icon]) => (
           <button
             key={tab}
@@ -202,7 +203,7 @@ export const RuleReplay: React.FC = () => {
           {/* Header */}
           <div className="flex items-center gap-4 mb-6 animate-reveal">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-              <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}50)`}}>⏱</span>
+              <Timer size={18} style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)`}} />
             </div>
             <div>
               <h2 className="text-3xl font-black tracking-tight text-gradient">Session Replay</h2>
@@ -250,7 +251,7 @@ export const RuleReplay: React.FC = () => {
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, ${colors.secondary}20, transparent)`}} />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm">🛡</span>
+              <ShieldCheck size={14} className="inline" />
               <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>What Changed Today</p>
             </div>
             <p className="text-xs text-white/50 leading-relaxed">

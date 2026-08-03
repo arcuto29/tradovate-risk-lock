@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Target, TrendingDown } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -192,7 +193,7 @@ export const TemptationTracker: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>🎯</span>
+          <Target size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Temptations</h2>
@@ -242,7 +243,7 @@ export const TemptationTracker: React.FC = () => {
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}20, transparent)` }} />
           <div className="relative z-10">
-            <p className="text-2xl mb-2">📉</p>
+            <TrendingDown size={20} style={{ color: colors.primary }} className="mb-2" />
             <p className="text-sm font-semibold text-white/50 mb-1">Not Enough Data</p>
             <p className="text-[0.6rem] text-white/25">Need at least 3 blocked attempts to show patterns.</p>
             <p className="text-[0.6rem] text-white/15 mt-2">Current: {sampleSize} event{sampleSize !== 1 ? 's' : ''}</p>

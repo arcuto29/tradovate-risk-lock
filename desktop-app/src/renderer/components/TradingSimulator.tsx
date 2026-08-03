@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FlaskConical } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -332,7 +333,7 @@ export const TradingSimulator: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-          <span className="text-lg">🧪</span>
+          <FlaskConical size={18} style={{color: colors.primary}} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Test Lab</h2>

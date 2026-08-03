@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Activity } from 'lucide-react';
 
 interface Props {
   onComplete: (result: { passed: boolean; tightened: boolean }) => void;
@@ -75,7 +76,7 @@ export const PreMarketCheck: React.FC<Props> = ({ onComplete }) => {
       {/* Header */}
       <div className="text-center mb-8 animate-reveal">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-          <span className="text-xl" style={{filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.5))'}}>🧘</span>
+          <Activity size={20} style={{color: 'rgb(56,189,248)', filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.5))'}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient mb-2">Pre-Market Check</h2>
         <p className="text-white/30 text-sm">Answer honestly. This is for you.</p>

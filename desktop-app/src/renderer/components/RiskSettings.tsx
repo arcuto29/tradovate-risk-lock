@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Maximize2, Timer } from 'lucide-react';
 
 const FUTURES_SYMBOLS = [
   { symbol: 'NQ', label: 'NQ — Nasdaq 100' },
@@ -253,7 +254,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
     { key: 'max_trades', label: 'Max Trades', enabled: maxTradesEnabled, icon: '#' },
     { key: 'blocked_symbols', label: 'Blocked', enabled: blockedSymbolsEnabled, icon: '⊘' },
     { key: 'max_contracts', label: 'Contracts', enabled: maxContractsEnabled, icon: '▣' },
-    { key: 'lockout', label: 'Lockout', enabled: lockoutEnabled, icon: '⏱' },
+    { key: 'lockout', label: 'Lockout', enabled: lockoutEnabled, icon: '◷' },
   ];
 
   const filteredBlockedSymbols = FUTURES_SYMBOLS.filter((f) => !blockedSymbols.includes(f.symbol));
@@ -402,7 +403,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-purple-400/60 text-sm">📐</span>
+                    <Maximize2 size={14} className="text-purple-400/60" />
                     <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Pyramiding</p>
                   </div>
                   <div
@@ -443,7 +444,7 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
         return (
           <div className="animate-reveal">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-sm">⏱</div>
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-sm"><Timer size={14} /></div>
               <h2 className="text-xl font-bold text-gradient">Lockout Options</h2>
             </div>
             <p className="text-white/30 text-xs mb-8 leading-relaxed ml-11">Choose how long to lock.</p>

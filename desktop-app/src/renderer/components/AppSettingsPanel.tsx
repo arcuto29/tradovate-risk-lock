@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Palette, Rocket, Handshake, Plug } from 'lucide-react';
 import { useTheme, Theme, THEMES } from '../ThemeContext';
 
 export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
@@ -79,7 +80,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-5">
-            <span className="text-indigo-400/60 text-sm">🎨</span>
+            <Palette size={14} className="text-indigo-400/60" />
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-indigo-400/60">Appearance</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -123,7 +124,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-5">
-            <span className="text-purple-400/60 text-sm">🚀</span>
+            <Rocket size={14} className="text-purple-400/60" />
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Startup</p>
           </div>
           <div className="space-y-4">
@@ -151,7 +152,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-emerald-400/60 text-sm">🤝</span>
+            <Handshake size={14} className="text-emerald-400/60" />
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-emerald-400/60">Trusted Person</p>
           </div>
           <p className="text-xs text-white/20 mb-5">Someone else holds the unlock password.</p>
@@ -197,7 +198,7 @@ export const AppSettingsPanel: React.FC<{ isLocked: boolean }> = ({ isLocked }) 
       <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-4 animate-reveal stagger-4">
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-white/30 text-sm">🔌</span>
+            <Plug size={14} className="text-white/30" />
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-white/30">Extension</p>
           </div>
           <p className="text-xs text-white/20">WebSocket port <span className="font-mono text-cyan-400/50">47392</span></p>

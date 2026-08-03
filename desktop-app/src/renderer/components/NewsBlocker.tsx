@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Newspaper, Calendar } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 import { getEventInfo, renderStars } from '../data/news-event-info';
@@ -153,7 +154,7 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}50)`}}>📰</span>
+          <Newspaper size={18} style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)`}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">News Blocker</h2>
       </div>
@@ -210,7 +211,7 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-sm">📅</span>
+            <Calendar size={14} className="inline" />
             <p className="text-[0.6rem] font-bold tracking-[2px] uppercase" style={{color: `${colors.primary}80`}}>Auto-Included Events</p>
           </div>
           <p className="text-[0.6rem] text-white/35 leading-relaxed">

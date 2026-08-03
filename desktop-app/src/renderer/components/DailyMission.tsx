@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Target } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -102,7 +103,7 @@ export const DailyMission: React.FC = () => {
           id: 'limit_trades',
           title: 'Take no more than 3 trades today',
           description: `You've averaged ${Math.round(tradesPerDay * 10) / 10} trades/day this week. Today, prove you can be selective.`,
-          icon: '🎯',
+          icon: '◎',
           reason: `Based on ${recentTrades.length} trades over ${tradeDays} days (avg ${Math.round(tradesPerDay * 10) / 10}/day)`,
         },
       });
@@ -125,7 +126,7 @@ export const DailyMission: React.FC = () => {
           id: 'wait_after_loss',
           title: 'Wait 5 minutes after every loss',
           description: `You had ${rapidReentries} rapid re-entries after losses this week. Give yourself time to reset.`,
-          icon: '⏱',
+          icon: '◷',
           reason: `Based on ${rapidReentries} trades entered within 1 minute of a loss (last 7 days)`,
         },
       });
@@ -140,7 +141,7 @@ export const DailyMission: React.FC = () => {
           id: 'respect_size',
           title: 'Do not increase position size today',
           description: `Sentinel blocked ${sizeViolations} oversized orders this week. Trade your normal size.`,
-          icon: '📐',
+          icon: '▱',
           reason: `Based on ${sizeViolations} size-blocked events in the last 7 days`,
         },
       });
@@ -175,7 +176,7 @@ export const DailyMission: React.FC = () => {
           id: 'stop_after_target',
           title: 'Stop trading after 2 consecutive losses',
           description: `You had a ${maxConsecLosses}-loss streak this week. Set a hard stop after 2 losses in a row.`,
-          icon: '🛑',
+          icon: '⬡',
           reason: `Based on max consecutive loss streak of ${maxConsecLosses} in the last 7 days`,
         },
       });
@@ -190,7 +191,7 @@ export const DailyMission: React.FC = () => {
           id: 'trust_rules',
           title: 'Trust your rules — do not attempt bypass',
           description: `You tried to bypass Sentinel ${bypassAttempts} time${bypassAttempts > 1 ? 's' : ''} this week. The rules exist for a reason.`,
-          icon: '🛡',
+          icon: '▲',
           reason: `Based on ${bypassAttempts} bypass attempts in the last 7 days`,
         },
       });
@@ -205,7 +206,7 @@ export const DailyMission: React.FC = () => {
           id: 'quality_over_quantity',
           title: 'Only take A+ setups today',
           description: `Your win rate was ${Math.round(winRate)}% this week. Be extremely selective — quality over quantity.`,
-          icon: '💎',
+          icon: '◆',
           reason: `Based on ${Math.round(winRate)}% win rate across ${recentTrades.length} trades (last 7 days)`,
         },
       });
@@ -258,7 +259,7 @@ export const DailyMission: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>🎯</span>
+          <Target size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Daily Mission</h2>
@@ -270,7 +271,7 @@ export const DailyMission: React.FC = () => {
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}20, transparent)` }} />
           <div className="relative z-10">
-            <p className="text-2xl mb-2">📋</p>
+            <p className="text-2xl mb-2">◻</p>
             <p className="text-sm font-semibold text-white/50 mb-1">No Mission Yet</p>
             <p className="text-[0.6rem] text-white/25">Start trading with Sentinel to generate daily missions based on your behavior.</p>
           </div>

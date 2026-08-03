@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Brain, PauseCircle, TrendingDown, Trophy, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -70,7 +71,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}80)`}}>🧠</span>
+          <Brain size={18} style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}80)`}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Psychology Coach</h2>
       </div>
@@ -97,7 +98,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
             <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}40, transparent)`}} />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm" style={{color: `${colors.primary}80`}}>⏸</span>
+                <PauseCircle size={14} style={{color: `${colors.primary}80`}} />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Cooldown After Loss</p>
               </div>
               <p className="text-xs text-white/25 mb-4">Seconds before you can trade again after a losing trade</p>
@@ -119,7 +120,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
             <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}40, transparent)`}} />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-red-400/60 text-sm">📉</span>
+                <TrendingDown size={14} className="text-red-400/60" />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-red-400/60">Loss Streak</p>
               </div>
               <div className="space-y-3">
@@ -140,7 +141,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-amber-400/60 text-sm">🔥</span>
+                <Trophy size={14} className="text-amber-400/60" />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-amber-400/60">Win Streak Protection</p>
               </div>
               <p className="text-xs text-white/25 mb-4">Protect profits after consecutive wins. Overconfidence after a streak leads to giving back gains.</p>
@@ -193,7 +194,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-emerald-400/60 text-sm">🛡</span>
+                <ShieldCheck size={14} className="text-emerald-400/60" />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-emerald-400/60">Profit Protection</p>
               </div>
               <label className="flex items-center gap-3 cursor-pointer group mb-4">

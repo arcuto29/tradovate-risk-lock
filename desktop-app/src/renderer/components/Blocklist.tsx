@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Ban } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -63,7 +64,7 @@ export const Blocklist: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/10 border border-red-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.5))'}}>🚫</span>
+          <Ban size={18} style={{color: 'rgb(239,68,68)', filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.5))'}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Blocklist</h2>
       </div>

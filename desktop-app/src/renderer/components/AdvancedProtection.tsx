@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Zap, Trophy, BarChart3 } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -65,7 +66,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}50)`}}>🧬</span>
+          <Zap size={18} style={{color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)`}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Advanced</h2>
       </div>
@@ -80,7 +81,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">⚡</span>
+                <Zap size={14} style={{color: colors.primary}} />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Circuit Breaker</p>
               </div>
               <div
@@ -126,7 +127,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">🔥</span>
+                <Trophy size={14} style={{color: colors.primary}} />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.secondary}80`}}>Win Streak Protection</p>
               </div>
               <div
@@ -158,7 +159,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">💢</span>
+                <Zap size={14} className="text-red-400/60" />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-red-400/60">Rage Quit Detection</p>
               </div>
               <div
@@ -192,7 +193,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">📝</span>
+                <BarChart3 size={14} style={{color: `${colors.primary}80`}} />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Commitment Contract</p>
               </div>
               <div
@@ -223,7 +224,7 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">📊</span>
+                <BarChart3 size={14} style={{color: colors.primary}} />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.secondary}80`}}>Time of Day Tracker</p>
               </div>
               <div

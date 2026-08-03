@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BarChart3 } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -84,7 +85,7 @@ export const DisciplineScore: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${themeColors.primary}20, ${themeColors.secondary}10)`, border: `1px solid ${themeColors.primary}20`}}>
-          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${themeColors.primary}80)`}}>📊</span>
+          <BarChart3 size={18} style={{color: themeColors.primary, filter: `drop-shadow(0 0 4px ${themeColors.primary}80)`}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Discipline</h2>
       </div>

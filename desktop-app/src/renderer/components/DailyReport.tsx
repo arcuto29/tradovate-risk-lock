@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Flag } from 'lucide-react';
 
 export const DailyReport: React.FC = () => {
   const [report, setReport] = useState<any>(null);
@@ -33,7 +34,7 @@ export const DailyReport: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.5))'}}>📋</span>
+          <Flag size={18} style={{color: 'rgb(251,191,36)', filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.5))'}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Daily Report</h2>
       </div>

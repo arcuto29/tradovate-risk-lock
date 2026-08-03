@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -80,7 +81,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/10 border border-orange-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(249,115,22,0.5))'}}>📅</span>
+          <Calendar size={18} style={{color: 'rgb(249,115,22)', filter: 'drop-shadow(0 0 4px rgba(249,115,22,0.5))'}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Day Rules</h2>
       </div>
@@ -144,7 +145,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <span className="text-orange-400/60 text-sm">📅</span>
+              <Calendar size={14} className="text-orange-400/60" />
               <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-orange-400/60">{selectedDay}</p>
             </div>
             <div

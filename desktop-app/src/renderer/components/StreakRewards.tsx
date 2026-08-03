@@ -1,4 +1,5 @@
 import React from 'react';
+import { ShieldCheck } from 'lucide-react';
 
 interface Props {
   streak: number;
@@ -20,7 +21,7 @@ export const StreakRewards: React.FC<Props> = ({ streak, monthlyAvg }) => {
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-6">
-          <span className="text-amber-400/60 text-sm">🛡</span>
+          <ShieldCheck size={14} className="text-amber-400/60" />
           <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-amber-400/60">Shields</p>
         </div>
         <div className="grid grid-cols-3 gap-3">

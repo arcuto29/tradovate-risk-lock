@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -131,7 +132,7 @@ export const TriggerDetector: React.FC = () => {
           id: 'first_trade_loss',
           label: 'Losing first trade',
           description: 'Days that start with a loss tend to have worse remaining P&L.',
-          icon: '1️⃣',
+          icon: '①',
           occurrences: daysWithFirstLoss,
           totalSessions: sessionCount,
           frequency: Math.round((daysWithFirstLoss / sessionCount) * 100),
@@ -166,7 +167,7 @@ export const TriggerDetector: React.FC = () => {
           id: 'lunch_trading',
           label: 'Trading after lunch',
           description: 'Trades entered between 12-1 PM have a notably lower win rate.',
-          icon: '🍽',
+          icon: '◷',
           occurrences: lunchTrades,
           totalSessions: trades.length,
           frequency: Math.round((lunchTrades / trades.length) * 100),
@@ -199,7 +200,7 @@ export const TriggerDetector: React.FC = () => {
         id: 'size_after_loss',
         label: 'Increasing size after loss',
         description: 'You sometimes increase position size immediately after a losing trade.',
-        icon: '📈',
+        icon: '▲',
         occurrences: sizeIncreaseAfterLoss,
         totalSessions: sessionCount,
         frequency: Math.round((sizeIncreaseAfterLoss / trades.length) * 100),
@@ -244,7 +245,7 @@ export const TriggerDetector: React.FC = () => {
           id: 'after_target',
           label: 'Trading after daily target',
           description: 'Continuing to trade after hitting your daily goal tends to reduce your P&L.',
-          icon: '🎯',
+          icon: '◎',
           occurrences: daysOvertraded,
           totalSessions: sessionCount,
           frequency: Math.round((daysOvertraded / sessionCount) * 100),
@@ -280,7 +281,7 @@ export const TriggerDetector: React.FC = () => {
         id: 'worst_weekday',
         label: `${weekdayNames[worstDay.weekday]} trading`,
         description: `Your results on ${weekdayNames[worstDay.weekday]} are consistently below average.`,
-        icon: '📅',
+        icon: '▦',
         occurrences: worstDay.days,
         totalSessions: sessionCount,
         frequency: Math.round((worstDay.days / sessionCount) * 100),
@@ -315,7 +316,7 @@ export const TriggerDetector: React.FC = () => {
         id: 'overtrade_after_wins',
         label: 'Overtrading after wins',
         description: 'After winning early, you sometimes take excess trades that give back profits.',
-        icon: '🔥',
+        icon: '⬆',
         occurrences: overtradeDays,
         totalSessions: sessionCount,
         frequency: Math.round((overtradeDays / sessionCount) * 100),
@@ -355,7 +356,7 @@ export const TriggerDetector: React.FC = () => {
           id: 'violation_days',
           label: 'Days with violations',
           description: 'Days where Sentinel blocks an order tend to have worse overall results.',
-          icon: '🚫',
+          icon: '⊘',
           occurrences: violDayCount,
           totalSessions: sessionCount,
           frequency: Math.round((violDayCount / sessionCount) * 100),
@@ -385,7 +386,7 @@ export const TriggerDetector: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>🔍</span>
+          <Search size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Triggers</h2>
@@ -415,7 +416,7 @@ export const TriggerDetector: React.FC = () => {
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}20, transparent)` }} />
           <div className="relative z-10">
-            <p className="text-2xl mb-2">🔍</p>
+            <Search size={20} style={{ color: colors.primary }} className="mb-2" />
             <p className="text-sm font-semibold text-white/50 mb-1">Not Enough Data</p>
             <p className="text-[0.6rem] text-white/25">
               Trigger detection requires at least {MIN_SESSIONS} trading sessions to avoid false patterns.

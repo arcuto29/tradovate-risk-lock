@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { GitBranch } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -90,7 +91,7 @@ export const WhatIf: React.FC = () => {
         id: 'stop_after_2',
         label: 'If you stopped after Trade 2',
         description: `Only the first 2 trades count`,
-        icon: '✌️',
+        icon: '✌',
         simulatedResult: firstTwo,
         actualResult: actualPnl,
         difference: firstTwo - actualPnl,
@@ -106,7 +107,7 @@ export const WhatIf: React.FC = () => {
         id: 'stop_after_3',
         label: 'If you stopped after Trade 3',
         description: `Only the first 3 trades count`,
-        icon: '3️⃣',
+        icon: '③',
         simulatedResult: firstThree,
         actualResult: actualPnl,
         difference: firstThree - actualPnl,
@@ -124,7 +125,7 @@ export const WhatIf: React.FC = () => {
         id: 'max_trades',
         label: `If max trades were ${maxLimit}`,
         description: `Based on your average (${avgTradesPerDay}/day)`,
-        icon: '🔒',
+        icon: '⊞',
         simulatedResult: limited,
         actualResult: actualPnl,
         difference: limited - actualPnl,
@@ -141,7 +142,7 @@ export const WhatIf: React.FC = () => {
         id: 'skip_worst',
         label: 'If you skipped the worst trade',
         description: `Removed: ${worstTrade.direction} ${worstTrade.symbol} ($${worstTrade.pnl.toFixed(0)})`,
-        icon: '🗑',
+        icon: '⊟',
         simulatedResult: withoutWorst,
         actualResult: actualPnl,
         difference: withoutWorst - actualPnl,
@@ -167,7 +168,7 @@ export const WhatIf: React.FC = () => {
         id: 'stop_at_peak',
         label: 'If you stopped at peak P&L',
         description: `Stopped after trade ${peakTradeIndex + 1} (highest point)`,
-        icon: '⛰',
+        icon: '▲',
         simulatedResult: peakPnl,
         actualResult: actualPnl,
         difference: peakPnl - actualPnl,
@@ -187,7 +188,7 @@ export const WhatIf: React.FC = () => {
           id: 'first_2_hours',
           label: 'If you only traded the first 2 hours',
           description: `${firstTwoHours.length} of ${dayTrades.length} trades`,
-          icon: '⏰',
+          icon: '◷',
           simulatedResult: twoHourPnl,
           actualResult: actualPnl,
           difference: twoHourPnl - actualPnl,
@@ -216,7 +217,7 @@ export const WhatIf: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>🔮</span>
+          <GitBranch size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">What If</h2>
@@ -271,7 +272,7 @@ export const WhatIf: React.FC = () => {
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}20, transparent)` }} />
           <div className="relative z-10">
-            <p className="text-2xl mb-2">🔮</p>
+            <GitBranch size={20} style={{ color: colors.primary }} className="mb-2" />
             <p className="text-sm font-semibold text-white/50 mb-1">Not Enough Trades</p>
             <p className="text-[0.6rem] text-white/25">Need at least 2 trades in a session to generate What If scenarios.</p>
           </div>

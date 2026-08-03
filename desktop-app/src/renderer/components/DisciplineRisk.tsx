@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Gauge } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -113,7 +114,7 @@ export const DisciplineRisk: React.FC = () => {
       description: consecutiveLosses === 0 ? 'No current losing streak' : `${consecutiveLosses} loss${consecutiveLosses > 1 ? 'es' : ''} in a row`,
       value: lossPoints,
       weight: 30,
-      icon: '📉',
+      icon: '▼',
       active: consecutiveLosses > 0,
     });
 
@@ -142,7 +143,7 @@ export const DisciplineRisk: React.FC = () => {
       description: todayViolations === 0 ? 'No rule violations' : `${todayViolations} blocked attempt${todayViolations > 1 ? 's' : ''}`,
       value: violationPoints,
       weight: 25,
-      icon: '🚫',
+      icon: '⊘',
       active: todayViolations > 0,
     });
 
@@ -159,7 +160,7 @@ export const DisciplineRisk: React.FC = () => {
       description: sizeIncreases === 0 ? 'Consistent position sizing' : `Increased size ${sizeIncreases} time${sizeIncreases > 1 ? 's' : ''}`,
       value: sizePoints,
       weight: 15,
-      icon: '📐',
+      icon: '▱',
       active: sizeIncreases > 0,
     });
 
@@ -207,7 +208,7 @@ export const DisciplineRisk: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>🎚</span>
+          <Gauge size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Discipline Risk</h2>

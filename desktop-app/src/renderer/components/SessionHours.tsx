@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Clock, Lock } from 'lucide-react';
 
 export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const [enabled, setEnabled] = useState(false);
@@ -32,7 +33,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-cyan-500/10 border border-indigo-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.5))'}}>⏰</span>
+          <Clock size={18} style={{color: 'rgb(99,102,241)', filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.5))'}} />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Session Hours</h2>
       </div>
@@ -77,7 +78,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/40 to-transparent" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-5">
-                <span className="text-indigo-400/60 text-sm">🕐</span>
+                <span className="text-indigo-400/60 text-sm"><Clock size={14} className="inline" /></span>
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-indigo-400/60">Trading Window</p>
               </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -107,7 +108,7 @@ export const SessionHours: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-purple-400/60 text-sm">🔒</span>
+                <Lock size={14} className="text-purple-400/60" />
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-purple-400/60">Protected Platforms</p>
               </div>
               <div className="flex flex-wrap gap-2">

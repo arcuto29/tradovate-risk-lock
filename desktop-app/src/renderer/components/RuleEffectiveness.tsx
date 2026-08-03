@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { BarChart3, TrendingDown, Search } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
 
@@ -154,7 +155,7 @@ export const RuleEffectiveness: React.FC = () => {
       if (mBefore && mAfter && before.length >= MIN_SAMPLE && after.length >= MIN_SAMPLE) {
         effects.push({
           feature: 'Cooldown',
-          icon: '⏸',
+          icon: '‖',
           enabled: true,
           enabledDate: splitDate,
           sampleBefore: before.length,
@@ -210,7 +211,7 @@ export const RuleEffectiveness: React.FC = () => {
       if (mBefore && mAfter && before.length >= MIN_SAMPLE && after.length >= MIN_SAMPLE) {
         effects.push({
           feature: 'Size Limits',
-          icon: '📐',
+          icon: '▱',
           enabled: true,
           enabledDate: splitDate,
           sampleBefore: before.length,
@@ -236,7 +237,7 @@ export const RuleEffectiveness: React.FC = () => {
       if (mBefore && mAfter && before.length >= MIN_SAMPLE && after.length >= MIN_SAMPLE) {
         effects.push({
           feature: 'Risk Lock',
-          icon: '🔒',
+          icon: '⊞',
           enabled: true,
           enabledDate: splitDate,
           sampleBefore: before.length,
@@ -262,7 +263,7 @@ export const RuleEffectiveness: React.FC = () => {
       if (mBefore && mAfter && before.length >= MIN_SAMPLE && after.length >= MIN_SAMPLE) {
         effects.push({
           feature: 'Anti-Stacking',
-          icon: '🧱',
+          icon: '▤',
           enabled: true,
           enabledDate: splitDate,
           sampleBefore: before.length,
@@ -288,7 +289,7 @@ export const RuleEffectiveness: React.FC = () => {
       if (mFirst && mSecond) {
         effects.push({
           feature: 'Overall Progress',
-          icon: '📈',
+          icon: '▲',
           enabled: true,
           enabledDate: null,
           sampleBefore: firstHalf.length,
@@ -322,7 +323,7 @@ export const RuleEffectiveness: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20` }}>
-          <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>📊</span>
+          <BarChart3 size={18} style={{ color: colors.primary, filter: `drop-shadow(0 0 4px ${colors.primary}50)` }} />
         </div>
         <div>
           <h2 className="text-3xl font-black tracking-tight text-gradient">Effectiveness</h2>
@@ -346,7 +347,7 @@ export const RuleEffectiveness: React.FC = () => {
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}20, transparent)` }} />
           <div className="relative z-10">
-            <p className="text-2xl mb-2">📉</p>
+            <TrendingDown size={20} style={{ color: colors.primary }} className="mb-2" />
             <p className="text-sm font-semibold text-white/50 mb-1">Not Enough Data</p>
             <p className="text-[0.6rem] text-white/25">Need at least {MIN_SAMPLE * 2} trades to compare before/after behavior.</p>
             <p className="text-[0.6rem] text-white/15 mt-2">Current: {totalTrades} trade{totalTrades !== 1 ? 's' : ''}</p>
@@ -355,7 +356,7 @@ export const RuleEffectiveness: React.FC = () => {
       ) : featureEffects.length === 0 ? (
         <div className="relative rounded-xl p-8 overflow-hidden card-premium text-center">
           <div className="relative z-10">
-            <p className="text-2xl mb-2">🔍</p>
+            <Search size={20} style={{ color: colors.primary }} className="mb-2" />
             <p className="text-sm font-semibold text-white/50 mb-1">No Feature Comparisons Available</p>
             <p className="text-[0.6rem] text-white/25">Features need enough trades both before and after activation.</p>
             <p className="text-[0.6rem] text-white/15 mt-2">Keep trading with Sentinel active to build comparison data.</p>
