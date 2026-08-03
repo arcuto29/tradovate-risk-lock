@@ -155,7 +155,9 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       if (lockMode === 'duration') {
         const hours = Number(lockDurationHours) || 4;
         const unlockAt = new Date(Date.now() + hours * 60 * 60 * 1000);
-        finalResetTime = unlockAt.getHours().toString().padStart(2, '0') + ':' + unlockAt.getMinutes().toString().padStart(2, '0');
+        // Convert to timezone-aware time string in the selected timezone
+        const unlockInTZ = unlockAt.toLocaleString('en-US', { timeZone: resetTimezone, hour12: false, hour: '2-digit', minute: '2-digit' });
+        finalResetTime = unlockInTZ;
       }
       
       const lockSettings = {
