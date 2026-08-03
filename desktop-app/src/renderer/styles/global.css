@@ -2491,3 +2491,69 @@ header nav button span[style*="linear-gradient"] {
 /* Nebula: Stat card text minimum visibility */
 [data-theme="nebula"] [class*="text-white\\/15"] { color: rgba(255,255,255,0.3) !important; }
 [data-theme="nebula"] [class*="text-white\\/20"] { color: rgba(255,255,255,0.35) !important; }
+
+
+
+/* ═══ GLOBAL: TIME/DATE PICKER + SELECT DROPDOWN FIXES ═══ */
+/* Ensure time/date pickers are visible on ALL dark themes */
+
+/* Default (Nebula): dark color scheme for native pickers */
+input[type="time"], input[type="date"] {
+  color-scheme: dark;
+}
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(0.3) saturate(2) hue-rotate(170deg);
+  opacity: 0.7;
+  cursor: pointer;
+}
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Select dropdown option backgrounds for dark themes */
+select option {
+  background: #0a0a1a;
+  color: #ffffff;
+}
+
+/* Aurora: green-tinted picker + options */
+[data-theme="aurora"] select option { background: #020c0a; color: #34d399; }
+[data-theme="aurora"] input[type="time"], [data-theme="aurora"] input[type="date"] { color-scheme: dark; }
+[data-theme="aurora"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="aurora"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(100deg) !important;
+}
+
+/* Midnight: white picker icon on pure black */
+[data-theme="midnight"] select option { background: #000000; color: #ffffff; }
+[data-theme="midnight"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="midnight"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+}
+
+/* Neon: pink-tinted picker */
+[data-theme="neon"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="neon"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(280deg) !important;
+}
+
+/* Light themes: dark picker icons (no filter needed) */
+[data-theme="sakura"] input[type="time"], [data-theme="sakura"] input[type="date"] { color-scheme: light; }
+[data-theme="sakura"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="sakura"] input[type="date"]::-webkit-calendar-picker-indicator { filter: none !important; opacity: 0.6; }
+[data-theme="sakura"] select option { background: #ffffff; color: #3f1f2c; }
+
+[data-theme="sunset"] input[type="time"], [data-theme="sunset"] input[type="date"] { color-scheme: light; }
+[data-theme="sunset"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="sunset"] input[type="date"]::-webkit-calendar-picker-indicator { filter: none !important; opacity: 0.6; }
+[data-theme="sunset"] select option { background: #ffffff; color: #422006; }
+
+/* ═══ GLOBAL: Remove hardcoded cyan focus from inline classes ═══ */
+/* Override any remaining focus:border-cyan in Tailwind classes with theme color */
+[data-theme="hologram"] .input-premium:focus { border-color: rgba(0,212,255,0.5) !important; box-shadow: 0 0 0 3px rgba(0,212,255,0.06), 0 0 12px rgba(0,212,255,0.1) !important; }
+[data-theme="void"] .input-premium:focus { border-color: rgba(0,255,136,0.4) !important; box-shadow: 0 0 0 3px rgba(0,255,136,0.05), 0 0 12px rgba(0,255,136,0.08) !important; }
+[data-theme="gold"] .input-premium:focus { border-color: rgba(255,215,0,0.4) !important; box-shadow: 0 0 0 3px rgba(255,215,0,0.05), 0 0 12px rgba(255,215,0,0.08) !important; }
+[data-theme="neon"] .input-premium:focus { border-color: rgba(244,114,182,0.4) !important; box-shadow: 0 0 0 3px rgba(244,114,182,0.06), 0 0 12px rgba(244,114,182,0.08) !important; }
+[data-theme="frost"] .input-premium:focus { border-color: rgba(148,163,184,0.35) !important; box-shadow: 0 0 0 3px rgba(148,163,184,0.05), 0 0 10px rgba(96,165,250,0.06) !important; }
