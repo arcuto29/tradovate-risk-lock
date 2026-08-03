@@ -21,34 +21,21 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
+      "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://www.tradingview.com/*"],
       "js": ["src/content/session-blocker-main.js", "src/content/tilt-meter.js", "src/content/ghost-mode.js", "src/content/loss-reaction-v2.js"],
       "css": ["src/content/block-overlay.css"],
       "run_at": "document_start",
       "world": "MAIN"
     },
     {
-      "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*"],
+      "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://www.tradingview.com/*"],
       "js": ["src/content/session-blocker-bridge.js"],
       "css": [],
       "run_at": "document_start"
     },
-    {
-      "matches": ["https://www.tradingview.com/*"],
-      "js": ["src/content/tradingview-main.js", "src/content/tilt-meter.js", "src/content/ghost-mode.js", "src/content/loss-reaction-v2.js"],
-      "css": ["src/content/block-overlay.css"],
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://www.tradingview.com/*"],
-      "js": ["src/content/tradingview-blocker.js"],
-      "css": [],
-      "run_at": "document_start"
-    }
   ],
-  "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" } },
-  "icons": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" } },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "declarative_net_request": { "rule_resources": [{ "id": "risk_api_rules", "enabled": false, "path": "src/shared/rules.json" }] },
   "web_accessible_resources": [
     {
