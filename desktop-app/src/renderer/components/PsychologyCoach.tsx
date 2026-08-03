@@ -9,6 +9,14 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
   const [profitLockThreshold, setProfitLockThreshold] = useState(500);
   const [drawdownFromHigh, setDrawdownFromHigh] = useState(200);
   const [scalingLockEnabled, setScalingLockEnabled] = useState(false);
+  const [winStreakEnabled, setWinStreakEnabled] = useState(false);
+  const [winStreakThreshold, setWinStreakThreshold] = useState(3);
+  const [winStreakReminder, setWinStreakReminder] = useState(true);
+  const [winStreakReduceSize, setWinStreakReduceSize] = useState(false);
+  const [winStreakCooldown, setWinStreakCooldown] = useState(false);
+  const [winStreakCooldownSeconds, setWinStreakCooldownSeconds] = useState(120);
+  const [winStreakSuggestStop, setWinStreakSuggestStop] = useState(true);
+  const [winStreakAutoLock, setWinStreakAutoLock] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -25,6 +33,14 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
           setProfitLockThreshold(c.profitLockThreshold || 500);
           setDrawdownFromHigh(c.drawdownFromHigh || 200);
           setScalingLockEnabled(c.scalingLockEnabled === true);
+          setWinStreakEnabled(c.winStreakEnabled === true);
+          setWinStreakThreshold(c.winStreakThreshold || 3);
+          setWinStreakReminder(c.winStreakReminder !== false);
+          setWinStreakReduceSize(c.winStreakReduceSize === true);
+          setWinStreakCooldown(c.winStreakCooldown === true);
+          setWinStreakCooldownSeconds(c.winStreakCooldownSeconds || 120);
+          setWinStreakSuggestStop(c.winStreakSuggestStop !== false);
+          setWinStreakAutoLock(c.winStreakAutoLock === true);
         }
       } catch {}
       setLoaded(true);
@@ -32,7 +48,12 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
   }, []);
 
   const handleSave = async () => {
-    await window.electronAPI.updateCoachConfig({ enabled, cooldownSeconds, escalatingCooldown, lossStreakEnabled, profitLockEnabled, profitLockThreshold, drawdownFromHigh, scalingLockEnabled });
+    await window.electronAPI.updateCoachConfig({
+      enabled, cooldownSeconds, escalatingCooldown, lossStreakEnabled,
+      profitLockEnabled, profitLockThreshold, drawdownFromHigh, scalingLockEnabled,
+      winStreakEnabled, winStreakThreshold, winStreakReminder, winStreakReduceSize,
+      winStreakCooldown, winStreakCooldownSeconds, winStreakSuggestStop, winStreakAutoLock,
+    });
     setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
@@ -107,6 +128,59 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
                   <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">One-way ratchet (never goes back up)</span>
                 </label>
               </div>
+            </div>
+          </div>
+
+          {/* Win Streak Protection */}
+          <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-2">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-amber-400/60 text-sm">🔥</span>
+                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-amber-400/60">Win Streak Protection</p>
+              </div>
+              <p className="text-xs text-white/25 mb-4">Protect profits after consecutive wins. Overconfidence after a streak leads to giving back gains.</p>
+              <label className="flex items-center gap-3 cursor-pointer group mb-4">
+                <input type="checkbox" checked={winStreakEnabled} onChange={(e) => setWinStreakEnabled(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Enable win streak protection</span>
+              </label>
+              {winStreakEnabled && (
+                <div className="space-y-4 pt-4 border-t border-white/[0.04]">
+                  <div>
+                    <p className="text-xs text-white/25 mb-2">Trigger after consecutive wins</p>
+                    <input type="number" min="2" max="10" value={winStreakThreshold} onChange={(e) => setWinStreakThreshold(parseInt(e.target.value) || 3)} className={numInput} />
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-[0.6rem] font-bold text-white/25 uppercase tracking-[1.5px]">Actions when triggered</p>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" checked={winStreakReminder} onChange={(e) => setWinStreakReminder(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                      <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Show reminder to protect profits</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" checked={winStreakReduceSize} onChange={(e) => setWinStreakReduceSize(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                      <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Reduce max contracts by half</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" checked={winStreakCooldown} onChange={(e) => setWinStreakCooldown(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                      <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Force cooldown before next trade</span>
+                    </label>
+                    {winStreakCooldown && (
+                      <div className="ml-7">
+                        <p className="text-xs text-white/20 mb-1">Cooldown duration (seconds)</p>
+                        <input type="number" min="30" max="600" step="30" value={winStreakCooldownSeconds} onChange={(e) => setWinStreakCooldownSeconds(parseInt(e.target.value) || 120)} className={numInput} />
+                      </div>
+                    )}
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" checked={winStreakSuggestStop} onChange={(e) => setWinStreakSuggestStop(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                      <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Suggest ending session (take the win)</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" checked={winStreakAutoLock} onChange={(e) => setWinStreakAutoLock(e.target.checked)} className="w-4 h-4 accent-amber-400 rounded" />
+                      <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Auto-lock after streak (end session)</span>
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
