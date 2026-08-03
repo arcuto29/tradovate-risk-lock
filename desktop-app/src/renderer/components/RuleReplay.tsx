@@ -8,6 +8,8 @@ import { DailyMission } from './DailyMission';
 import { ConsistencyMeter } from './ConsistencyMeter';
 import { BehavioralHeatmap } from './BehavioralHeatmap';
 import { TriggerDetector } from './TriggerDetector';
+import { DisciplineRisk } from './DisciplineRisk';
+import { WhatIf } from './WhatIf';
 
 interface ReplayEvent {
   timestamp: string;
@@ -18,7 +20,7 @@ interface ReplayEvent {
   detail?: string;
 }
 
-type ReplayTab = 'timeline' | 'temptations' | 'recovery' | 'effectiveness' | 'mission' | 'consistency' | 'heatmap' | 'triggers';
+type ReplayTab = 'timeline' | 'temptations' | 'recovery' | 'effectiveness' | 'mission' | 'consistency' | 'heatmap' | 'triggers' | 'risk' | 'whatif';
 
 /**
  * Rule Replay - Shows a timeline of today's session events + Temptation Tracker
@@ -158,7 +160,7 @@ export const RuleReplay: React.FC = () => {
     <div className="max-w-lg">
       {/* Sub-tab switcher */}
       <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯'], ['recovery', 'Recovery', '💪'], ['effectiveness', 'Effects', '📊'], ['mission', 'Mission', '🎖'], ['consistency', 'Consistency', '📏'], ['heatmap', 'Heatmap', '🗺'], ['triggers', 'Triggers', '🔍']] as const).map(([tab, label, icon]) => (
+        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯'], ['recovery', 'Recovery', '💪'], ['effectiveness', 'Effects', '📊'], ['mission', 'Mission', '🎖'], ['consistency', 'Consistency', '📏'], ['heatmap', 'Heatmap', '🗺'], ['triggers', 'Triggers', '🔍'], ['risk', 'Risk', '🎚'], ['whatif', 'What If', '🔮']] as const).map(([tab, label, icon]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -188,6 +190,10 @@ export const RuleReplay: React.FC = () => {
         <BehavioralHeatmap />
       ) : activeTab === 'triggers' ? (
         <TriggerDetector />
+      ) : activeTab === 'risk' ? (
+        <DisciplineRisk />
+      ) : activeTab === 'whatif' ? (
+        <WhatIf />
       ) : (
         <>
           {/* Header */}
