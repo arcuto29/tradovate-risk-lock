@@ -21,6 +21,7 @@ import { DayRules } from './components/DayRules';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { TradingSimulator } from './components/TradingSimulator';
 import { Analytics } from './components/Analytics';
+import { RuleReplay } from './components/RuleReplay';
 import { Logo } from './components/Logo';
 import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
@@ -28,7 +29,7 @@ import { AdvancedProtection } from './components/AdvancedProtection';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
-type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings' | 'simulator' | 'analytics';
+type Page = 'main' | 'session' | 'coach' | 'discipline' | 'blocklist' | 'dayrules' | 'news' | 'advanced' | 'log' | 'settings' | 'simulator' | 'analytics' | 'replay';
 
 declare global {
   interface Window { electronAPI: any; }
@@ -42,6 +43,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'news', label: 'News', icon: '◌' },
   { page: 'discipline', label: 'Score', icon: '◉' },
   { page: 'analytics', label: 'Insights', icon: '◫' },
+  { page: 'replay', label: 'Replay', icon: '◧' },
   { page: 'blocklist', label: 'Blocklist', icon: '◻' },
   { page: 'settings', label: 'Settings', icon: '◎' },
   { page: 'simulator', label: 'Test Lab', icon: '▶', devOnly: true },
@@ -265,6 +267,7 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'log' && <ActivityLog />}
           {currentPage === 'analytics' && <Analytics />}
+          {currentPage === 'replay' && <RuleReplay />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
           {currentPage === 'simulator' && <TradingSimulator />}
         </div>
