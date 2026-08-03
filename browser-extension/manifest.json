@@ -8,19 +8,6 @@
   "background": { "service_worker": "src/background/service-worker.js", "type": "module" },
   "content_scripts": [
     {
-      "matches": ["https://trader.tradovate.com/*"],
-      "js": ["src/content/injector.js", "src/content/psychology-coach-main.js", "src/content/tilt-meter.js", "src/content/ghost-mode.js", "src/content/loss-reaction-v2.js"],
-      "css": ["src/content/block-overlay.css"],
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://trader.tradovate.com/*"],
-      "js": ["src/content/content-script.js", "src/content/psychology-coach.js"],
-      "css": [],
-      "run_at": "document_start"
-    },
-    {
       "matches": ["https://app.tradesea.ai/*", "https://topstepx.com/*", "https://*.topstepx.com/*", "https://www.tradingview.com/*", "https://trader.tradovate.com/*"],
       "js": ["src/content/ws-diagnostics.js", "src/content/session-blocker-main.js", "src/content/tilt-meter.js", "src/content/ghost-mode.js", "src/content/loss-reaction-v2.js"],
       "css": ["src/content/block-overlay.css"],
