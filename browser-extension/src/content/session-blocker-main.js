@@ -615,157 +615,199 @@
         return origFetch.apply(this, arguments);
       }
 
-      // CRITICAL SAFETY: NEVER block risk-reducing orders (closing, reducing, canceling)
-      var classResult = classifyOrder(url, body);
-      if (classResult.action === 'CLOSE_POSITION' || classResult.action === 'REDUCE_POSITION' ||
-          classResult.action === 'CANCEL_ORDER' || classResult.action === 'MODIFY_PROTECTIVE_ORDER' ||
-          classResult.action === 'QUERY') {
-        logDiagnostic(url, method, body, classResult, 'ALLOWED', true);
-        return origFetch.apply(this, arguments);
+      // ═══ USE UNIFIED EVALUATOR ═══
+      var decision = evaluateTradingRequest(url, method, body);
+      
+      if (!decision.allow) {
+        if (decision.playSound) playBlockSound();
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason }, '*');
+        window.postMessage({ type: 'TRL_ORDER_PLACED', size: 0 }, '*'); // Track blocked attempt for tilt
+        return Promise.reject(new Error('Blocked: ' + decision.reason));
       }
+      
+      // Order allowed - track for tilt meter and position state
+      var orderSize = body ? Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
+      var orderSymbol = (decision.classification.symbol || '').toUpperCase();
+      var orderDirection = decision.classification.side || 'Long';
+      if (orderDirection === 'sell' || orderDirection === 'SELL' || orderDirection === 'short' || orderDirection === 'SHORT') orderDirection = 'Short';
+      else orderDirection = 'Long';
+      lastOrderSymbol = orderSymbol || lastOrderSymbol;
+      lastOrderDirection = orderDirection;
 
-      // REVERSE_POSITION: The broker submits this as one request. We cannot split it.
-      // Policy: ALLOW the full request (preserves exit safety) but log the new-risk portion.
-      // The trader can still exit. If they're reversing, we let them close + open new.
-      if (classResult.action === 'REVERSE_POSITION') {
-        logDiagnostic(url, method, body, classResult, 'ALLOWED_REVERSAL', true);
-        console.log('[Sentinel] ALLOWING reversal (cannot split close+open in single broker request). New risk: ' + classResult.newRiskQuantity);
-        return origFetch.apply(this, arguments);
-      }
-
-      // UNKNOWN: Log clearly but apply configured policy (default: allow with warning)
-      if (classResult.action === 'UNKNOWN') {
-        logDiagnostic(url, method, body, classResult, 'ALLOWED_UNKNOWN', true);
-        console.warn('[Sentinel] UNKNOWN order classification - allowing (may be exit). URL:', sanitizeUrl(url));
-        return origFetch.apply(this, arguments);
-      }
-
-      // FULL DAY BLOCK (Pre-Market Check admitted to revenge trading)
-      if (fullDayBlocked) {
-        console.log('[TradingGuardian] BLOCKED: Full day block active (Pre-Market Check)');
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked for today. You admitted to revenge trading.' }, '*');
-        return Promise.reject(new Error('Blocked: Full day block'));
-      }
-
-      // Blocked symbol check
-      if (lockActive && body && isBlockedSymbol(body)) {
-        var blockedSym = (body.symbolId || body.symbol || body.instrument || '');
-        console.log('[TradingGuardian] BLOCKED: Symbol blocked -', blockedSym);
-        playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol ' + blockedSym + ' is blocked' }, '*');
-        return Promise.reject(new Error('Blocked: Symbol is blocked'));
-      }
-
-      // Session block
-      if (lockActive && sessionBlocked) {
-        console.log('[TradingGuardian] BLOCKED: Outside trading hours');
-        playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
-        return Promise.reject(new Error('Blocked: Outside trading hours'));
-      }
-
-      // News event block
-      if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
-        console.log('[TradingGuardian] BLOCKED: News event window');
-        playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked - major news event window active. Wait for volatility to settle.' }, '*');
-        return Promise.reject(new Error('Blocked: News event'));
-      }
-
-      // Position size (single order check)
-      if (lockActive && body && isOversized(body)) {
-        var blockedSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
-        console.log('[TradingGuardian] BLOCKED: Oversize', blockedSize, body.symbolId);
-        playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size ' + blockedSize + ' exceeds max for ' + (body.symbolId || 'contract') }, '*');
-        window.postMessage({ type: 'TRL_ORDER_PLACED', size: blockedSize }, '*');
-        return Promise.reject(new Error('Blocked: Position size exceeds limit'));
-      }
-
-      // Pyramiding / Stacking check
-      if (lockActive && body) {
-        var orderSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
-        var orderSymbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
-        
-        if (orderSize > 0 && orderSymbol) {
-          var pos = currentOpenPositions[orderSymbol];
-          
-          if (pos && pos.size > 0) {
-            // Already have a position in this symbol - this is stacking
-            if (!pyramidingEnabled) {
-              // Stacking blocked by default
-              console.log('[TradingGuardian] BLOCKED: Stacking disabled. Already in', orderSymbol);
-              window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Already have a position in ' + orderSymbol + '. Stacking is disabled.' }, '*');
-              return Promise.reject(new Error('Blocked: Stacking disabled'));
-            } else {
-              // Pyramiding enabled - check limits
-              var newTotal = pos.size + orderSize;
-              var maxTotal = pyramidMaxContracts > 0 ? pyramidMaxContracts : (positionLimits.defaultMax || 2);
-              
-              if (newTotal > maxTotal) {
-                console.log('[TradingGuardian] BLOCKED: Pyramid max contracts. Current:', pos.size, 'Adding:', orderSize, 'Max:', maxTotal);
-                window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Adding ' + orderSize + ' would exceed pyramid max of ' + maxTotal + ' contracts for ' + orderSymbol }, '*');
-                return Promise.reject(new Error('Blocked: Pyramid max contracts'));
-              }
-              
-              if (pyramidMaxAddOns > 0 && pos.addOns >= pyramidMaxAddOns) {
-                console.log('[TradingGuardian] BLOCKED: Max add-ons reached for', orderSymbol);
-                window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Max add-ons reached for ' + orderSymbol + '. Already added ' + pos.addOns + ' times.' }, '*');
-                return Promise.reject(new Error('Blocked: Max add-ons'));
-              }
-              
-              // Allowed - update tracking
-              pos.size = newTotal;
-              pos.addOns++;
-            }
+      // Only fire ORDER_PLACED for risk-increasing actions (tilt meter tracks these)
+      if (decision.classification.action === 'OPEN_POSITION' || decision.classification.action === 'INCREASE_POSITION') {
+        window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize, symbol: lastOrderSymbol, direction: orderDirection }, '*');
+        // Update position tracking
+        if (orderSymbol && orderSize > 0) {
+          if (!currentOpenPositions[orderSymbol]) {
+            currentOpenPositions[orderSymbol] = { size: orderSize, addOns: 0, direction: orderDirection.toLowerCase() };
           } else {
-            // First entry - track it
-            currentOpenPositions[orderSymbol] = { size: orderSize, addOns: 0 };
+            currentOpenPositions[orderSymbol].size += orderSize;
+            currentOpenPositions[orderSymbol].addOns++;
           }
         }
       }
-
-      // Tilt meter check
-      if (lockActive && window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
-        console.log('[TradingGuardian] TILT BLOCKED: Score', window.__tiltMeter.getScore());
-        window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'TILTING', message: 'Your tilt meter is red. You are making emotional decisions. Step away and reset.' }, '*');
-        return Promise.reject(new Error('Blocked: Tilt meter red'));
-      }
-
-      // Psychology coach
-      var coachResult = checkCoach(body);
-      if (coachResult) {
-        if (coachResult.block) {
-          console.log('[TradingGuardian] COACH BLOCKED:', coachResult.reason);
-          window.postMessage({ type: 'TRL_COACH_BLOCK', reason: coachResult.reason, message: coachResult.message }, '*');
-          return Promise.reject(new Error('Blocked: ' + coachResult.reason));
-        }
-        if (coachResult.warn) {
-          console.log('[TradingGuardian] COACH WARNING:', coachResult.reason);
-          window.postMessage({ type: 'TRL_COACH_WARN', reason: coachResult.reason, message: coachResult.message }, '*');
-        }
-      }
-
-      // Order passed all checks — notify tilt meter
-      var orderSize = body ? (body.positionSize || body.qty || body.quantity || body.size || 0) : 0;
-      var orderSymbol = body ? (body.symbolId || body.symbol || body.instrument || '') : '';
-      var orderDirection = 'Long';
-      if (body) {
-        var action = (body.action || body.orderAction || body.side || '').toLowerCase();
-        if (action === 'sell' || action === 'short' || action === 'sellshort') orderDirection = 'Short';
-        if ((body.positionSize || body.qty || body.quantity || body.size || 0) < 0) orderDirection = 'Short';
-      }
-      lastOrderSymbol = orderSymbol.toUpperCase() || lastOrderSymbol;
-      lastOrderDirection = orderDirection;
-      var passedClassification = classifyOrder(url, body);
-      logDiagnostic(url, method, body, passedClassification, 'ALLOWED', true);
-      window.postMessage({ type: 'TRL_ORDER_PLACED', size: Math.abs(orderSize), symbol: lastOrderSymbol, direction: orderDirection }, '*');
     }
 
     return origFetch.apply(this, arguments);
   };
 
-  // ─── Override XHR ──────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // UNIFIED TRADING REQUEST EVALUATOR
+  // Both fetch and XHR call this single function. No duplicated logic.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * evaluateTradingRequest - Single decision point for ALL trading requests
+   * @param {string} url - The request URL
+   * @param {string} method - HTTP method
+   * @param {object|null} body - Parsed request body
+   * @returns {{ allow: boolean, reason: string, classification: object, playSound: boolean }}
+   */
+  function evaluateTradingRequest(url, method, body) {
+    var classification = classifyOrder(url, body);
+    var decision = { allow: true, reason: '', classification: classification, playSound: false, requestReached: false };
+
+    // ─── EXIT SAFETY: Always allow risk-reducing actions FIRST ─────────────
+    if (classification.action === 'CLOSE_POSITION' || classification.action === 'REDUCE_POSITION' ||
+        classification.action === 'CANCEL_ORDER' || classification.action === 'MODIFY_PROTECTIVE_ORDER' ||
+        classification.action === 'QUERY') {
+      decision.allow = true;
+      decision.reason = 'Risk-reducing: ' + classification.action;
+      decision.requestReached = true;
+      logDiagnostic(url, method, body, classification, 'ALLOWED', true);
+      return decision;
+    }
+
+    // ─── REVERSAL: Evaluate the new-risk portion against rules ─────────────
+    if (classification.action === 'REVERSE_POSITION') {
+      // The close portion is always safe. Check if the NEW exposure violates rules.
+      var newRiskQty = classification.newRiskQuantity || 0;
+      var symbol = classification.symbol;
+      
+      // Check new-risk portion against max contracts
+      if (lockActive && newRiskQty > 0 && symbol) {
+        var max = getMaxForSymbol(symbol);
+        if (newRiskQty > max) {
+          decision.allow = false;
+          decision.reason = 'Reversal blocked: new exposure ' + newRiskQty + ' exceeds max ' + max + ' for ' + symbol;
+          decision.playSound = true;
+          logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SIZE', false);
+          return decision;
+        }
+      }
+      // Check other rules against the new-risk portion
+      if (lockActive && symbol && isBlockedSymbol(body)) {
+        decision.allow = false;
+        decision.reason = 'Reversal blocked: ' + symbol + ' is a blocked symbol';
+        decision.playSound = true;
+        logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SYMBOL', false);
+        return decision;
+      }
+      if (lockActive && sessionBlocked) {
+        decision.allow = false;
+        decision.reason = 'Reversal blocked: outside session hours';
+        decision.playSound = true;
+        logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SESSION', false);
+        return decision;
+      }
+      if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
+        decision.allow = false;
+        decision.reason = 'Reversal blocked: news event window';
+        decision.playSound = true;
+        logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_NEWS', false);
+        return decision;
+      }
+      // If new-risk passes all checks, allow the full reversal
+      decision.allow = true;
+      decision.reason = 'Reversal allowed: new exposure ' + newRiskQty + ' within limits';
+      decision.requestReached = true;
+      logDiagnostic(url, method, body, classification, 'ALLOWED_REVERSAL', true);
+      return decision;
+    }
+
+    // ─── UNKNOWN: Allow but degrade protection status ─────────────────────
+    if (classification.action === 'UNKNOWN') {
+      decision.allow = true;
+      decision.reason = 'Unknown format - allowing (may be exit). Protection degraded.';
+      decision.requestReached = true;
+      logDiagnostic(url, method, body, classification, 'ALLOWED_UNKNOWN_DEGRADED', true);
+      console.warn('[Sentinel] UNKNOWN order format - protection degraded. URL:', sanitizeUrl(url));
+      // Track that we've seen an unknown format (degrades protection status)
+      if (typeof window.__sentinel_unknownCount === 'undefined') window.__sentinel_unknownCount = 0;
+      window.__sentinel_unknownCount++;
+      return decision;
+    }
+
+    // ─── RISK-INCREASING: Check ALL rules ─────────────────────────────────
+    // Actions: OPEN_POSITION, INCREASE_POSITION, MODIFY_ENTRY_ORDER
+
+    // Full day block
+    if (fullDayBlocked) {
+      decision.allow = false; decision.reason = 'Full day block active'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_FULL_DAY', false);
+      return decision;
+    }
+
+    // Blocked symbol
+    if (lockActive && body && isBlockedSymbol(body)) {
+      decision.allow = false; decision.reason = 'Symbol is blocked'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_SYMBOL', false);
+      return decision;
+    }
+
+    // Session hours
+    if (lockActive && sessionBlocked) {
+      decision.allow = false; decision.reason = 'Outside trading hours'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_SESSION', false);
+      return decision;
+    }
+
+    // News block
+    if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
+      decision.allow = false; decision.reason = 'News event window active'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_NEWS', false);
+      return decision;
+    }
+
+    // Position size
+    if (lockActive && body && isOversized(body)) {
+      decision.allow = false; decision.reason = 'Position size exceeds limit'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_SIZE', false);
+      return decision;
+    }
+
+    // Pyramiding/stacking
+    if (lockActive && body && classification.action === 'INCREASE_POSITION' && !pyramidingEnabled) {
+      decision.allow = false; decision.reason = 'Stacking blocked - already in position'; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_STACKING', false);
+      return decision;
+    }
+
+    // Tilt meter
+    if (lockActive && window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
+      decision.allow = false; decision.reason = 'Tilt meter red - score ' + window.__tiltMeter.getScore(); decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_TILT', false);
+      return decision;
+    }
+
+    // Psychology coach
+    var coachResult = checkCoach(body);
+    if (coachResult && coachResult.block) {
+      decision.allow = false; decision.reason = coachResult.reason + ': ' + coachResult.message; decision.playSound = true;
+      logDiagnostic(url, method, body, classification, 'BLOCKED_COACH', false);
+      window.postMessage({ type: 'TRL_COACH_BLOCK', reason: coachResult.reason, message: coachResult.message }, '*');
+      return decision;
+    }
+
+    // ─── ALL CHECKS PASSED: Allow the order ───────────────────────────────
+    decision.allow = true;
+    decision.reason = 'All rules passed';
+    decision.requestReached = true;
+    logDiagnostic(url, method, body, classification, 'ALLOWED', true);
+    return decision;
+  }
+  // ─── Override XHR (uses unified evaluateTradingRequest) ──────────────────
   var origOpen = XMLHttpRequest.prototype.open;
   var origSend = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.open = function(m, url) { this._tgUrl = url; this._tgMethod = m; return origOpen.apply(this, arguments); };
@@ -775,35 +817,24 @@
       var parsed = null;
       if (typeof body === 'string') { try { parsed = JSON.parse(body); } catch(e) {} }
 
-      // Skip coach/size checks for order modifications (moving SL/TP)
+      // Skip modifications (SL/TP moves)
       if (isModifyOrCancel(this._tgUrl, parsed)) {
         return origSend.apply(this, arguments);
       }
 
-      // FULL DAY BLOCK
-      if (fullDayBlocked) {
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Trading blocked for today.' }, '*');
-        return;
+      // Use unified evaluator
+      var decision = evaluateTradingRequest(this._tgUrl, method, parsed);
+      
+      if (!decision.allow) {
+        if (decision.playSound) playBlockSound();
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason }, '*');
+        return; // Block the XHR - don't call origSend
       }
-
-      // Blocked symbol
-      if (parsed && isBlockedSymbol(parsed)) {
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Symbol is blocked' }, '*');
-        return;
-      }
-
-      if (sessionBlocked) {
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Outside trading hours' }, '*');
-        return;
-      }
-      if (parsed && isOversized(parsed)) {
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'Position size exceeds limit' }, '*');
-        return;
-      }
-      var coachResult = checkCoach(parsed);
-      if (coachResult && coachResult.block) {
-        window.postMessage({ type: 'TRL_COACH_BLOCK', reason: coachResult.reason, message: coachResult.message }, '*');
-        return;
+      
+      // Track the order for tilt meter
+      var orderSize = parsed ? Math.abs(parsed.positionSize || parsed.qty || parsed.quantity || parsed.size || 0) : 0;
+      if (decision.classification.action === 'OPEN_POSITION' || decision.classification.action === 'INCREASE_POSITION') {
+        window.postMessage({ type: 'TRL_ORDER_PLACED', size: orderSize, symbol: decision.classification.symbol, direction: decision.classification.side }, '*');
       }
     }
     return origSend.apply(this, arguments);

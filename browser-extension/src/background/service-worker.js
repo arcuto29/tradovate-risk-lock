@@ -7,6 +7,29 @@ let reconnectTimer = null;
 
 function connectToDesktopApp() {
   if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) return;
+  
+  // On startup/wake, check if we were in emergency mode
+  chrome.storage.local.get(['sentinel_emergency_mode', 'sentinel_last_lock_state', 'sentinel_fallback_state'], (stored) => {
+    if (stored.sentinel_emergency_mode && stored.sentinel_last_lock_state) {
+      lockState = stored.sentinel_last_lock_state;
+      // Check if lock has expired (if settings have a reset time)
+      if (stored.sentinel_fallback_state && stored.sentinel_fallback_state.settings) {
+        var resetTimeISO = stored.sentinel_fallback_state.settings.resetTimeISO;
+        if (resetTimeISO && new Date(resetTimeISO) < new Date()) {
+          // Lock expired - clear emergency mode
+          chrome.storage.local.set({ sentinel_emergency_mode: false });
+          lockState = { locked: false, settings: null };
+          updateRules(false);
+          chrome.action.setBadgeText({ text: '' });
+          return;
+        }
+      }
+      updateRules(true);
+      chrome.action.setBadgeText({ text: 'EMR' });
+      chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' });
+    }
+  });
+
   try {
     ws = new WebSocket(WS_URL);
     ws.onopen = () => {
