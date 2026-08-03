@@ -241,8 +241,8 @@
 
     // Extract order details from body
     if (body) {
-      symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
-      side = (body.action || body.orderAction || body.side || '').toLowerCase();
+      symbol = String(body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+      side = String(body.action || body.orderAction || body.side || '').toLowerCase();
       quantity = Math.abs(body.positionSize || body.qty || body.quantity || body.amount || body.size || 0);
     }
 
@@ -283,7 +283,7 @@
 
     // ─── Body flag-based classification ────────────────────────────────────
     if (body) {
-      var action = (body.action || body.orderAction || body.type || '').toLowerCase();
+      var action = String(body.action || body.orderAction || body.type || '').toLowerCase();
       if (action === 'close' || action === 'flatten' || action === 'closeposition' || action === 'closeall') {
         result.action = 'CLOSE_POSITION'; result.reason = 'body.action=' + action; result.confidence = 'high';
         result.closeQuantity = positionBefore.quantity || quantity; return result;
@@ -448,8 +448,8 @@
       var flags = {};
 
       if (body) {
-        symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
-        side = (body.action || body.orderAction || body.side || '').toUpperCase() || 'UNKNOWN';
+        symbol = String(body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+        side = String(body.action || body.orderAction || body.side || '').toUpperCase() || 'UNKNOWN';
         quantity = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
         flags = {
           reduceOnly: !!(body.reduceOnly || body.isReduceOnly),
