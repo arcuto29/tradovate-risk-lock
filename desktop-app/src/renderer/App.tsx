@@ -44,7 +44,7 @@ const NAV_ITEMS: { page: Page; label: string; lockedLabel?: string; icon: string
   { page: 'analytics', label: 'Insights', icon: '◫' },
   { page: 'blocklist', label: 'Blocklist', icon: '◻' },
   { page: 'settings', label: 'Settings', icon: '◎' },
-  { page: 'simulator', label: 'Sim', icon: '▶', devOnly: true },
+  { page: 'simulator', label: 'Test Lab', icon: '▶', devOnly: true },
 ];
 
 export const App: React.FC = () => {
