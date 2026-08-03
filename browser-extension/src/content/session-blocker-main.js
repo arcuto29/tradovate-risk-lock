@@ -151,10 +151,10 @@
   });
 
   // ─── Order URL detection ───────────────────────────────────────────────────
-  var ORDER_URLS = ['userapi.topstepx.com/Order', 'topstepx.com/Order', 'tradovate.com/Order', 'tradesea.ai/Order', 'tradingview.com/broker/', '/api/Order', 'order/place', '/trading/'];
-  var SAFE_URLS = ['/Order?accountId', '/order/list', '/order/item', '/orders/history'];
+  var ORDER_URLS = ['userapi.topstepx.com/Order', 'topstepx.com/Order', 'tradovate.com/Order', 'tradovateapi.com/order/', 'tradovateapi.com/Order', 'ninjatrader.com/Order', 'tradesea.ai/Order', 'tradingview.com/broker/', '/api/Order', 'order/place', 'order/placeOrder', 'order/placeOCO', 'order/placeOSO'];
+  var SAFE_URLS = ['/Order?accountId', '/order/list', '/order/item', '/orders/history', '/order/deps', '/order/ldeps', '/risk-settings'];
   // URLs that indicate modifying/canceling an existing order (NOT new orders)
-  var MODIFY_URLS = ['/Order/modify', '/Order/cancel', '/Order/update', '/order/modify', '/order/cancel', '/order/update', '/Order/editStopLoss', '/Order/editTakeProfit', '/Order/editStop', '/Order/editTarget', '/Order/edit'];
+  var MODIFY_URLS = ['/Order/modify', '/Order/cancel', '/Order/update', '/order/modify', '/order/cancel', '/order/update', '/Order/editStopLoss', '/Order/editTakeProfit', '/Order/editStop', '/Order/editTarget', '/Order/edit', '/order/modifyOrder', '/order/cancelOrder'];
   // Domains that are NEVER trading platforms (ad networks, analytics, etc)
   var IGNORE_DOMAINS = ['doubleclick.net', 'google.com', 'googleapis.com', 'gstatic.com', 'facebook.com', 'analytics', 'sentry.io', 'cloudflare', 'jsdelivr', 'unpkg', 'cdn.'];
 
@@ -165,7 +165,7 @@
     if (IGNORE_DOMAINS.some(function(d) { return lower.includes(d); })) return false;
     if (SAFE_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return false;
     // Only match URLs that contain known trading endpoint patterns AND are on trading domains
-    var isTradingDomain = lower.includes('topstepx') || lower.includes('tradovate') || lower.includes('tradesea') || lower.includes('tradingview');
+    var isTradingDomain = lower.includes('topstepx') || lower.includes('tradovate') || lower.includes('tradesea') || lower.includes('tradingview') || lower.includes('ninjatrader');
     if (!isTradingDomain) return false;
     return ORDER_URLS.some(function(p) { return lower.includes(p.toLowerCase()); });
   }
