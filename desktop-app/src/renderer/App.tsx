@@ -21,6 +21,7 @@ import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { Onboarding } from './components/Onboarding';
+import { HomeDashboard } from './components/HomeDashboard';
 import { TradingSimulator } from './components/TradingSimulator';
 import { Analytics } from './components/Analytics';
 import { RuleReplay } from './components/RuleReplay';
@@ -251,15 +252,7 @@ export const App: React.FC = () => {
                 </>
               : (!preMarketPassed && !devMode)
                 ? <TradingReadiness onComplete={(result) => { setPreMarketPassed(true); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
-                : <>
-                    {limitsTightened && (
-                      <div className="mb-6 px-5 py-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] text-amber-300/80 text-xs font-medium animate-reveal flex items-center gap-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-                        Limits tightened for today. You're not in the right headspace.
-                      </div>
-                    )}
-                    <RiskSettings isLocked={false} onLocked={refreshState} />
-                  </>
+                : <HomeDashboard onLocked={refreshState} limitsTightened={limitsTightened} />
           )}
           {currentPage === 'protection' && (
             <>
