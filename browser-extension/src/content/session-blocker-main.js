@@ -194,26 +194,138 @@
   var CANCEL_URLS = ['/Order/cancel', '/order/cancel', '/Order/delete', '/order/delete'];
 
   function classifyOrder(url, body) {
-    if (!url) return 'UNKNOWN';
+    if (!url) return { action: 'UNKNOWN', reason: 'No URL' };
     var lower = url.toLowerCase();
     // Explicit close/flatten URLs
-    if (CLOSE_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return 'CLOSE_POSITION';
+    if (CLOSE_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return { action: 'CLOSE_POSITION', reason: 'URL matches close/flatten pattern' };
     // Explicit cancel URLs
-    if (CANCEL_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return 'CANCEL_ORDER';
+    if (CANCEL_URLS.some(function(p) { return lower.includes(p.toLowerCase()); })) return { action: 'CANCEL_ORDER', reason: 'URL matches cancel pattern' };
     // Check body for close/reduce signals
     if (body) {
       var action = (body.action || body.orderAction || body.type || '').toLowerCase();
-      if (action === 'close' || action === 'flatten' || action === 'closeposition') return 'CLOSE_POSITION';
-      if (action === 'cancel' || action === 'cancelorder') return 'CANCEL_ORDER';
-      if (body.isClose === true || body.closePosition === true || body.flatten === true) return 'CLOSE_POSITION';
-      if (body.reduceOnly === true || body.isReduceOnly === true) return 'REDUCE_POSITION';
+      if (action === 'close' || action === 'flatten' || action === 'closeposition') return { action: 'CLOSE_POSITION', reason: 'body.action=' + action };
+      if (action === 'cancel' || action === 'cancelorder') return { action: 'CANCEL_ORDER', reason: 'body.action=' + action };
+      if (body.isClose === true || body.closePosition === true || body.flatten === true) return { action: 'CLOSE_POSITION', reason: 'body.isClose/closePosition/flatten flag' };
+      if (body.reduceOnly === true || body.isReduceOnly === true) return { action: 'REDUCE_POSITION', reason: 'body.reduceOnly/isReduceOnly flag' };
+      
+      // Position-aware classification: check if this order reduces current position
+      var orderSymbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+      var orderSize = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
+      var orderSide = (body.action || body.orderAction || body.side || '').toLowerCase();
+      if (orderSymbol && currentOpenPositions[orderSymbol] && currentOpenPositions[orderSymbol].size > 0) {
+        var pos = currentOpenPositions[orderSymbol];
+        // If selling when long, or buying when short - this reduces/closes
+        var posDirection = pos.direction || 'long';
+        if ((posDirection === 'long' || posDirection === 'Long') && (orderSide === 'sell' || orderSide === 'sellshort' || orderSide === 'short')) {
+          if (orderSize <= pos.size) return { action: 'REDUCE_POSITION', reason: 'Sell ' + orderSize + ' reduces/closes long ' + pos.size + ' ' + orderSymbol };
+          else return { action: 'REVERSE_POSITION', reason: 'Sell ' + orderSize + ' reverses long ' + pos.size + ' (close + open short ' + (orderSize - pos.size) + ')' };
+        }
+        if ((posDirection === 'short' || posDirection === 'Short') && (orderSide === 'buy' || orderSide === 'buytocover' || orderSide === 'long')) {
+          if (orderSize <= pos.size) return { action: 'REDUCE_POSITION', reason: 'Buy ' + orderSize + ' reduces/closes short ' + pos.size + ' ' + orderSymbol };
+          else return { action: 'REVERSE_POSITION', reason: 'Buy ' + orderSize + ' reverses short ' + pos.size + ' (close + open long ' + (orderSize - pos.size) + ')' };
+        }
+      }
     }
-    return 'OPEN_POSITION';
+    return { action: 'OPEN_POSITION', reason: 'No close/reduce/cancel signals detected - treating as new risk' };
   }
 
   function isRiskReducing(url, body) {
-    var classification = classifyOrder(url, body);
-    return classification === 'CLOSE_POSITION' || classification === 'REDUCE_POSITION' || classification === 'CANCEL_ORDER';
+    var result = classifyOrder(url, body);
+    return result.action === 'CLOSE_POSITION' || result.action === 'REDUCE_POSITION' || result.action === 'CANCEL_ORDER';
+  }
+
+  // ─── Diagnostic Logger (Dev Mode Only) ────────────────────────────────────
+  var diagnosticLog = [];
+  var diagnosticEnabled = false;
+  var diagnosticEventId = 0;
+
+  // Listen for dev mode toggle from bridge
+  window.addEventListener('message', function(event) {
+    if (event.source !== window) return;
+    if (event.data && event.data.type === 'TRL_DEV_MODE') {
+      diagnosticEnabled = event.data.enabled;
+      if (diagnosticEnabled) console.log('[Sentinel Diagnostics] Order classification logging ENABLED. Use paper trading only.');
+    }
+  });
+
+  function detectPlatform() {
+    var host = window.location.hostname;
+    if (host.includes('tradingview')) return 'TradingView';
+    if (host.includes('topstepx')) return 'TopstepX';
+    if (host.includes('tradovate')) return 'Tradovate';
+    if (host.includes('tradesea')) return 'Tradesea';
+    return 'Unknown';
+  }
+
+  function sanitizeUrl(url) {
+    try {
+      var parsed = new URL(url, window.location.origin);
+      // Keep path only, redact query params that might contain account info
+      var path = parsed.pathname;
+      // Redact numeric IDs in path (e.g. /account/12345/order -> /account/[ID]/order)
+      path = path.replace(/\/\d{4,}/g, '/[ID]');
+      return path;
+    } catch(e) {
+      return url.split('?')[0].replace(/\/\d{4,}/g, '/[ID]');
+    }
+  }
+
+  function logDiagnostic(url, method, body, classification, decision) {
+    if (!diagnosticEnabled) return;
+    
+    var symbol = '';
+    var side = '';
+    var quantity = 0;
+    var flags = {};
+    var positionBefore = null;
+
+    if (body) {
+      symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
+      side = (body.action || body.orderAction || body.side || '').toUpperCase() || 'UNKNOWN';
+      quantity = Math.abs(body.positionSize || body.qty || body.quantity || body.size || 0);
+      flags = {
+        reduceOnly: body.reduceOnly || body.isReduceOnly || false,
+        isClose: body.isClose || body.closePosition || body.flatten || false,
+        action: body.action || body.orderAction || null,
+        orderType: body.orderType || body.type || null,
+      };
+    }
+
+    // Get position state (if tracked)
+    if (symbol && currentOpenPositions[symbol]) {
+      positionBefore = {
+        side: currentOpenPositions[symbol].direction || 'unknown',
+        quantity: currentOpenPositions[symbol].size || 0,
+      };
+    } else {
+      positionBefore = { side: 'FLAT', quantity: 0 };
+    }
+
+    var entry = {
+      id: 'diag_' + (++diagnosticEventId),
+      platform: detectPlatform(),
+      timestamp: new Date().toISOString(),
+      method: method,
+      urlPath: sanitizeUrl(url),
+      symbol: symbol || 'UNKNOWN',
+      side: side,
+      quantity: quantity,
+      flags: flags,
+      positionBefore: positionBefore,
+      classification: classification.action,
+      classificationReason: classification.reason,
+      decision: decision,
+    };
+
+    diagnosticLog.push(entry);
+    // Cap at 500 entries
+    if (diagnosticLog.length > 500) diagnosticLog.shift();
+
+    // Log to console in dev mode
+    console.log('[Sentinel Diagnostics]', JSON.stringify(entry, null, 2));
+
+    // Post to bridge so desktop app can display/store
+    window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: entry }, '*');
   }
 
   // ─── Position size check ───────────────────────────────────────────────────
@@ -355,7 +467,9 @@
 
       // CRITICAL SAFETY: NEVER block risk-reducing orders (closing, reducing, canceling)
       if (isRiskReducing(url, body)) {
-        console.log('[Sentinel] ALLOWING risk-reducing order (exit/close/cancel)');
+        var classResult = classifyOrder(url, body);
+        logDiagnostic(url, method, body, classResult, 'ALLOWED');
+        console.log('[Sentinel] ALLOWING risk-reducing order:', classResult.action, classResult.reason);
         return origFetch.apply(this, arguments);
       }
 
@@ -476,6 +590,8 @@
       }
       lastOrderSymbol = orderSymbol.toUpperCase() || lastOrderSymbol;
       lastOrderDirection = orderDirection;
+      var passedClassification = classifyOrder(url, body);
+      logDiagnostic(url, method, body, passedClassification, 'ALLOWED');
       window.postMessage({ type: 'TRL_ORDER_PLACED', size: Math.abs(orderSize), symbol: lastOrderSymbol, direction: orderDirection }, '*');
     }
 
@@ -734,5 +850,29 @@
     };
   })(window.fetch);
 
-  console.log('[TradingGuardian] MAIN world interceptor loaded. Session/Size/Coach/P&L active.');
+  // ─── Dev Mode Console Commands ─────────────────────────────────────────────
+  // Type these in Chrome DevTools console on the trading page:
+  window.__sentinel = {
+    enableDiagnostics: function() { diagnosticEnabled = true; console.log('[Sentinel Diagnostics] ENABLED. Trade on paper only. Every order will be logged.'); },
+    disableDiagnostics: function() { diagnosticEnabled = false; console.log('[Sentinel Diagnostics] DISABLED.'); },
+    getDiagnostics: function() { return diagnosticLog; },
+    exportDiagnostics: function() {
+      var json = JSON.stringify(diagnosticLog, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'sentinel-diagnostics-' + new Date().toISOString().split('T')[0] + '.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      console.log('[Sentinel Diagnostics] Exported ' + diagnosticLog.length + ' entries.');
+    },
+    copyDiagnostics: function() {
+      var json = JSON.stringify(diagnosticLog, null, 2);
+      navigator.clipboard.writeText(json).then(function() { console.log('[Sentinel Diagnostics] Copied ' + diagnosticLog.length + ' entries to clipboard.'); });
+    },
+    clearDiagnostics: function() { diagnosticLog = []; diagnosticEventId = 0; console.log('[Sentinel Diagnostics] Cleared.'); },
+    getClassification: function(url, body) { return classifyOrder(url, body); },
+  };
+
+  console.log('[Sentinel] MAIN world interceptor loaded. Session/Size/Coach/P&L active.');
+  console.log('[Sentinel] Dev commands: __sentinel.enableDiagnostics() / .exportDiagnostics() / .copyDiagnostics() / .clearDiagnostics()');
 })();

@@ -41,6 +41,10 @@
       window.postMessage({ type: 'TRL_SESSION_STATE', blocked: false, sessionHours: null, positionLimits: { limits: [], defaultMax: 0 } }, '*');
       window.postMessage({ type: 'TRL_GHOST_MODE', enabled: false }, '*');
     }
+    if (msg.type === 'DEV_MODE_UPDATE') {
+      chrome.storage.local.set({ sentinel_dev_mode: msg.enabled });
+      window.postMessage({ type: 'TRL_DEV_MODE', enabled: msg.enabled }, '*');
+    }
   });
 
   function sendStateToPage() {
@@ -72,6 +76,11 @@
 
   setInterval(sendStateToPage, 5000);
 
+  // Send dev mode status to main world for diagnostic logging on load
+  chrome.storage.local.get('sentinel_dev_mode', (r) => {
+    window.postMessage({ type: 'TRL_DEV_MODE', enabled: r?.sentinel_dev_mode || false }, '*');
+  });
+
   // Listen for events from MAIN world
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
@@ -101,6 +110,10 @@
 
     if (event.data && event.data.type === 'TRL_TRADE_FILL') {
       try { chrome.runtime.sendMessage({ type: 'TRADE_FILL', symbol: event.data.symbol, size: event.data.size, direction: event.data.direction, entryTime: event.data.entryTime, exitTime: event.data.exitTime, pnl: event.data.pnl, result: event.data.result }); } catch(e) {}
+    }
+
+    if (event.data && event.data.type === 'TRL_DIAGNOSTIC_LOG') {
+      try { chrome.runtime.sendMessage({ type: 'DIAGNOSTIC_LOG', entry: event.data.entry }); } catch(e) {}
     }
   });
 
