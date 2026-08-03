@@ -20,6 +20,7 @@ import { ActivationScreen } from './components/ActivationScreen';
 import { Blocklist } from './components/Blocklist';
 import { DayRules } from './components/DayRules';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { Onboarding } from './components/Onboarding';
 import { TradingSimulator } from './components/TradingSimulator';
 import { Analytics } from './components/Analytics';
 import { RuleReplay } from './components/RuleReplay';
@@ -62,6 +63,7 @@ export const App: React.FC = () => {
   const [ghostMode, setGhostMode] = useState(false);
   const [activated, setActivated] = useState(true);
   const [welcomeDone, setWelcomeDone] = useState(() => localStorage.getItem('tg-welcome-done') === 'true');
+  const [profileDone, setProfileDone] = useState(false);
   const [devMode, setDevMode] = useState(() => localStorage.getItem('tg-dev-mode') === 'true');
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
@@ -74,6 +76,10 @@ export const App: React.FC = () => {
         setLoading(false);
         return;
       }
+      // Check if trading profile exists (onboarding complete)
+      const profile = await (window as any).electronAPI?.getTradingProfile?.();
+      setProfileDone(!!profile);
+
       const state = await window.electronAPI.getLockState();
       setLockState(state);
     } catch (e) {
@@ -125,6 +131,10 @@ export const App: React.FC = () => {
 
   if (!welcomeDone && !devMode) {
     return <WelcomeScreen onComplete={() => { setWelcomeDone(true); localStorage.setItem('tg-welcome-done', 'true'); }} />;
+  }
+
+  if (!profileDone && !devMode) {
+    return <Onboarding onComplete={() => { setProfileDone(true); localStorage.setItem('tg-welcome-done', 'true'); }} />;
   }
 
   return (
