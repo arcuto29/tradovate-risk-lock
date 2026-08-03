@@ -6,6 +6,7 @@ import { RecoveryScore } from './RecoveryScore';
 import { RuleEffectiveness } from './RuleEffectiveness';
 import { DailyMission } from './DailyMission';
 import { ConsistencyMeter } from './ConsistencyMeter';
+import { BehavioralHeatmap } from './BehavioralHeatmap';
 
 interface ReplayEvent {
   timestamp: string;
@@ -16,7 +17,7 @@ interface ReplayEvent {
   detail?: string;
 }
 
-type ReplayTab = 'timeline' | 'temptations' | 'recovery' | 'effectiveness' | 'mission' | 'consistency';
+type ReplayTab = 'timeline' | 'temptations' | 'recovery' | 'effectiveness' | 'mission' | 'consistency' | 'heatmap';
 
 /**
  * Rule Replay - Shows a timeline of today's session events + Temptation Tracker
@@ -156,7 +157,7 @@ export const RuleReplay: React.FC = () => {
     <div className="max-w-lg">
       {/* Sub-tab switcher */}
       <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯'], ['recovery', 'Recovery', '💪'], ['effectiveness', 'Effects', '📊'], ['mission', 'Mission', '🎖'], ['consistency', 'Consistency', '📏']] as const).map(([tab, label, icon]) => (
+        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯'], ['recovery', 'Recovery', '💪'], ['effectiveness', 'Effects', '📊'], ['mission', 'Mission', '🎖'], ['consistency', 'Consistency', '📏'], ['heatmap', 'Heatmap', '🗺']] as const).map(([tab, label, icon]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -182,6 +183,8 @@ export const RuleReplay: React.FC = () => {
         <DailyMission />
       ) : activeTab === 'consistency' ? (
         <ConsistencyMeter />
+      ) : activeTab === 'heatmap' ? (
+        <BehavioralHeatmap />
       ) : (
         <>
           {/* Header */}
