@@ -43,6 +43,14 @@ function clearAllState() {
       [STORAGE_KEYS.CONNECTION_STATUS]: false,
       sentinel_emergency_mode: true,
       sentinel_last_lock_state: lockState,
+      sentinel_emergency_started: Date.now(),
+      // Retain all enforcement state for fallback
+      sentinel_fallback_state: {
+        locked: true,
+        settings: lockState.settings,
+        sessionState: sessionState,
+        stateVersion: Date.now(),
+      },
     });
     
     // Tell content scripts we're in emergency fallback mode (still enforce, but show warning)
@@ -94,8 +102,21 @@ function clearAllState() {
 }
 
 function handleMessage(msg) {
-  if (msg.type === 'connected' || msg.type === 'lock_state') { lockState = { locked: msg.locked, settings: msg.settings || null }; updateRules(msg.locked); broadcastLock(); }
-  if (msg.type === 'lock_state_changed') { lockState.locked = msg.locked; updateRules(msg.locked); broadcastLock(); ws?.send(JSON.stringify({ type: 'check_lock' })); }
+  if (msg.type === 'connected' || msg.type === 'lock_state') {
+    lockState = { locked: msg.locked, settings: msg.settings || null };
+    updateRules(msg.locked);
+    broadcastLock();
+    // Clear emergency mode on reconnect
+    chrome.storage.local.set({ sentinel_emergency_mode: false });
+  }
+  if (msg.type === 'lock_state_changed') {
+    lockState.locked = msg.locked;
+    updateRules(msg.locked);
+    broadcastLock();
+    ws?.send(JSON.stringify({ type: 'check_lock' }));
+    // Clear emergency mode on state change from desktop
+    chrome.storage.local.set({ sentinel_emergency_mode: false });
+  }
   if (msg.type === 'session_state') { sessionState = { blocked: msg.blocked, sessionHours: msg.sessionHours, enabled: msg.enabled }; broadcastSession(); }
   if (msg.type === 'session_state_changed') { sessionState = { blocked: msg.blocked, sessionHours: msg.sessionHours, enabled: msg.enabled }; broadcastSession(); }
   if (msg.type === 'coach_config') { chrome.storage.local.set({ coach_config: msg }); broadcastCoach(msg); }
