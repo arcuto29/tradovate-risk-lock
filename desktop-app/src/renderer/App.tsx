@@ -26,6 +26,8 @@ import { Logo } from './components/Logo';
 import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
 import { AdvancedProtection } from './components/AdvancedProtection';
+import { DailyMission } from './components/DailyMission';
+import { DisciplineRisk } from './components/DisciplineRisk';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
@@ -184,7 +186,13 @@ export const App: React.FC = () => {
           {currentPage === 'home' && (
             lockState?.isLocked
               ? <>
-                  <TiltMeter />
+                  <DailyMission />
+                  <div className="mt-5">
+                    <DisciplineRisk />
+                  </div>
+                  <div className="mt-5">
+                    <TiltMeter />
+                  </div>
                   <LockStatus lockState={lockState} onRefresh={refreshState} />
                   <div className="mt-6">
                     <KillSwitch onActivated={refreshState} />
