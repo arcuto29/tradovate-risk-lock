@@ -1565,9 +1565,9 @@ main > div {
 [data-theme="midnight"] [class*="bg-orange-400"] { background-color: rgba(239,68,68,0.05) !important; }
 [data-theme="midnight"] [class*="bg-amber-400"] { background-color: rgba(59,130,246,0.05) !important; }
 
-/* Status dots and indicators */
-[data-theme="midnight"] [class*="bg-emerald-400"] { background-color: #3b82f6 !important; }
-[data-theme="midnight"] [class*="bg-cyan-400"] { background-color: #ef4444 !important; }
+/* Status dots and indicators - only target small dot elements */
+[data-theme="midnight"] span[class*="rounded-full"][class*="bg-emerald-400"] { background-color: #3b82f6 !important; }
+[data-theme="midnight"] span[class*="rounded-full"][class*="bg-cyan-400"] { background-color: #ef4444 !important; }
 [data-theme="midnight"] [class*="shadow-\\[0_0"][class*="emerald"] { box-shadow: 0 0 6px rgba(59,130,246,0.6) !important; }
 [data-theme="midnight"] [class*="shadow-\\[0_0"][class*="cyan"] { box-shadow: 0 0 6px rgba(239,68,68,0.6) !important; }
 
@@ -1605,7 +1605,8 @@ main > div {
 /* Midnight: status badges - white border only, no colored fill */
 [data-theme="midnight"] [class*="border-emerald-400"] { border-color: rgba(255,255,255,0.15) !important; }
 [data-theme="midnight"] [class*="bg-emerald-400\\/\\[0\\.04\\]"] { background: rgba(255,255,255,0.03) !important; }
-[data-theme="midnight"] [class*="bg-emerald-400"] { background-color: rgba(255,255,255,0.8) !important; }
+[data-theme="midnight"] [class*="bg-emerald-400\\/\\[0\\.05\\]"] { background: rgba(255,255,255,0.03) !important; }
+[data-theme="midnight"] span[class*="bg-emerald-400"], [data-theme="midnight"] div[class*="w-1"][class*="bg-emerald-400"], [data-theme="midnight"] div[class*="w-2"][class*="bg-emerald-400"] { background-color: #3b82f6 !important; }
 [data-theme="midnight"] .text-emerald-300 { color: #ffffff !important; }
 [data-theme="midnight"] [class*="border-red-400"][class*="bg-"] { background: rgba(239,68,68,0.04) !important; }
 
