@@ -78,11 +78,206 @@
     return 0;
   }
 
+  // ═══ Tradovate WebSocket Message Parser ════════════════════════════════════
+  // Format: "endpoint\nrequestId\n\n{jsonBody}"
+  // Order endpoints: order/placeorder, order/placeOCO, order/placeOSO
+  // Cancel: order/cancelorder
+  // Modify: order/modifyorder
+  // Close: order/placeorder with isClose or liquidatePosition
+  
+  var TRADOVATE_ORDER_ENDPOINTS = ['order/placeorder', 'order/placeoco', 'order/placeoso'];
+  var TRADOVATE_CANCEL_ENDPOINTS = ['order/cancelorder'];
+  var TRADOVATE_MODIFY_ENDPOINTS = ['order/modifyorder'];
+  var TRADOVATE_CLOSE_ENDPOINTS = ['order/liquidateposition', 'position/liquidateposition'];
+
+  function parseTradovateWsMessage(data) {
+    if (!data || typeof data !== 'string') return null;
+    
+    // Split by \n - format is: endpoint\nid\n\n{json}
+    var parts = data.split('\n');
+    if (parts.length < 3) return null;
+    
+    var endpoint = (parts[0] || '').toLowerCase().trim();
+    var requestId = parts[1] || '';
+    
+    // Check if this is a trading-related endpoint
+    var isOrder = TRADOVATE_ORDER_ENDPOINTS.some(function(e) { return endpoint === e; });
+    var isCancel = TRADOVATE_CANCEL_ENDPOINTS.some(function(e) { return endpoint === e; });
+    var isModify = TRADOVATE_MODIFY_ENDPOINTS.some(function(e) { return endpoint === e; });
+    var isClose = TRADOVATE_CLOSE_ENDPOINTS.some(function(e) { return endpoint === e; });
+    
+    if (!isOrder && !isCancel && !isModify && !isClose) return null;
+    
+    // Parse the JSON body (after the double newline)
+    var jsonStr = '';
+    var doubleNewline = data.indexOf('\n\n');
+    if (doubleNewline >= 0) {
+      jsonStr = data.substring(doubleNewline + 2);
+    }
+    
+    var body = null;
+    try { body = JSON.parse(jsonStr); } catch(e) { return null; }
+    if (!body) return null;
+    
+    return {
+      isOrder: isOrder || isClose,
+      isCancel: isCancel,
+      isModify: isModify,
+      isClose: isClose,
+      endpoint: endpoint,
+      requestId: requestId,
+      action: body.action || '', // Buy, Sell
+      symbol: body.symbol || '',
+      qty: body.orderQty || body.qty || 1,
+      orderType: body.orderType || 'Market',
+      timeInForce: body.timeInForce || 'Day',
+      isLiquidate: endpoint.includes('liquidate'),
+      body: body,
+    };
+  }
+
+  function evaluateTradovateOrder(parsed) {
+    if (!parsed) return { allow: true, reason: 'No parsed data', classification: 'UNKNOWN' };
+    
+    // CANCEL: Always allow
+    if (parsed.isCancel) {
+      return { allow: true, reason: 'Cancel order - always allowed', classification: 'CANCEL_ORDER' };
+    }
+    
+    // CLOSE/LIQUIDATE: Always allow (exit safety)
+    if (parsed.isClose || parsed.isLiquidate) {
+      return { allow: true, reason: 'Close/liquidate - always allowed (exit safety)', classification: 'CLOSE_POSITION' };
+    }
+    
+    // MODIFY: Allow (usually stop/TP changes)
+    if (parsed.isModify) {
+      return { allow: true, reason: 'Modify order - allowed', classification: 'MODIFY_PROTECTIVE_ORDER' };
+    }
+    
+    // ORDER: Check against rules
+    // Access the lockActive state from session-blocker-main.js via window
+    var lockActive = window.__sentinelLockActive || false;
+    
+    if (!lockActive) {
+      return { allow: true, reason: 'Not locked - all orders allowed', classification: 'OPEN_POSITION' };
+    }
+    
+    // ─── RULE CHECKS (when locked) ──────────────────────────────────────
+    
+    // Full day block
+    if (window.__sentinelFullDayBlocked) {
+      return { allow: false, reason: 'Trading blocked for today (pre-market check)', classification: 'OPEN_POSITION' };
+    }
+    
+    // Session block
+    if (window.__sentinelSessionBlocked) {
+      return { allow: false, reason: 'Outside trading hours', classification: 'OPEN_POSITION' };
+    }
+    
+    // News block
+    if (window.__sentinelNewsBlocked && window.__sentinelNewsBlocked()) {
+      return { allow: false, reason: 'News event window active', classification: 'OPEN_POSITION' };
+    }
+    
+    // Position size check
+    var symbol = (parsed.symbol || '').toUpperCase();
+    var qty = parsed.qty || 1;
+    if (window.__sentinelGetMax) {
+      var max = window.__sentinelGetMax(symbol);
+      if (qty > max) {
+        return { allow: false, reason: 'Position size ' + qty + ' exceeds max ' + max + ' for ' + symbol, classification: 'OPEN_POSITION' };
+      }
+    }
+    
+    // Blocked symbol
+    if (window.__sentinelBlockedSymbols && window.__sentinelBlockedSymbols.length > 0) {
+      for (var i = 0; i < window.__sentinelBlockedSymbols.length; i++) {
+        if (symbol.includes(window.__sentinelBlockedSymbols[i].toUpperCase())) {
+          return { allow: false, reason: 'Symbol ' + symbol + ' is blocked', classification: 'OPEN_POSITION' };
+        }
+      }
+    }
+    
+    // Tilt meter
+    if (window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
+      return { allow: false, reason: 'Tilt meter red - score ' + window.__tiltMeter.getScore(), classification: 'OPEN_POSITION' };
+    }
+    
+    // All checks passed
+    return { allow: true, reason: 'All rules passed', classification: 'OPEN_POSITION' };
+  }
+
   // ═══ WebSocket.prototype.send interceptor ═════════════════════════════════
   var origWsSend = WebSocket.prototype.send;
 
   WebSocket.prototype.send = function(data) {
-    // Always call original first - NEVER block
+    // ─── TRADOVATE ORDER INTERCEPTION ───────────────────────────────────
+    // Tradovate sends orders via WS to demo.tradovateapi.com/v1/websocket
+    // Format: "endpoint\nrequestId\n\n{json}"
+    // Order endpoints: order/placeorder, order/placeOCO, order/placeOSO
+    // Cancel: order/cancelorder
+    // Modify: order/modifyorder
+    
+    if (typeof data === 'string' && this.url && this.url.includes('tradovateapi.com')) {
+      var parsed = parseTradovateWsMessage(data);
+      if (parsed && parsed.isOrder) {
+        // Check if we should block this order
+        var blockDecision = evaluateTradovateOrder(parsed);
+        
+        if (blockDecision && !blockDecision.allow) {
+          // BLOCK: Do NOT call original send
+          console.log('[Sentinel] BLOCKED WebSocket order:', blockDecision.reason);
+          if (typeof playBlockSound === 'function') playBlockSound();
+          window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: blockDecision.reason }, '*');
+          
+          // Log diagnostic
+          if (WS_DIAG_ENABLED) {
+            try {
+              wsLog.push({
+                id: 'ws_blocked_' + (++wsSocketId),
+                socketUrl: sanitizeUrl(this.url),
+                timestamp: new Date().toISOString(),
+                payloadType: 'text',
+                payloadLength: data.length,
+                preview: redactPreview(data),
+                testAction: currentTestAction,
+                classification: blockDecision.classification,
+                decision: 'BLOCKED',
+                reason: blockDecision.reason,
+              });
+              if (wsLog.length > MAX_LOG_ENTRIES) wsLog.shift();
+            } catch(e) {}
+          }
+          return; // Do NOT send to broker
+        }
+        
+        // ALLOWED: Log if diagnostics enabled, then send
+        if (WS_DIAG_ENABLED) {
+          try {
+            wsLog.push({
+              id: 'ws_allowed_' + (++wsSocketId),
+              socketUrl: sanitizeUrl(this.url),
+              timestamp: new Date().toISOString(),
+              payloadType: 'text',
+              payloadLength: data.length,
+              preview: redactPreview(data),
+              testAction: currentTestAction,
+              classification: blockDecision ? blockDecision.classification : 'ALLOWED',
+              decision: 'ALLOWED',
+              reason: blockDecision ? blockDecision.reason : 'passed',
+            });
+            if (wsLog.length > MAX_LOG_ENTRIES) wsLog.shift();
+          } catch(e) {}
+        }
+        
+        // Track order for tilt meter
+        if (parsed.action === 'Buy' || parsed.action === 'Sell') {
+          window.postMessage({ type: 'TRL_ORDER_PLACED', size: parsed.qty || 1, symbol: parsed.symbol, direction: parsed.action === 'Buy' ? 'Long' : 'Short' }, '*');
+        }
+      }
+    }
+
+    // Always call original (unless blocked above which returns early)
     var result = origWsSend.apply(this, arguments);
 
     // Only log if diagnostics enabled

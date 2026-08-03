@@ -57,10 +57,18 @@
     if (event.source !== window) return;
     if (event.data && event.data.type === 'TRL_SESSION_STATE') {
       sessionBlocked = event.data.blocked;
+      window.__sentinelSessionBlocked = sessionBlocked;
       if (event.data.positionLimits) positionLimits = event.data.positionLimits;
     }
     if (event.data && event.data.type === 'TRL_LOCK_STATE') {
       lockActive = event.data.locked === true;
+      // Expose lock state globally for WebSocket interceptor
+      window.__sentinelLockActive = lockActive;
+      window.__sentinelSessionBlocked = sessionBlocked;
+      window.__sentinelFullDayBlocked = fullDayBlocked;
+      window.__sentinelBlockedSymbols = blockedSymbols;
+      window.__sentinelGetMax = getMaxForSymbol;
+      window.__sentinelNewsBlocked = isNewsBlocked;
       if (!lockActive) {
         // Clear all enforcement when unlocked
         cooldownActive = false;
