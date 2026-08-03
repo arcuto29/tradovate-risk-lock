@@ -12,6 +12,7 @@ import { TiltMeter } from './components/TiltMeter';
 import { BypassWarning } from './components/BypassWarning';
 import { DisciplineScore } from './components/DisciplineScore';
 import { PreMarketCheck } from './components/PreMarketCheck';
+import { TradingReadiness } from './components/TradingReadiness';
 import { KillSwitch } from './components/KillSwitch';
 import { DailyReport } from './components/DailyReport';
 import { StreakRewards } from './components/StreakRewards';
@@ -239,7 +240,7 @@ export const App: React.FC = () => {
                   </button>
                 </>
               : (!preMarketPassed && !devMode)
-                ? <PreMarketCheck onComplete={(result) => { setPreMarketPassed(result.passed); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
+                ? <TradingReadiness onComplete={(result) => { setPreMarketPassed(true); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
                 : <>
                     {limitsTightened && (
                       <div className="mb-6 px-5 py-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] text-amber-300/80 text-xs font-medium animate-reveal flex items-center gap-3">
