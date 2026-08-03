@@ -29,6 +29,7 @@ import { Logo } from './components/Logo';
 import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
 import { AdvancedProtection } from './components/AdvancedProtection';
+import { TradingProfileCard } from './components/TradingProfileCard';
 import { DailyMission } from './components/DailyMission';
 import { DisciplineRisk } from './components/DisciplineRisk';
 import { useTheme } from './ThemeContext';
@@ -256,6 +257,7 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'protection' && (
             <>
+              <TradingProfileCard isLocked={lockState?.isLocked} />
               <SessionHours isLocked={lockState?.isLocked} />
               <div className="mt-8"><PsychologyCoach isLocked={lockState?.isLocked} /></div>
               <div className="mt-8"><AdvancedProtection isLocked={lockState?.isLocked} /></div>
