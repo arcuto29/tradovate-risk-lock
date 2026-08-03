@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
+import { TemptationTracker } from './TemptationTracker';
 
 interface ReplayEvent {
   timestamp: string;
@@ -11,14 +12,17 @@ interface ReplayEvent {
   detail?: string;
 }
 
+type ReplayTab = 'timeline' | 'temptations';
+
 /**
- * Rule Replay - Shows a timeline of today's session events
+ * Rule Replay - Shows a timeline of today's session events + Temptation Tracker
  * Data source: activity_log + trades table (SQLite)
  * No fake AI. Every insight is based on logged events.
  */
 export const RuleReplay: React.FC = () => {
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
+  const [activeTab, setActiveTab] = useState<ReplayTab>('timeline');
   const [events, setEvents] = useState<ReplayEvent[]>([]);
   const [blockedCount, setBlockedCount] = useState(0);
   const [estimatedRiskPrevented, setEstimatedRiskPrevented] = useState(0);
@@ -146,16 +150,38 @@ export const RuleReplay: React.FC = () => {
 
   return (
     <div className="max-w-lg">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6 animate-reveal">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
-          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}50)`}}>⏱</span>
-        </div>
-        <div>
-          <h2 className="text-3xl font-black tracking-tight text-gradient">Session Replay</h2>
-          <p className="text-[0.6rem] text-white/30">Today's events in order</p>
-        </div>
+      {/* Sub-tab switcher */}
+      <div className="flex gap-1 mb-6 p-1 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+        {([['timeline', 'Timeline', '⏱'], ['temptations', 'Temptations', '🎯']] as const).map(([tab, label, icon]) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="flex-1 px-3 py-2 rounded-lg text-[0.65rem] font-bold uppercase tracking-[1.5px] transition-all"
+            style={{
+              background: activeTab === tab ? `${colors.primary}15` : 'transparent',
+              border: activeTab === tab ? `1px solid ${colors.primary}25` : '1px solid transparent',
+              color: activeTab === tab ? colors.primary : 'rgba(255,255,255,0.3)',
+            }}
+          >
+            {icon} {label}
+          </button>
+        ))}
       </div>
+
+      {activeTab === 'temptations' ? (
+        <TemptationTracker />
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-6 animate-reveal">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
+              <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}50)`}}>⏱</span>
+            </div>
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-gradient">Session Replay</h2>
+              <p className="text-[0.6rem] text-white/30">Today's events in order</p>
+            </div>
+          </div>
 
       {/* Timeline */}
       {events.length === 0 ? (
@@ -213,6 +239,8 @@ export const RuleReplay: React.FC = () => {
             </p>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
