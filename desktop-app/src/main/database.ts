@@ -77,6 +77,63 @@ export class DatabaseManager {
     try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_end TEXT DEFAULT "16:00"'); } catch {}
     try { this.db.run('ALTER TABLE app_settings ADD COLUMN session_timezone TEXT DEFAULT "America/New_York"'); } catch {}
 
+    // ─── Trading Plan Architecture Tables ─────────────────────────────────
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS trading_profile (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        firm TEXT NOT NULL DEFAULT 'other',
+        platform TEXT NOT NULL DEFAULT 'other',
+        program TEXT NOT NULL DEFAULT '',
+        account_stage TEXT NOT NULL DEFAULT 'evaluation',
+        account_size TEXT NOT NULL DEFAULT '',
+        rules_preset_id TEXT,
+        rules_preset_version TEXT,
+        firm_max_contracts INTEGER,
+        firm_daily_loss INTEGER,
+        firm_drawdown INTEGER,
+        drawdown_type TEXT DEFAULT 'intraday_trailing',
+        rules_last_verified_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS trading_plan (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        max_contracts INTEGER NOT NULL DEFAULT 2,
+        daily_loss INTEGER NOT NULL DEFAULT 400,
+        max_trades INTEGER NOT NULL DEFAULT 3,
+        profit_target INTEGER NOT NULL DEFAULT 600,
+        lock_duration_hours INTEGER NOT NULL DEFAULT 4,
+        lock_mode TEXT NOT NULL DEFAULT 'duration',
+        reset_time TEXT DEFAULT '17:00',
+        reset_timezone TEXT DEFAULT 'America/New_York',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS daily_session_plan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trading_date TEXT NOT NULL,
+        readiness_status TEXT NOT NULL DEFAULT 'not_started',
+        readiness_score INTEGER,
+        protection_level TEXT,
+        baseline_plan_snapshot TEXT,
+        active_plan_snapshot TEXT,
+        recommendation_applied INTEGER DEFAULT 0,
+        readiness_completed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(trading_date)
+      );
+    `);
+
+    // ─── Migration: Existing users → populate trading_plan from position_limits ─
+    this.migrateExistingPlanData();
+
     this.save();
   }
 
@@ -196,6 +253,199 @@ export class DatabaseManager {
   }
 
   close(): void { this.save(); }
+
+  // ─── Migration: Populate trading_plan from existing position_limits ─────
+  private migrateExistingPlanData(): void {
+    // Only migrate if trading_plan is empty (first run after upgrade)
+    const planExists = this.db.exec('SELECT COUNT(*) FROM trading_plan');
+    if (planExists.length && planExists[0].values[0][0] as number > 0) return;
+
+    // Try to extract from existing position_limits JSON in app_settings
+    try {
+      this.db.run('ALTER TABLE app_settings ADD COLUMN position_limits TEXT');
+    } catch {} // Column may already exist
+
+    const settings = this.db.exec('SELECT position_limits FROM app_settings WHERE id = 1');
+    if (!settings.length || !settings[0].values.length) {
+      // No existing data — insert defaults
+      this.db.run('INSERT OR IGNORE INTO trading_plan (id) VALUES (1)');
+      return;
+    }
+
+    const limitsJson = settings[0].values[0][0] as string | null;
+    if (!limitsJson) {
+      this.db.run('INSERT OR IGNORE INTO trading_plan (id) VALUES (1)');
+      return;
+    }
+
+    try {
+      const limits = JSON.parse(limitsJson);
+      const maxContracts = limits.defaultMax || 2;
+      const dailyLoss = limits.lossLimitAmount || 400;
+      const maxTrades = limits.maxTradesPerDay || 3;
+      const profitTarget = limits.profitTargetAmount || 600;
+
+      this.db.run(
+        'INSERT OR IGNORE INTO trading_plan (id, max_contracts, daily_loss, max_trades, profit_target) VALUES (1, ?, ?, ?, ?)',
+        [maxContracts, dailyLoss, maxTrades, profitTarget]
+      );
+    } catch {
+      this.db.run('INSERT OR IGNORE INTO trading_plan (id) VALUES (1)');
+    }
+  }
+
+  // ─── Trading Profile CRUD ──────────────────────────────────────────────
+
+  getTradingProfile(): any | null {
+    const results = this.db.exec('SELECT * FROM trading_profile WHERE id = 1');
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    return obj;
+  }
+
+  saveTradingProfile(profile: {
+    firm: string; platform: string; program: string; accountStage: string;
+    accountSize: string; firmMaxContracts?: number; firmDailyLoss?: number;
+    firmDrawdown?: number; drawdownType?: string; rulesPresetId?: string;
+    rulesPresetVersion?: string;
+  }): void {
+    const existing = this.getTradingProfile();
+    if (existing) {
+      this.db.run(
+        `UPDATE trading_profile SET firm=?, platform=?, program=?, account_stage=?, account_size=?,
+         firm_max_contracts=?, firm_daily_loss=?, firm_drawdown=?, drawdown_type=?,
+         rules_preset_id=?, rules_preset_version=?, rules_last_verified_at=datetime('now'), updated_at=datetime('now')
+         WHERE id=1`,
+        [profile.firm, profile.platform, profile.program, profile.accountStage,
+         profile.accountSize, profile.firmMaxContracts || null, profile.firmDailyLoss || null,
+         profile.firmDrawdown || null, profile.drawdownType || 'intraday_trailing',
+         profile.rulesPresetId || null, profile.rulesPresetVersion || null]
+      );
+    } else {
+      this.db.run(
+        `INSERT INTO trading_profile (id, firm, platform, program, account_stage, account_size,
+         firm_max_contracts, firm_daily_loss, firm_drawdown, drawdown_type,
+         rules_preset_id, rules_preset_version, rules_last_verified_at)
+         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+        [profile.firm, profile.platform, profile.program, profile.accountStage,
+         profile.accountSize, profile.firmMaxContracts || null, profile.firmDailyLoss || null,
+         profile.firmDrawdown || null, profile.drawdownType || 'intraday_trailing',
+         profile.rulesPresetId || null, profile.rulesPresetVersion || null]
+      );
+    }
+    this.save();
+  }
+
+  // ─── Trading Plan CRUD ─────────────────────────────────────────────────
+
+  getTradingPlan(): any | null {
+    const results = this.db.exec('SELECT * FROM trading_plan WHERE id = 1');
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    return obj;
+  }
+
+  saveTradingPlan(plan: {
+    maxContracts: number; dailyLoss: number; maxTrades: number;
+    profitTarget: number; lockDurationHours: number; lockMode: string;
+    resetTime: string; resetTimezone: string;
+  }): void {
+    const existing = this.getTradingPlan();
+    if (existing) {
+      this.db.run(
+        `UPDATE trading_plan SET max_contracts=?, daily_loss=?, max_trades=?, profit_target=?,
+         lock_duration_hours=?, lock_mode=?, reset_time=?, reset_timezone=?, updated_at=datetime('now')
+         WHERE id=1`,
+        [plan.maxContracts, plan.dailyLoss, plan.maxTrades, plan.profitTarget,
+         plan.lockDurationHours, plan.lockMode, plan.resetTime, plan.resetTimezone]
+      );
+    } else {
+      this.db.run(
+        `INSERT INTO trading_plan (id, max_contracts, daily_loss, max_trades, profit_target,
+         lock_duration_hours, lock_mode, reset_time, reset_timezone)
+         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [plan.maxContracts, plan.dailyLoss, plan.maxTrades, plan.profitTarget,
+         plan.lockDurationHours, plan.lockMode, plan.resetTime, plan.resetTimezone]
+      );
+    }
+    this.save();
+  }
+
+  // ─── Daily Session Plan CRUD ───────────────────────────────────────────
+
+  getDailySessionPlan(tradingDate: string): any | null {
+    const results = this.db.exec(
+      'SELECT * FROM daily_session_plan WHERE trading_date = ?', [tradingDate]
+    );
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    // Parse JSON snapshots
+    if (obj.baseline_plan_snapshot) {
+      try { obj.baseline_plan_snapshot = JSON.parse(obj.baseline_plan_snapshot); } catch {}
+    }
+    if (obj.active_plan_snapshot) {
+      try { obj.active_plan_snapshot = JSON.parse(obj.active_plan_snapshot); } catch {}
+    }
+    return obj;
+  }
+
+  saveDailySessionPlan(plan: {
+    tradingDate: string; readinessStatus: string; readinessScore?: number;
+    protectionLevel?: string; baselinePlanSnapshot?: any;
+    activePlanSnapshot?: any; recommendationApplied?: boolean;
+    readinessCompletedAt?: string;
+  }): void {
+    const baselineJson = plan.baselinePlanSnapshot ? JSON.stringify(plan.baselinePlanSnapshot) : null;
+    const activeJson = plan.activePlanSnapshot ? JSON.stringify(plan.activePlanSnapshot) : null;
+
+    const existing = this.getDailySessionPlan(plan.tradingDate);
+    if (existing) {
+      this.db.run(
+        `UPDATE daily_session_plan SET readiness_status=?, readiness_score=?, protection_level=?,
+         baseline_plan_snapshot=?, active_plan_snapshot=?, recommendation_applied=?,
+         readiness_completed_at=?, updated_at=datetime('now')
+         WHERE trading_date=?`,
+        [plan.readinessStatus, plan.readinessScore || null, plan.protectionLevel || null,
+         baselineJson, activeJson, plan.recommendationApplied ? 1 : 0,
+         plan.readinessCompletedAt || null, plan.tradingDate]
+      );
+    } else {
+      this.db.run(
+        `INSERT INTO daily_session_plan (trading_date, readiness_status, readiness_score,
+         protection_level, baseline_plan_snapshot, active_plan_snapshot,
+         recommendation_applied, readiness_completed_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [plan.tradingDate, plan.readinessStatus, plan.readinessScore || null,
+         plan.protectionLevel || null, baselineJson, activeJson,
+         plan.recommendationApplied ? 1 : 0, plan.readinessCompletedAt || null]
+      );
+    }
+    this.save();
+  }
+
+  getRecentSessionPlans(limit: number = 30): any[] {
+    const results = this.db.exec(
+      'SELECT * FROM daily_session_plan ORDER BY trading_date DESC LIMIT ?', [limit]
+    );
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => {
+      const cols = results[0].columns;
+      const obj: any = {};
+      cols.forEach((c: string, i: number) => { obj[c] = row[i]; });
+      if (obj.baseline_plan_snapshot) { try { obj.baseline_plan_snapshot = JSON.parse(obj.baseline_plan_snapshot); } catch {} }
+      if (obj.active_plan_snapshot) { try { obj.active_plan_snapshot = JSON.parse(obj.active_plan_snapshot); } catch {} }
+      return obj;
+    });
+  }
 
   // Session hours
   updateSessionHours(hours: { enabled: boolean; startTime: string; endTime: string; timezone: string }): void {

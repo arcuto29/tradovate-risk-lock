@@ -670,6 +670,28 @@ function setupIPC(): void {
     return { success: true };
   });
 
+  // ─── Trading Profile + Plan + Session ─────────────────────────────────
+  ipcMain.handle('get-trading-profile', () => db.getTradingProfile());
+  ipcMain.handle('save-trading-profile', (_e, profile) => {
+    db.saveTradingProfile(profile);
+    db.logActivity('trading_profile_saved', JSON.stringify({ firm: profile.firm, platform: profile.platform, accountSize: profile.accountSize }));
+    return { success: true };
+  });
+
+  ipcMain.handle('get-trading-plan', () => db.getTradingPlan());
+  ipcMain.handle('save-trading-plan', (_e, plan) => {
+    db.saveTradingPlan(plan);
+    db.logActivity('trading_plan_saved', JSON.stringify(plan));
+    return { success: true };
+  });
+
+  ipcMain.handle('get-daily-session-plan', (_e, tradingDate) => db.getDailySessionPlan(tradingDate));
+  ipcMain.handle('save-daily-session-plan', (_e, plan) => {
+    db.saveDailySessionPlan(plan);
+    return { success: true };
+  });
+  ipcMain.handle('get-recent-session-plans', (_e, limit) => db.getRecentSessionPlans(limit || 30));
+
   // Trade Analytics
   ipcMain.handle('get-trades', (_e, limit?) => {
     return db.getTrades(limit || 500);
