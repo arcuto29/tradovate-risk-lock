@@ -7,8 +7,12 @@ export interface RiskSettings {
   dailyLossLimit: number;
   dailyProfitTarget: number;
   maxContracts: number;
+  // For "Until Time" mode display only (not used for scheduling after lockExpiresAt is set)
   resetTime: string;
   resetTimezone: string;
+  // NEW: Absolute expiry timestamp (used for ALL scheduling)
+  lockExpiresAt?: string;
+  lockMode?: 'duration' | 'time';
   platform: 'web' | 'desktop' | 'pwa';
 }
 
@@ -29,7 +33,7 @@ export class LockManager {
   private locked: boolean = false;
   private currentSettings: RiskSettings | null = null;
   private lockTime: string | null = null;
-  private scheduledResetTime: string | null = null;
+  private lockExpiresAt: string | null = null;
 
   constructor(db: DatabaseManager) {
     this.db = db;
@@ -42,7 +46,7 @@ export class LockManager {
     if (state && state.is_locked) {
       this.locked = true;
       this.lockTime = state.lock_time;
-      this.scheduledResetTime = state.reset_time;
+      this.lockExpiresAt = state.reset_time; // Stored as ISO timestamp
       this.currentSettings = {
         dailyLossLimit: state.daily_loss_limit,
         dailyProfitTarget: state.daily_profit_target,
@@ -51,36 +55,36 @@ export class LockManager {
         resetTimezone: state.reset_timezone || 'America/New_York',
         platform: (state.platform as any) || 'web',
       };
-      if (this.scheduledResetTime) {
-        const resetDT = DateTime.fromISO(this.scheduledResetTime);
-        if (DateTime.now() > resetDT) { this.performReset(); }
+      // Check if lock has already expired
+      if (this.lockExpiresAt) {
+        const expiryDT = DateTime.fromISO(this.lockExpiresAt);
+        if (DateTime.now() > expiryDT) {
+          this.performReset();
+        }
       }
     }
   }
 
   private scheduleReset(): void {
-    if (!this.locked || !this.currentSettings) return;
+    if (!this.locked || !this.lockExpiresAt) return;
     if (this.resetJob) { this.resetJob.cancel(); }
 
-    const [hours, minutes] = this.currentSettings.resetTime.split(':').map(Number);
-    const timezone = this.currentSettings.resetTimezone;
+    const expiryDT = DateTime.fromISO(this.lockExpiresAt);
 
-    let resetDT = DateTime.now().setZone(timezone).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
-    if (resetDT < DateTime.now().setZone(timezone)) {
-      const lockDT = this.lockTime ? DateTime.fromISO(this.lockTime) : null;
-      if (lockDT && lockDT < resetDT) { this.performReset(); return; }
-      resetDT = resetDT.plus({ days: 1 });
+    // If already expired, reset immediately
+    if (expiryDT <= DateTime.now()) {
+      this.performReset();
+      return;
     }
 
-    this.scheduledResetTime = resetDT.toISO();
-    this.saveState();
-    this.resetJob = schedule.scheduleJob(resetDT.toJSDate(), () => { this.performReset(); });
+    // Schedule job at the absolute expiry time
+    this.resetJob = schedule.scheduleJob(expiryDT.toJSDate(), () => { this.performReset(); });
   }
 
   private performReset(): void {
     this.locked = false;
     this.lockTime = null;
-    this.scheduledResetTime = null;
+    this.lockExpiresAt = null;
     this.currentSettings = null;
     this.db.saveLockState({ isLocked: false, lockTime: null, resetTime: null, resetTimezone: null, dailyLossLimit: null, dailyProfitTarget: null, maxContracts: null, platform: null });
     this.db.resetBypassAttempts();
@@ -90,7 +94,7 @@ export class LockManager {
 
   private saveState(): void {
     this.db.saveLockState({
-      isLocked: this.locked, lockTime: this.lockTime, resetTime: this.scheduledResetTime,
+      isLocked: this.locked, lockTime: this.lockTime, resetTime: this.lockExpiresAt,
       resetTimezone: this.currentSettings?.resetTimezone || null,
       dailyLossLimit: this.currentSettings?.dailyLossLimit || null,
       dailyProfitTarget: this.currentSettings?.dailyProfitTarget || null,
@@ -104,13 +108,16 @@ export class LockManager {
   getState(): LockState {
     const settings = this.db.getSettings();
     let timeRemaining: number | null = null;
-    if (this.locked && this.scheduledResetTime) {
-      const diff = DateTime.fromISO(this.scheduledResetTime).diff(DateTime.now(), 'seconds');
+
+    // Simple: lockExpiresAt - now = seconds remaining
+    if (this.locked && this.lockExpiresAt) {
+      const diff = DateTime.fromISO(this.lockExpiresAt).diff(DateTime.now(), 'seconds');
       timeRemaining = Math.max(0, Math.floor(diff.seconds));
     }
+
     return {
       isLocked: this.locked, settings: this.currentSettings, lockTime: this.lockTime,
-      resetTime: this.scheduledResetTime, timeRemaining, bypassAttempts: this.db.getBypassAttemptCount(),
+      resetTime: this.lockExpiresAt, timeRemaining, bypassAttempts: this.db.getBypassAttemptCount(),
       earlyUnlockRequest: this.db.getActiveUnlockRequest(),
       trustedPersonEnabled: settings?.trusted_person_enabled === 1,
     };
@@ -121,12 +128,33 @@ export class LockManager {
     if (settings.dailyLossLimit <= 0 && settings.dailyProfitTarget <= 0 && settings.maxContracts <= 0) {
       return { success: false, error: 'At least one risk limit must be greater than zero' };
     }
+
     this.locked = true;
     this.currentSettings = settings;
     this.lockTime = DateTime.now().toISO();
+
+    // Calculate lockExpiresAt based on mode
+    if (settings.lockExpiresAt) {
+      // Frontend already calculated the absolute timestamp (duration mode)
+      this.lockExpiresAt = settings.lockExpiresAt;
+    } else if (settings.resetTime) {
+      // "Until Time" mode - convert HH:MM in timezone to absolute timestamp ONCE
+      const [hours, minutes] = settings.resetTime.split(':').map(Number);
+      const timezone = settings.resetTimezone || 'America/New_York';
+      let resetDT = DateTime.now().setZone(timezone).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+      // If this time has already passed today in the target timezone, schedule for tomorrow
+      if (resetDT <= DateTime.now()) {
+        resetDT = resetDT.plus({ days: 1 });
+      }
+      this.lockExpiresAt = resetDT.toISO();
+    } else {
+      // Fallback: 4 hours from now
+      this.lockExpiresAt = DateTime.now().plus({ hours: 4 }).toISO();
+    }
+
     this.saveState();
     this.scheduleReset();
-    this.db.logActivity('lock_activated', JSON.stringify(settings));
+    this.db.logActivity('lock_activated', JSON.stringify({ ...settings, lockExpiresAt: this.lockExpiresAt }));
     return { success: true };
   }
 

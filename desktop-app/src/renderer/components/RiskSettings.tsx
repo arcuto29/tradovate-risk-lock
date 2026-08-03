@@ -154,20 +154,37 @@ const RiskSettings: React.FC<Props> = ({ isLocked, onLocked }) => {
       let finalResetTime = resetTime;
       if (lockMode === 'duration') {
         const hours = Number(lockDurationHours) || 4;
-        const unlockAt = new Date(Date.now() + hours * 60 * 60 * 1000);
-        // Convert to timezone-aware time string in the selected timezone
-        const unlockInTZ = unlockAt.toLocaleString('en-US', { timeZone: resetTimezone, hour12: false, hour: '2-digit', minute: '2-digit' });
-        finalResetTime = unlockInTZ;
+        // Duration mode: calculate absolute expiry timestamp directly
+        const lockExpiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+        finalResetTime = ''; // Not used for duration mode
+        
+        const lockSettings = {
+          dailyLossLimit: Number(lossLimitAmount) || 0,
+          dailyProfitTarget: Number(profitTargetAmount) || 0,
+          maxContracts: Number(defaultMax) || (contractLimits.length > 0 ? Math.min(...contractLimits.map(c => c.maxSize)) : 0),
+          resetTime: finalResetTime,
+          resetTimezone,
+          lockExpiresAt,
+          lockMode: 'duration',
+          platform: 'web',
+        };
+      } else {
+        // "Until Time" mode - send resetTime + timezone, lock manager converts once
+        const lockSettings = {
+          dailyLossLimit: Number(lossLimitAmount) || 0,
+          dailyProfitTarget: Number(profitTargetAmount) || 0,
+          maxContracts: Number(defaultMax) || (contractLimits.length > 0 ? Math.min(...contractLimits.map(c => c.maxSize)) : 0),
+          resetTime: resetTime,
+          resetTimezone,
+          lockMode: 'time',
+          platform: 'web',
+        };
+        const result = await (window as any).electronAPI.lockSettings(lockSettings);
+        if (result.success) onLocked();
+        else setError(result.error || 'Failed to lock');
+        setLocking(false);
+        return;
       }
-      
-      const lockSettings = {
-        dailyLossLimit: Number(lossLimitAmount) || 0,
-        dailyProfitTarget: Number(profitTargetAmount) || 0,
-        maxContracts: Number(defaultMax) || (contractLimits.length > 0 ? Math.min(...contractLimits.map(c => c.maxSize)) : 0),
-        resetTime: finalResetTime,
-        resetTimezone,
-        platform: 'web',
-      };
       const result = await (window as any).electronAPI.lockSettings(lockSettings);
       if (result.success) onLocked();
       else setError(result.error || 'Failed to lock');
