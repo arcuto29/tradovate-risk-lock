@@ -72,4 +72,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   shutdownPC: () => ipcRenderer.invoke('shutdown-pc'),
   // Dev force unlock
   devForceUnlock: () => ipcRenderer.invoke('dev-force-unlock'),
+  // Trading Profile + Plan + Session
+  getTradingProfile: () => ipcRenderer.invoke('get-trading-profile'),
+  saveTradingProfile: (profile: any) => ipcRenderer.invoke('save-trading-profile', profile),
+  getTradingPlan: () => ipcRenderer.invoke('get-trading-plan'),
+  saveTradingPlan: (plan: any) => ipcRenderer.invoke('save-trading-plan', plan),
+  getDailySessionPlan: (tradingDate: string) => ipcRenderer.invoke('get-daily-session-plan', tradingDate),
+  saveDailySessionPlan: (plan: any) => ipcRenderer.invoke('save-daily-session-plan', plan),
+  getRecentSessionPlans: (limit?: number) => ipcRenderer.invoke('get-recent-session-plans', limit),
 });

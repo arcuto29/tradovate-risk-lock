@@ -67,7 +67,22 @@ export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened }) =>
         resetTimezone: plan.reset_timezone,
       });
       setReadinessStatus('not_started');
+      return;
     }
+
+    // No plan exists — use hardcoded defaults so UI doesn't get stuck
+    setActivePlan({
+      maxContracts: 2,
+      dailyLoss: 400,
+      maxTrades: 3,
+      profitTarget: 600,
+      cooldownMinutes: 0,
+      lockDurationHours: 4,
+      lockMode: 'duration',
+      resetTime: '17:00',
+      resetTimezone: 'America/New_York',
+    });
+    setReadinessStatus('not_started');
   };
 
   const handleLock = async () => {
