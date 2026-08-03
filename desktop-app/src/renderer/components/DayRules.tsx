@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -37,6 +38,7 @@ const FRIDAY_DEFAULT: DayConfig = {
 
 export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const { theme } = useTheme();
+  const colors = getThemeColors(theme);
   const [dayConfigs, setDayConfigs] = useState<Record<string, DayConfig>>({
     Monday: { ...DEFAULT_CONFIG },
     Tuesday: { ...DEFAULT_CONFIG },
@@ -87,9 +89,9 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       </p>
 
       {/* Today indicator */}
-      <div className="mb-6 px-4 py-3 rounded-xl border border-cyan-400/15 bg-cyan-400/[0.03] flex items-center gap-3 animate-reveal">
-        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
-        <span className="text-xs text-cyan-300/70 font-medium">Today is {today}</span>
+      <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3 animate-reveal" style={{border: `1px solid ${colors.primary}25`, background: `${colors.primary}05`}}>
+        <span className="w-2 h-2 rounded-full" style={{background: colors.primary, boxShadow: `0 0 8px ${colors.primary}90`}} />
+        <span className="text-xs font-medium" style={{color: `${colors.primary}b0`}}>Today is {today}</span>
         {dayConfigs[today]?.enabled && (
           <span className="ml-auto text-[0.6rem] px-2 py-0.5 rounded-full bg-orange-400/10 border border-orange-400/20 text-orange-300 font-bold">RULES ACTIVE</span>
         )}
@@ -233,7 +235,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                       value={config.maxTrades}
                       onChange={(e) => updateDay(selectedDay, 'maxTrades', Number(e.target.value) || 0)}
                       disabled={isLocked}
-                      className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                      className="w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:outline-none transition-all disabled:opacity-30 input-premium"
                     />
                   </div>
 
@@ -247,7 +249,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                       value={config.lossLimit}
                       onChange={(e) => updateDay(selectedDay, 'lossLimit', Number(e.target.value) || 0)}
                       disabled={isLocked}
-                      className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                      className="w-28 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:outline-none transition-all disabled:opacity-30 input-premium"
                     />
                   </div>
 
@@ -258,7 +260,7 @@ export const DayRules: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
                       value={config.sessionEnd}
                       onChange={(e) => updateDay(selectedDay, 'sessionEnd', e.target.value)}
                       disabled={isLocked}
-                      className="w-32 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm font-medium focus:border-cyan-400/50 focus:outline-none transition-all disabled:opacity-30 input-premium"
+                      className="w-32 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white text-sm font-medium focus:outline-none transition-all disabled:opacity-30 input-premium"
                     />
                   </div>
                 </>

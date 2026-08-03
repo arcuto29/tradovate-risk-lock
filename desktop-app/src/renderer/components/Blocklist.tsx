@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 interface Platform {
   id: string;
@@ -10,6 +12,8 @@ interface Platform {
 }
 
 export const Blocklist: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
+  const { theme } = useTheme();
+  const colors = getThemeColors(theme);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -69,7 +73,7 @@ export const Blocklist: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
 
       {/* Stats */}
       <div className="flex gap-3 mb-6 animate-reveal">
-        <span className="px-3 py-1.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-300 text-[0.65rem] font-bold">
+        <span className="px-3 py-1.5 rounded-lg text-[0.65rem] font-bold" style={{background: `${colors.primary}15`, border: `1px solid ${colors.primary}30`, color: colors.primary}}>
           {builtIn.length} built-in
         </span>
         <span className="px-3 py-1.5 rounded-lg bg-purple-400/10 border border-purple-400/20 text-purple-300 text-[0.65rem] font-bold">
@@ -82,17 +86,17 @@ export const Blocklist: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
 
       {/* Built-in Platforms */}
       <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-5 animate-reveal">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
         <div className="relative z-10">
-          <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-cyan-400/60 mb-5">Platforms</p>
+          <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase mb-5" style={{color: `${colors.primary}90`}}>Platforms</p>
           <div className="grid grid-cols-2 gap-2">
             {builtIn.map((platform) => (
-              <div key={platform.id} className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-cyan-400/15 transition-all group">
+              <div key={platform.id} className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.02] border border-white/[0.04] transition-all group" style={{'--hover-border': `${colors.primary}25`} as any}>
                 <div>
                   <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors font-medium">{platform.name}</span>
                   <div className="flex gap-2 mt-1">
                     {platform.processes.length > 0 && (
-                      <span className="text-[0.55rem] text-cyan-400/40 px-1.5 py-0.5 rounded bg-cyan-400/5">app</span>
+                      <span className="text-[0.55rem] px-1.5 py-0.5 rounded" style={{color: `${colors.primary}70`, background: `${colors.primary}08`}}>app</span>
                     )}
                     {platform.domains.length > 0 && (
                       <span className="text-[0.55rem] text-purple-400/40 px-1.5 py-0.5 rounded bg-purple-400/5">web</span>

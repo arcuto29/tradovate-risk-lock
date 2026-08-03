@@ -83,8 +83,8 @@ export const DisciplineScore: React.FC = () => {
     <div className="max-w-lg">
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/10 border border-cyan-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.5))'}}>📊</span>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${themeColors.primary}20, ${themeColors.secondary}10)`, border: `1px solid ${themeColors.primary}20`}}>
+          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${themeColors.primary}80)`}}>📊</span>
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Discipline</h2>
       </div>
@@ -93,7 +93,7 @@ export const DisciplineScore: React.FC = () => {
 
       {/* Today's Score - Circular Ring */}
       <div className="relative rounded-xl p-8 overflow-hidden card-premium mb-6 text-center animate-reveal">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.primary}40, transparent)`}} />
         <div className="relative z-10">
           <p className="text-[0.55rem] font-bold tracking-[3px] uppercase text-white/25 mb-6">Today</p>
           <div className="relative inline-block" style={{width: '200px', height: '200px'}}>
@@ -182,14 +182,14 @@ export const DisciplineScore: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3 mb-6 animate-reveal">
         <div className="relative rounded-xl p-5 overflow-hidden card-premium text-center hover-lift">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.primary}30, transparent)`}} />
           <div className="relative z-10">
             <p className="text-[0.5rem] font-bold tracking-[1.5px] uppercase text-white/20 mb-2">7 Day Avg</p>
             <p className={`text-2xl font-black font-mono ${getScoreColor(weeklyAvg)}`}>{weeklyAvg}</p>
           </div>
         </div>
         <div className="relative rounded-xl p-5 overflow-hidden card-premium text-center hover-lift">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.secondary}30, transparent)`}} />
           <div className="relative z-10">
             <p className="text-[0.5rem] font-bold tracking-[1.5px] uppercase text-white/20 mb-2">30 Day Avg</p>
             <p className={`text-2xl font-black font-mono ${getScoreColor(monthlyAvg)}`}>{monthlyAvg}</p>
@@ -199,7 +199,7 @@ export const DisciplineScore: React.FC = () => {
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
           <div className="relative z-10">
             <p className="text-[0.5rem] font-bold tracking-[1.5px] uppercase text-white/20 mb-2">Streak</p>
-            <p className="text-2xl font-black font-mono text-cyan-400">{streak} <span className="text-sm text-white/20">days</span></p>
+            <p className="text-2xl font-black font-mono" style={{color: themeColors.primary}}>{streak} <span className="text-sm text-white/20">days</span></p>
           </div>
         </div>
       </div>

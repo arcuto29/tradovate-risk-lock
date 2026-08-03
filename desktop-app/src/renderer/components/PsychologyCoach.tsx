@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
+import { getThemeColors } from '../themeColors';
 
 export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
+  const { theme } = useTheme();
+  const colors = getThemeColors(theme);
   const [enabled, setEnabled] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(120);
   const [escalatingCooldown, setEscalatingCooldown] = useState(false);
@@ -57,7 +61,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
     setSaved(true); setTimeout(() => setSaved(false), 3000);
   };
 
-  const numInput = "w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.08),0_0_15px_rgba(56,189,248,0.1)] focus:outline-none transition-all input-premium";
+  const numInput = "w-24 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-3 text-white font-mono text-sm font-bold text-center focus:outline-none transition-all input-premium";
 
   if (!loaded) return <span className="text-white/20 text-sm animate-pulse">Loading...</span>;
 
@@ -65,8 +69,8 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
     <div className="max-w-lg">
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 animate-reveal">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/10 border border-purple-500/20 flex items-center justify-center">
-          <span className="text-lg" style={{filter: 'drop-shadow(0 0 4px rgba(168,85,247,0.5))'}}>🧠</span>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${colors.primary}20, ${colors.secondary}10)`, border: `1px solid ${colors.primary}20`}}>
+          <span className="text-lg" style={{filter: `drop-shadow(0 0 4px ${colors.primary}80)`}}>🧠</span>
         </div>
         <h2 className="text-3xl font-black tracking-tight text-gradient">Psychology Coach</h2>
       </div>
@@ -90,11 +94,11 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
         <div className="space-y-4">
           {/* Cooldown After Loss */}
           <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-1">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}40, transparent)`}} />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-cyan-400/60 text-sm">⏸</span>
-                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-cyan-400/60">Cooldown After Loss</p>
+                <span className="text-sm" style={{color: `${colors.primary}80`}}>⏸</span>
+                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{color: `${colors.primary}80`}}>Cooldown After Loss</p>
               </div>
               <p className="text-xs text-white/25 mb-4">Seconds before you can trade again after a losing trade</p>
               <div className="flex items-center gap-4">
@@ -103,7 +107,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
               </div>
               <div className="mt-5 pt-4 border-t border-white/[0.04]">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" checked={escalatingCooldown} onChange={(e) => setEscalatingCooldown(e.target.checked)} className="w-4 h-4 accent-cyan-400 rounded" />
+                  <input type="checkbox" checked={escalatingCooldown} onChange={(e) => setEscalatingCooldown(e.target.checked)} className="w-4 h-4 accent-current rounded" style={{color: colors.primary}} />
                   <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Escalating (doubles each consecutive loss)</span>
                 </label>
               </div>
@@ -112,7 +116,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
 
           {/* Loss Streak */}
           <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-2">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-400/40 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.secondary}40, transparent)`}} />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-red-400/60 text-sm">📉</span>
@@ -120,11 +124,11 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
               </div>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" checked={lossStreakEnabled} onChange={(e) => setLossStreakEnabled(e.target.checked)} className="w-4 h-4 accent-cyan-400 rounded" />
+                  <input type="checkbox" checked={lossStreakEnabled} onChange={(e) => setLossStreakEnabled(e.target.checked)} className="w-4 h-4 accent-current rounded" style={{color: colors.primary}} />
                   <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Reduce size on consecutive losses</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" checked={scalingLockEnabled} onChange={(e) => setScalingLockEnabled(e.target.checked)} className="w-4 h-4 accent-cyan-400 rounded" />
+                  <input type="checkbox" checked={scalingLockEnabled} onChange={(e) => setScalingLockEnabled(e.target.checked)} className="w-4 h-4 accent-current rounded" style={{color: colors.primary}} />
                   <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">One-way ratchet (never goes back up)</span>
                 </label>
               </div>
@@ -193,7 +197,7 @@ export const PsychologyCoach: React.FC<{ isLocked: boolean }> = ({ isLocked }) =
                 <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-emerald-400/60">Profit Protection</p>
               </div>
               <label className="flex items-center gap-3 cursor-pointer group mb-4">
-                <input type="checkbox" checked={profitLockEnabled} onChange={(e) => setProfitLockEnabled(e.target.checked)} className="w-4 h-4 accent-cyan-400 rounded" />
+                <input type="checkbox" checked={profitLockEnabled} onChange={(e) => setProfitLockEnabled(e.target.checked)} className="w-4 h-4 accent-current rounded" style={{color: colors.primary}} />
                 <span className="text-sm text-white/35 group-hover:text-white/50 transition-colors">Lock after target or drawdown</span>
               </label>
               {profitLockEnabled && (
