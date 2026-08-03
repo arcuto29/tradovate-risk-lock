@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
 import { getThemeColors } from '../themeColors';
+import { getEventInfo, renderStars } from '../data/news-event-info';
+import type { NewsEventInfo } from '../data/news-event-info';
 
 interface NewsEvent {
   id: string;
@@ -80,6 +82,7 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -225,20 +228,44 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
             <p className="text-xs text-white/20 text-center py-3">No events this week</p>
           ) : (
             <div className="space-y-2">
-              {upcoming.slice(0, 10).map((event) => (
-                <div key={event.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                  <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full" style={{background: event.impact === 'high' ? '#ef4444' : '#f59e0b'}} />
-                    <div>
-                      <span className="text-xs text-white/60 font-medium">{event.name}</span>
-                      <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET{(event as any).source === 'forex_factory' ? ' (FF)' : ''}</p>
+              {upcoming.slice(0, 10).map((event) => {
+                const isExpanded = expandedEventId === event.id;
+                const info = getEventInfo(event.name);
+                return (
+                  <div key={event.id}>
+                    <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                      <div className="flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full" style={{background: event.impact === 'high' ? '#ef4444' : '#f59e0b'}} />
+                        <div>
+                          <span className="text-xs text-white/60 font-medium">{event.name}</span>
+                          <p className="text-[0.55rem] text-white/20">{event.date} at {event.time} ET{(event as any).source === 'forex_factory' ? ' (FF)' : ''}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-[0.6rem] font-bold transition-all hover:scale-110"
+                          style={{
+                            background: isExpanded ? `${colors.primary}20` : 'rgba(255,255,255,0.04)',
+                            color: isExpanded ? colors.primary : 'rgba(255,255,255,0.3)',
+                            border: `1px solid ${isExpanded ? colors.primary + '30' : 'rgba(255,255,255,0.06)'}`,
+                          }}
+                          title="Event info"
+                        >
+                          ⓘ
+                        </button>
+                        {!event.builtIn && !isLocked && !(event as any).source && (
+                          <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
+                        )}
+                      </div>
                     </div>
+                    {/* Info Panel - only shown when ⓘ is clicked */}
+                    {isExpanded && (
+                      <EventInfoPanel info={info} colors={colors} />
+                    )}
                   </div>
-                  {!event.builtIn && !isLocked && !(event as any).source && (
-                    <button onClick={() => removeCustomEvent(event.id)} className="text-white/20 hover:text-red-400 transition-colors text-sm press-scale">✕</button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -353,6 +380,48 @@ export const NewsBlocker: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
       <button onClick={handleSave} disabled={isLocked} className="mt-6 px-8 py-3.5 btn-premium text-xs uppercase tracking-[2px] rounded-xl press-scale animate-reveal disabled:opacity-30">
         Save
       </button>
+    </div>
+  );
+};
+
+// ─── Event Info Panel (shown on ⓘ click) ────────────────────────────────────
+
+const EventInfoPanel: React.FC<{ info: NewsEventInfo; colors: any }> = ({ info, colors }) => {
+  return (
+    <div className="mt-1 mb-2 ml-5 p-4 rounded-xl border animate-reveal" style={{ background: `${colors.primary}04`, borderColor: `${colors.primary}15` }}>
+      {/* What it is */}
+      <p className="text-[0.6rem] font-bold tracking-[1.5px] uppercase mb-2" style={{ color: `${colors.primary}70` }}>What This Is</p>
+      <p className="text-xs text-white/50 leading-relaxed mb-3">{info.what}</p>
+
+      {/* Why it matters */}
+      <p className="text-[0.6rem] font-bold tracking-[1.5px] uppercase mb-2" style={{ color: `${colors.primary}70` }}>Why It Matters</p>
+      <p className="text-xs text-white/50 leading-relaxed mb-3">{info.why}</p>
+
+      {/* Affected Markets */}
+      {info.markets.length > 0 && (
+        <>
+          <p className="text-[0.6rem] font-bold tracking-[1.5px] uppercase mb-2" style={{ color: `${colors.primary}70` }}>Affected Markets</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3">
+            {info.markets.map((m) => (
+              <div key={m.symbol} className="flex items-center justify-between">
+                <span className="text-[0.6rem] font-mono font-bold text-white/40">{m.symbol}</span>
+                <span className="text-[0.55rem] tracking-[1px]" style={{ color: m.rating >= 4 ? colors.primary : m.rating >= 3 ? '#fbbf24' : 'rgba(255,255,255,0.25)' }}>
+                  {renderStars(m.rating)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Sentinel Recommendation */}
+      <div className="pt-3 border-t" style={{ borderColor: `${colors.primary}10` }}>
+        <p className="text-[0.6rem] font-bold tracking-[1.5px] uppercase mb-1.5" style={{ color: `${colors.secondary}70` }}>Sentinel</p>
+        <p className="text-[0.6rem] text-white/35 leading-relaxed">{info.sentinelReason}</p>
+        <p className="text-[0.55rem] text-white/20 mt-2 leading-relaxed">
+          Existing positions can always be reduced, closed, or cancelled. Sentinel never traps traders inside positions.
+        </p>
+      </div>
     </div>
   );
 };
