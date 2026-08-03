@@ -162,13 +162,6 @@ export const DisciplineScore: React.FC = () => {
             </div>
           </div>
 
-          {violations.length > 0 && (
-            <div className="mt-6 space-y-1.5">
-              {violations.map((v, i) => (
-                <p key={i} className="text-[0.7rem] text-red-400/60 animate-reveal" style={{animationDelay: `${i * 0.1}s`}}>{v}</p>
-              ))}
-            </div>
-          )}
           {violations.length === 0 && (
             <p className="mt-6 text-xs text-emerald-400/60 flex items-center justify-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
