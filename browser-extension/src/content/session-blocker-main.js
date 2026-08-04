@@ -52,6 +52,18 @@
   var lossStreakEnabled = false; // Auto-reduce size after consecutive losses
   var profitLockEnabled = false; // Lock out after hitting profit target or drawdown from high
   var escalatingCooldown = false; // Cooldown gets longer after each loss
+  
+  // Win Streak Protection
+  var winStreakEnabled = false;
+  var winStreakThreshold = 3;
+  var winStreakReminder = true;
+  var winStreakReduceSize = false;
+  var winStreakCooldown = false;
+  var winStreakCooldownSeconds = 120;
+  var winStreakSuggestStop = true;
+  var winStreakAutoLock = false;
+  var consecutiveWins = 0;
+  var winStreakTriggered = false;
 
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
@@ -77,6 +89,8 @@
         profitLocked = false;
         fullDayBlocked = false;
         currentOpenPositions = {}; // Reset position tracking
+        consecutiveWins = 0;
+        winStreakTriggered = false;
       }
     }
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
@@ -131,12 +145,23 @@
       lossStreakEnabled = event.data.lossStreakEnabled === true;
       profitLockEnabled = event.data.profitLockEnabled === true;
       escalatingCooldown = event.data.escalatingCooldown === true;
+      // Win Streak settings
+      winStreakEnabled = event.data.winStreakEnabled === true;
+      winStreakThreshold = event.data.winStreakThreshold || 3;
+      winStreakReminder = event.data.winStreakReminder !== false;
+      winStreakReduceSize = event.data.winStreakReduceSize === true;
+      winStreakCooldown = event.data.winStreakCooldown === true;
+      winStreakCooldownSeconds = event.data.winStreakCooldownSeconds || 120;
+      winStreakSuggestStop = event.data.winStreakSuggestStop !== false;
+      winStreakAutoLock = event.data.winStreakAutoLock === true;
       // Set original max size at start
       if (!originalMaxSize) { originalMaxSize = positionLimits.defaultMax || 2; currentMaxSize = positionLimits.defaultMax || 2; }
     }
     if (event.data && event.data.type === 'TRL_TRADE_RESULT') {
       if (event.data.result === 'loss') {
         consecutiveLosses++;
+        consecutiveWins = 0;
+        winStreakTriggered = false;
         if (coachEnabled) {
           lastLossTime = Date.now();
           cooldownActive = true;
@@ -155,6 +180,42 @@
         }
       } else if (event.data.result === 'win') {
         consecutiveLosses = 0;
+        consecutiveWins++;
+        
+        // WIN STREAK PROTECTION
+        if (winStreakEnabled && consecutiveWins >= winStreakThreshold && !winStreakTriggered) {
+          winStreakTriggered = true;
+          console.log('[Sentinel] Win streak triggered: ' + consecutiveWins + ' consecutive wins (threshold: ' + winStreakThreshold + ')');
+          
+          // Action: Reminder
+          if (winStreakReminder) {
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: 'You\'re on a ' + consecutiveWins + '-win streak. Protect your profits — don\'t give them back.' }, '*');
+          }
+          
+          // Action: Reduce size
+          if (winStreakReduceSize) {
+            currentMaxSize = Math.max(1, Math.ceil(originalMaxSize / 2));
+            console.log('[Sentinel] Win streak: Size reduced to ' + currentMaxSize);
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'SIZE REDUCED (WIN STREAK)', message: 'Size reduced to ' + currentMaxSize + ' contract(s) to protect your streak.' }, '*');
+          }
+          
+          // Action: Force cooldown
+          if (winStreakCooldown) {
+            cooldownActive = true;
+            cooldownUntil = Date.now() + (winStreakCooldownSeconds * 1000);
+            console.log('[Sentinel] Win streak: Cooldown activated for ' + winStreakCooldownSeconds + 's');
+          }
+          
+          // Action: Suggest stopping
+          if (winStreakSuggestStop) {
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'TAKE THE WIN', message: 'You\'re up ' + consecutiveWins + ' in a row. Consider ending on a high note.' }, '*');
+          }
+          
+          // Action: Auto-lock (most aggressive)
+          if (winStreakAutoLock) {
+            window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'WIN STREAK LOCK', message: 'Session locked after ' + consecutiveWins + ' consecutive wins. Protecting your profits.' }, '*');
+          }
+        }
       }
     }
   });
