@@ -8,17 +8,22 @@ interface LogoProps {
 /**
  * Sentinel Logo — Shield + Sword
  * 
- * Sword orientation: blade points UP, tip near top of shield.
- * Crossguard sits below the blade, grip and pommel at bottom.
- * Optimized for readability at all sizes (16px tray → 128px onboarding).
- * Minimal decorative details. Bold, clean shapes.
- * Communicates: protection, discipline, security.
+ * Design priorities (in order):
+ * 1. Instantly recognizable at 24px (tray) through 128px (onboarding)
+ * 2. Strong defensive silhouette (shield dominant, sword complementing)
+ * 3. Clean, minimal, professional
+ * 4. Premium feel without being decorative
+ * 
+ * Sword: long slim blade pointing UP, wide crossguard, thin grip, minimal pommel.
+ * Shield: bold outline, simple pointed shape, dark fill.
  */
 export const Logo: React.FC<LogoProps> = ({ size = 48, animated = false }) => {
-  const goldPrimary = '#ffd700';
+  const gold = '#ffd700';
   const goldDark = '#b8860b';
   const goldLight = '#ffe566';
-  const shieldFill = '#0a0a12';
+
+  // Use unique IDs per instance to avoid SVG gradient conflicts
+  const uid = `s${size}`;
 
   return (
     <svg
@@ -31,79 +36,52 @@ export const Logo: React.FC<LogoProps> = ({ size = 48, animated = false }) => {
       style={animated ? { animation: 'float 6s ease-in-out infinite' } : undefined}
     >
       <defs>
-        <linearGradient id={`shieldBorder-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={`sb-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={goldLight} />
-          <stop offset="50%" stopColor={goldPrimary} />
+          <stop offset="50%" stopColor={gold} />
           <stop offset="100%" stopColor={goldDark} />
         </linearGradient>
-        <linearGradient id={`blade-${size}`} x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="20%" stopColor={goldLight} />
-          <stop offset="60%" stopColor={goldPrimary} />
+        <linearGradient id={`bl-${uid}`} x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#fff" />
+          <stop offset="25%" stopColor={goldLight} />
+          <stop offset="70%" stopColor={gold} />
           <stop offset="100%" stopColor={goldDark} />
         </linearGradient>
-        <linearGradient id={`guard-${size}`} x1="0%" y1="50%" x2="100%" y2="50%">
-          <stop offset="0%" stopColor={goldDark} />
-          <stop offset="50%" stopColor={goldPrimary} />
-          <stop offset="100%" stopColor={goldDark} />
-        </linearGradient>
-        <linearGradient id={`grip-${size}`} x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor={goldDark} />
-          <stop offset="100%" stopColor="#8b6508" />
-        </linearGradient>
-        <filter id={`glow-${size}`}>
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feFlood floodColor={goldPrimary} floodOpacity="0.4" result="color" />
-          <feComposite in="color" in2="blur" operator="in" result="glow" />
-          <feMerge>
-            <feMergeNode in="glow" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
+        <filter id={`gl-${uid}`}>
+          <feGaussianBlur stdDeviation="2" result="b" />
+          <feFlood floodColor={gold} floodOpacity="0.35" result="c" />
+          <feComposite in="c" in2="b" operator="in" result="g" />
+          <feMerge><feMergeNode in="g" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
 
-      {/* Shield — bold, simple shape */}
+      {/* Shield */}
       <path
-        d="M50 6L82 21v28c0 21-13 36-32 41C31 85 18 70 18 49V21L50 6z"
-        fill={shieldFill}
-        stroke={`url(#shieldBorder-${size})`}
+        d="M50 7L81 21v27c0 20-12 35-31 40C31 83 19 68 19 48V21L50 7z"
+        fill="#080810"
+        stroke={`url(#sb-${uid})`}
         strokeWidth="3.5"
         strokeLinejoin="round"
-        filter={`url(#glow-${size})`}
+        filter={`url(#gl-${uid})`}
       />
 
-      {/* Blade — slim, tapers to sharp tip at TOP */}
-      {/* Wide base (5px) near crossguard, narrows to sharp point at top */}
+      {/* Blade — long, slim, sharp tip at top */}
       <path
-        d="M50 14 L47.5 55 L50 56.5 L52.5 55 Z"
-        fill={`url(#blade-${size})`}
+        d="M50 13L47.8 53H52.2L50 13Z"
+        fill={`url(#bl-${uid})`}
       />
 
-      {/* Blade center highlight */}
-      <line x1="50" y1="16" x2="50" y2="54" stroke="white" strokeWidth="0.7" opacity="0.3" />
+      {/* Blade center line */}
+      <line x1="50" y1="15" x2="50" y2="52" stroke="#fff" strokeWidth="0.5" opacity="0.25" />
 
-      {/* Blade edge highlights */}
-      <line x1="48.8" y1="52" x2="50" y2="15" stroke="white" strokeWidth="0.3" opacity="0.15" />
-      <line x1="51.2" y1="52" x2="50" y2="15" stroke="white" strokeWidth="0.3" opacity="0.15" />
+      {/* Crossguard — wide, clean */}
+      <rect x="35" y="53" width="30" height="3.5" rx="1.75" fill={gold} />
 
-      {/* Crossguard — wide, clearly below blade */}
-      <rect x="36" y="56" width="28" height="4.5" rx="2.25" fill={`url(#guard-${size})`} />
+      {/* Grip — narrow */}
+      <rect x="48.5" y="57" width="3" height="11" rx="1.5" fill={goldDark} />
 
-      {/* Crossguard end details */}
-      <circle cx="36.5" cy="58.25" r="1.5" fill={goldPrimary} opacity="0.6" />
-      <circle cx="63.5" cy="58.25" r="1.5" fill={goldPrimary} opacity="0.6" />
-
-      {/* Grip — narrow, below crossguard */}
-      <rect x="48" y="61" width="4" height="13" rx="1.5" fill={`url(#grip-${size})`} />
-
-      {/* Grip wrap texture */}
-      <line x1="48.3" y1="64" x2="51.7" y2="63" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
-      <line x1="48.3" y1="67" x2="51.7" y2="66" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
-      <line x1="48.3" y1="70" x2="51.7" y2="69" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
-
-      {/* Pommel — small circle at bottom */}
-      <circle cx="50" cy="76" r="3" fill={goldPrimary} />
-      <circle cx="50" cy="76" r="1.5" fill={goldLight} opacity="0.5" />
+      {/* Pommel — minimal */}
+      <circle cx="50" cy="70" r="2.5" fill={gold} />
     </svg>
   );
 };

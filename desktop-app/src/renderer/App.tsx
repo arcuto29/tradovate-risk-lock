@@ -152,42 +152,37 @@ export const App: React.FC = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong" style={{borderBottom: `1px solid ${colors.primary}15`}}>
-        {/* Subtle top glow line */}
-        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, ${colors.secondary}20, transparent)`}} />
-        
+      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong" style={{borderBottom: `1px solid ${colors.primary}08`}}>
         {/* Brand */}
-        <div className="flex items-center justify-center mb-5">
-          <div className="flex items-center gap-3">
-            <Logo size={24} />
-            <p className="text-[0.6rem] font-bold tracking-[5px] uppercase text-gradient">
+        <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center gap-2.5">
+            <Logo size={22} />
+            <p className="text-[0.6rem] font-bold tracking-[4px] uppercase" style={{color: `${colors.primary}90`}}>
               Sentinel
             </p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex justify-center gap-1">
+        <nav className="flex justify-center gap-0.5">
           {NAV_ITEMS.filter(item => !item.devOnly || devMode).map(({ page, label, icon }) => {
             const isMidnight = theme === 'midnight';
+            const isActive = currentPage === page;
             return (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`
-                relative px-4 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200 group
-                ${currentPage === page
-                  ? 'text-white'
-                  : 'text-white/25 hover:text-white/50 hover:bg-white/[0.02]'}
+                relative px-5 py-3 rounded-t-xl text-[0.72rem] font-medium transition-all duration-200
+                ${isActive ? 'text-white/90' : 'text-white/30 hover:text-white/50'}
               `}
-              style={currentPage === page && !isMidnight ? {background: `${colors.primary}08`} : undefined}
             >
               <span className="flex items-center gap-2">
-                <span className={`text-[0.6rem] transition-all ${currentPage === page ? 'opacity-100' : 'opacity-30'}`} style={{color: currentPage === page ? (isMidnight ? '#ffffff' : colors.primary) : undefined}}>{icon}</span>
+                <span className={`text-[0.55rem] transition-all duration-200 ${isActive ? 'opacity-80' : 'opacity-0'}`} style={{color: isActive ? (isMidnight ? '#ffffff' : colors.primary) : undefined}}>{icon}</span>
                 <span>{label}</span>
               </span>
-              {currentPage === page && (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, boxShadow: `0 0 8px ${colors.primary}80`}} />
+              {isActive && (
+                <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, opacity: 0.8}} />
               )}
             </button>
             );
@@ -277,11 +272,11 @@ export const App: React.FC = () => {
 
 
       {/* Footer */}
-      <footer className="relative z-10 px-8 py-3 glass flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}10`}}>
+      <footer className="relative z-10 px-8 py-2.5 flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}06`}}>
         <MarketTimer />
-        <div className="flex items-center gap-2">
-          <Logo size={14} />
-          <span className="text-[0.5rem] font-bold tracking-[3px] uppercase text-gradient">
+        <div className="flex items-center gap-2 opacity-40">
+          <Logo size={12} />
+          <span className="text-[0.45rem] font-bold tracking-[3px] uppercase" style={{color: colors.primary}}>
             Sentinel
           </span>
         </div>
