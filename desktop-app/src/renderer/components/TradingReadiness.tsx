@@ -58,6 +58,7 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
   const [goal, setGoal] = useState<GoalLevel>(null);
   const [focus, setFocus] = useState<FocusLevel>(null);
   const [showRecommendation, setShowRecommendation] = useState(false);
+  const [showAnalyzing, setShowAnalyzing] = useState(false);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState('');
   const [plan, setPlan] = useState<TradingPlan | null>(null);
@@ -79,28 +80,34 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
   const handleConfirm = () => {
     if (!plan) return;
 
-    // Calculate readiness score (0-100)
-    let s = 0;
-    if (rest === 'good') s += 35;
-    else if (rest === 'ok') s += 25;
-    else if (rest === 'low') s += 12;
-    else if (rest === 'poor') s += 0;
+    // Show analyzing state briefly
+    setShowAnalyzing(true);
 
-    if (goal === 'plan') s += 35;
-    else if (goal === 'discipline') s += 25;
-    else if (goal === 'recover') s += 5;
+    setTimeout(() => {
+      // Calculate readiness score (0-100)
+      let s = 0;
+      if (rest === 'good') s += 35;
+      else if (rest === 'ok') s += 25;
+      else if (rest === 'low') s += 12;
+      else if (rest === 'poor') s += 0;
 
-    if (focus === 'sharp') s += 30;
-    else if (focus === 'normal') s += 20;
-    else if (focus === 'distracted') s += 5;
+      if (goal === 'plan') s += 35;
+      else if (goal === 'discipline') s += 25;
+      else if (goal === 'recover') s += 5;
 
-    setScore(s);
+      if (focus === 'sharp') s += 30;
+      else if (focus === 'normal') s += 20;
+      else if (focus === 'distracted') s += 5;
 
-    // Determine protection level + calculate active plan
-    const activePlan = calculateActivePlan(s, plan);
-    setLevel(activePlan.protectionLevel);
-    setRecommended(activePlan.plan);
-    setShowRecommendation(true);
+      setScore(s);
+
+      // Determine protection level + calculate active plan
+      const activePlan = calculateActivePlan(s, plan);
+      setLevel(activePlan.protectionLevel);
+      setRecommended(activePlan.plan);
+      setShowAnalyzing(false);
+      setShowRecommendation(true);
+    }, 700);
   };
 
   const handleApply = () => {
@@ -299,6 +306,16 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
     );
   }
 
+  // ─── ANALYZING STATE ────────────────────────────────────────────────────
+  if (showAnalyzing) {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center animate-reveal">
+        <div className="w-10 h-10 rounded-full border-2 animate-spin mx-auto mb-5" style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }} />
+        <p className="text-sm font-medium text-white/40 tracking-wide">Analyzing today's readiness...</p>
+      </div>
+    );
+  }
+
   // ─── CHECKLIST SCREEN ──────────────────────────────────────────────────
   return (
     <div className="max-w-md mx-auto py-6">
@@ -308,7 +325,7 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
           <span className="text-lg" style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}>✓</span>
         </div>
         <h2 className="text-2xl font-black tracking-tight text-gradient mb-1">Trading Readiness</h2>
-        <p className="text-[0.6rem] text-white/25 uppercase tracking-[2px]">Pre-session checklist</p>
+        <p className="text-[0.65rem] text-white/20 mt-2 max-w-xs mx-auto leading-relaxed">Complete your pre-session check before locking today's trading plan.</p>
       </div>
 
       {/* Checklist */}
@@ -317,14 +334,14 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
         <div className="relative rounded-xl p-5 overflow-hidden card-premium">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold ${rest ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold transition-all duration-200 ${rest ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
                 {rest ? '✓' : '1'}
               </span>
               <span className="text-xs font-bold text-white/60 uppercase tracking-[1.5px]">Rest</span>
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {([['good', '8+'], ['ok', '6-8'], ['low', '5-6'], ['poor', '<5']] as const).map(([value, label]) => (
-                <button key={value} onClick={() => setRest(value)} className="py-2.5 rounded-lg text-[0.6rem] font-bold transition-all press-scale" style={{ background: rest === value ? `${colors.primary}20` : 'rgba(255,255,255,0.02)', border: `1px solid ${rest === value ? colors.primary + '40' : 'rgba(255,255,255,0.06)'}`, color: rest === value ? colors.primary : 'rgba(255,255,255,0.35)' }}>
+              {([['good', '8+ hrs'], ['ok', '6-8 hrs'], ['low', '5-6 hrs'], ['poor', '<5 hrs']] as const).map(([value, label]) => (
+                <button key={value} onClick={() => setRest(value)} className="py-3 rounded-lg text-[0.6rem] font-bold transition-all duration-200 press-scale" style={{ background: rest === value ? `${colors.primary}20` : 'rgba(255,255,255,0.02)', border: `${rest === value ? '2px' : '1px'} solid ${rest === value ? colors.primary + '40' : 'rgba(255,255,255,0.06)'}`, color: rest === value ? colors.primary : 'rgba(255,255,255,0.4)', transform: rest === value ? 'scale(1.02)' : 'scale(1)' }}>
                   {label}
                 </button>
               ))}
@@ -336,14 +353,14 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
         <div className="relative rounded-xl p-5 overflow-hidden card-premium">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold ${goal ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold transition-all duration-200 ${goal ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
                 {goal ? '✓' : '2'}
               </span>
               <span className="text-xs font-bold text-white/60 uppercase tracking-[1.5px]">Today's Goal</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {([['plan', 'Follow plan'], ['discipline', 'Stay disciplined'], ['recover', 'Recover losses']] as const).map(([value, label]) => (
-                <button key={value} onClick={() => setGoal(value)} className="py-2.5 rounded-lg text-[0.6rem] font-bold transition-all press-scale" style={{ background: goal === value ? (value === 'recover' ? 'rgba(239,68,68,0.1)' : `${colors.primary}20`) : 'rgba(255,255,255,0.02)', border: `1px solid ${goal === value ? (value === 'recover' ? 'rgba(239,68,68,0.3)' : colors.primary + '40') : 'rgba(255,255,255,0.06)'}`, color: goal === value ? (value === 'recover' ? '#ef4444' : colors.primary) : 'rgba(255,255,255,0.35)' }}>
+                <button key={value} onClick={() => setGoal(value)} className="py-3 rounded-lg text-[0.6rem] font-bold transition-all duration-200 press-scale" style={{ background: goal === value ? (value === 'recover' ? 'rgba(239,68,68,0.1)' : `${colors.primary}20`) : 'rgba(255,255,255,0.02)', border: `${goal === value ? '2px' : '1px'} solid ${goal === value ? (value === 'recover' ? 'rgba(239,68,68,0.3)' : colors.primary + '40') : 'rgba(255,255,255,0.06)'}`, color: goal === value ? (value === 'recover' ? '#ef4444' : colors.primary) : 'rgba(255,255,255,0.4)', transform: goal === value ? 'scale(1.02)' : 'scale(1)' }}>
                   {label}
                 </button>
               ))}
@@ -355,14 +372,14 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
         <div className="relative rounded-xl p-5 overflow-hidden card-premium">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold ${focus ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold transition-all duration-200 ${focus ? 'bg-emerald-400/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
                 {focus ? '✓' : '3'}
               </span>
               <span className="text-xs font-bold text-white/60 uppercase tracking-[1.5px]">Focus</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {([['sharp', 'Sharp'], ['normal', 'Normal'], ['distracted', 'Distracted']] as const).map(([value, label]) => (
-                <button key={value} onClick={() => setFocus(value)} className="py-2.5 rounded-lg text-[0.6rem] font-bold transition-all press-scale" style={{ background: focus === value ? `${colors.primary}20` : 'rgba(255,255,255,0.02)', border: `1px solid ${focus === value ? colors.primary + '40' : 'rgba(255,255,255,0.06)'}`, color: focus === value ? colors.primary : 'rgba(255,255,255,0.35)' }}>
+              {([['sharp', 'Locked In'], ['normal', 'Normal'], ['distracted', 'Distracted']] as const).map(([value, label]) => (
+                <button key={value} onClick={() => setFocus(value)} className="py-3 rounded-lg text-[0.6rem] font-bold transition-all duration-200 press-scale" style={{ background: focus === value ? `${colors.primary}20` : 'rgba(255,255,255,0.02)', border: `${focus === value ? '2px' : '1px'} solid ${focus === value ? colors.primary + '40' : 'rgba(255,255,255,0.06)'}`, color: focus === value ? colors.primary : 'rgba(255,255,255,0.4)', transform: focus === value ? 'scale(1.02)' : 'scale(1)' }}>
                   {label}
                 </button>
               ))}
@@ -372,15 +389,24 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
       </div>
 
       {/* Confirm */}
-      <div className="mt-6 animate-reveal">
-        <button onClick={handleConfirm} disabled={!allAnswered} className="w-full py-4 btn-premium text-xs font-bold uppercase tracking-[2.5px] rounded-xl press-scale disabled:opacity-20 disabled:cursor-not-allowed transition-all">
+      <div className="mt-7 animate-reveal">
+        <button
+          onClick={handleConfirm}
+          disabled={!allAnswered}
+          className="w-full py-4 text-sm font-bold uppercase tracking-[3px] rounded-xl press-scale disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-[1px]"
+          style={{
+            background: allAnswered ? `linear-gradient(135deg, ${colors.primary}dd, ${colors.secondary}cc)` : 'rgba(255,255,255,0.04)',
+            color: allAnswered ? '#ffffff' : 'rgba(255,255,255,0.25)',
+            boxShadow: allAnswered ? `0 0 20px ${colors.primary}25` : 'none',
+          }}
+        >
           {allAnswered ? 'Check Readiness' : 'Complete checklist'}
         </button>
         {!allAnswered && <p className="text-[0.5rem] text-white/15 text-center mt-2">Select one option in each section</p>}
       </div>
 
       {/* Skip */}
-      <button onClick={handleSkip} className="w-full mt-3 py-2 text-[0.55rem] text-white/15 hover:text-white/30 transition-all">
+      <button onClick={handleSkip} className="w-full mt-3 py-2 text-[0.55rem] text-white/15 hover:text-white/30 transition-all duration-200">
         Skip for today
       </button>
     </div>

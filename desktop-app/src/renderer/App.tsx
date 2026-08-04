@@ -282,7 +282,7 @@ export const App: React.FC = () => {
         <div className="flex items-center gap-2">
           <Logo size={14} />
           <span className="text-[0.5rem] font-bold tracking-[3px] uppercase text-gradient">
-            Priisma
+            Sentinel
           </span>
         </div>
       </footer>
