@@ -802,7 +802,7 @@ app.whenReady().then(async () => {
 
   // Auto-updater
   if (!isDev && mainWindow) {
-    setupAutoUpdater(mainWindow);
+    setupAutoUpdater(mainWindow, () => lockManager.isLocked());
   }
 
   // Start process blocker (kills Tradesea/TopstepX outside trading hours)

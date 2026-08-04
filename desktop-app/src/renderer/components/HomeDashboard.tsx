@@ -106,29 +106,29 @@ export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened, onNa
         platform: 'web',
       };
 
-      // Also update position limits for the extension
-      await (window as any).electronAPI?.updatePositionLimits?.({
-        lossLimitEnabled: true,
-        lossLimitAmount: activePlan.dailyLoss,
-        profitTargetEnabled: activePlan.profitTarget > 0,
-        profitTargetAmount: activePlan.profitTarget,
-        maxTradesEnabled: true,
-        maxTradesPerDay: activePlan.maxTrades,
-        maxContractsEnabled: true,
-        defaultMax: activePlan.maxContracts,
-        contractLimits: [],
-        blockedSymbolsEnabled: false,
-        blockedSymbols: [],
-        pyramidingEnabled: false,
-        pyramidMaxContracts: 0,
-        pyramidMaxAddOns: 0,
-        lockoutEnabled: false,
-        resetTime: activePlan.resetTime,
-        resetTimezone: activePlan.resetTimezone,
-      });
-
+      // Lock FIRST — if it fails (e.g. day rule block), don't update position limits
       const result = await (window as any).electronAPI?.lockSettings?.(lockSettings);
       if (result?.success) {
+        // Only update position limits AFTER lock succeeds
+        await (window as any).electronAPI?.updatePositionLimits?.({
+          lossLimitEnabled: true,
+          lossLimitAmount: activePlan.dailyLoss,
+          profitTargetEnabled: activePlan.profitTarget > 0,
+          profitTargetAmount: activePlan.profitTarget,
+          maxTradesEnabled: true,
+          maxTradesPerDay: activePlan.maxTrades,
+          maxContractsEnabled: true,
+          defaultMax: activePlan.maxContracts,
+          contractLimits: [],
+          blockedSymbolsEnabled: false,
+          blockedSymbols: [],
+          pyramidingEnabled: false,
+          pyramidMaxContracts: 0,
+          pyramidMaxAddOns: 0,
+          lockoutEnabled: false,
+          resetTime: activePlan.resetTime,
+          resetTimezone: activePlan.resetTimezone,
+        });
         onLocked();
       } else {
         setError(result?.error || 'Failed to lock');

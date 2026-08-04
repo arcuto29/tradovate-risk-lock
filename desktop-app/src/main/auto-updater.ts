@@ -1,7 +1,7 @@
 import { autoUpdater } from 'electron-updater';
 import { BrowserWindow, ipcMain } from 'electron';
 
-export function setupAutoUpdater(mainWindow: BrowserWindow): void {
+export function setupAutoUpdater(mainWindow: BrowserWindow, isLocked?: () => boolean): void {
   // Check for updates silently on launch
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
@@ -37,6 +37,10 @@ export function setupAutoUpdater(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('install-update', () => {
+    // SAFETY: Never restart while locked (trader is actively trading)
+    if (isLocked && isLocked()) {
+      return { success: false, error: 'Cannot update while session is locked. Update will install when session ends.' };
+    }
     autoUpdater.quitAndInstall(false, true);
     return { success: true };
   });

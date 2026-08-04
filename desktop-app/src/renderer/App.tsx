@@ -78,9 +78,11 @@ export const App: React.FC = () => {
         setLoading(false);
         return;
       }
-      // Check if trading profile exists (onboarding complete)
-      const profile = await (window as any).electronAPI?.getTradingProfile?.();
-      setProfileDone(!!profile);
+      // Only check profile on first load (not every poll)
+      if (!profileDone) {
+        const profile = await (window as any).electronAPI?.getTradingProfile?.();
+        setProfileDone(!!profile);
+      }
 
       const state = await window.electronAPI.getLockState();
       setLockState(state);
@@ -89,7 +91,7 @@ export const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profileDone]);
 
   useEffect(() => {
     refreshState();
