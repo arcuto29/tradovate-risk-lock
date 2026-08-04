@@ -152,11 +152,7 @@ export const App: React.FC = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-8 pt-5 pb-0" style={{
-        borderBottom: `1px solid ${colors.primary}06`,
-        background: 'rgba(8,8,10,0.75)',
-        backdropFilter: 'blur(20px) saturate(1.1)'
-      }}>
+      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong" style={{borderBottom: `1px solid ${colors.primary}10`}}>
         {/* Subtle gradient divider at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent 10%, ${colors.primary}15, ${colors.secondary}10, transparent 90%)`}} />
         
