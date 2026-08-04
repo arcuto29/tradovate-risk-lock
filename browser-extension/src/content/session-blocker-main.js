@@ -32,6 +32,7 @@
   var dailyLossBlocked = false;
   var totalDailyPnL = 0;
   var lastLossDetectedTime = 0;
+  var lastCloseOrderTime = 0; // When a close/reduce order was last detected
 
   // ─── Pyramiding / Stacking Protection ──────────────────────────────────────
   var pyramidingEnabled = false;   // false = block all stacking (default)
@@ -690,6 +691,10 @@
       decision.allow = true;
       decision.reason = 'Risk-reducing: ' + classification.action;
       decision.requestReached = true;
+      // Mark close time so P&L polling doesn't count the resulting P&L drop as a new loss
+      if (classification.action === 'CLOSE_POSITION' || classification.action === 'REDUCE_POSITION') {
+        lastCloseOrderTime = Date.now();
+      }
       logDiagnostic(url, method, body, classification, 'ALLOWED', true);
       return decision;
     }
@@ -918,8 +923,9 @@
           
           // Only count as a real loss if:
           // 1. Drop is at least $10 (ignore fees/spread ticks)
-          // 2. At least 30 seconds since last loss detection (separate trades)
-          if (lossAmount >= 10 && (now - lastLossDetectedTime) > 30000) {
+          // 2. At least 60 seconds since last loss detection (separate trades)
+          // 3. Not during a position close (P&L can drop when closing a loser)
+          if (lossAmount >= 10 && (now - lastLossDetectedTime) > 60000 && (now - lastCloseOrderTime) > 30000) {
             lastLossDetectedTime = now;
             console.log('[Sentinel PnL] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ', Previous: $' + lastKnownPnL.toFixed(2) + ', ConsecLosses: ' + (consecutiveLosses + 1) + ', Time: ' + new Date().toISOString() + ')');
             

@@ -10,7 +10,9 @@
   var consecutiveLosses = 0;
   var appConnected = false;
   var lastTriggerTime = 0;
+  var overlayDismissedAt = 0;
   var MIN_TRIGGER_INTERVAL = 60000; // Don't trigger more than once per minute
+  var GRACE_PERIOD_AFTER_DISMISS = 120000; // 2 min grace after dismissing overlay (covers position closing)
 
   function handleMessage(event) {
     if (event.source !== window) return;
@@ -27,12 +29,17 @@
       var existing = document.getElementById('trl-reaction-overlay');
       if (existing) existing.remove();
     }
-    // REMOVED: TRL_COACH_BLOCK trigger — this was firing on ANY cooldown block
-    // regardless of how many losses occurred. The overlay should ONLY fire
-    // from TRL_TRADE_RESULT after verified consecutive losses.
     
     if (type === 'TRL_TRADE_RESULT') {
       var now = Date.now();
+      
+      // Grace period: ignore loss events right after overlay was dismissed
+      // (user is closing their position, not taking a new trade)
+      if ((now - overlayDismissedAt) < GRACE_PERIOD_AFTER_DISMISS) {
+        console.log('[Sentinel LossReaction] Ignoring event during grace period (closing position after overlay)');
+        return;
+      }
+      
       if (event.data.result === 'loss') {
         consecutiveLosses++;
         console.log('[Sentinel LossReaction] Loss #' + consecutiveLosses + ' detected (pnl: ' + (event.data.pnl || 'unknown') + ', time: ' + new Date().toISOString() + ')');
@@ -190,6 +197,7 @@
 
         // Auto-dismiss after 4 seconds
         setTimeout(function() {
+          overlayDismissedAt = Date.now();
           overlay.style.opacity = '0';
           overlay.style.transition = 'opacity 0.5s ease';
           setTimeout(function() { overlay.remove(); }, 500);
