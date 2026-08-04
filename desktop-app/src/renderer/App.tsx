@@ -152,7 +152,18 @@ export const App: React.FC = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-8 pt-5 pb-0" style={{borderBottom: `1px solid ${colors.primary}06`, background: 'rgba(5,3,15,0.6)', backdropFilter: 'blur(20px) saturate(1.2)'}}>
+      <header className="relative z-10 px-8 pt-5 pb-0" style={{
+        borderBottom: `1px solid ${colors.primary}06`,
+        background: theme === 'midnight' ? 'rgba(0,0,0,0.85)' 
+          : theme === 'void' ? 'rgba(0,0,0,0.8)'
+          : theme === 'hologram' ? 'rgba(0,10,20,0.7)'
+          : theme === 'gold' ? 'rgba(8,6,3,0.7)'
+          : theme === 'neon' ? 'rgba(8,2,12,0.7)'
+          : theme === 'frost' ? 'rgba(8,10,15,0.7)'
+          : theme === 'aurora' ? 'rgba(3,10,8,0.7)'
+          : 'rgba(5,3,15,0.7)',
+        backdropFilter: 'blur(20px) saturate(1.2)'
+      }}>
         {/* Subtle gradient divider at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent 10%, ${colors.primary}15, ${colors.secondary}10, transparent 90%)`}} />
         
