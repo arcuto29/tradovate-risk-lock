@@ -1,22 +1,24 @@
 import React from 'react';
-import { useTheme } from '../ThemeContext';
-import { getThemeColors } from '../themeColors';
 
 interface LogoProps {
   size?: number;
   animated?: boolean;
 }
 
+/**
+ * Sentinel Logo — Shield + Sword
+ * 
+ * Sword orientation: blade points UP, tip near top of shield.
+ * Crossguard sits below the blade, grip and pommel at bottom.
+ * Optimized for readability at all sizes (16px tray → 128px onboarding).
+ * Minimal decorative details. Bold, clean shapes.
+ * Communicates: protection, discipline, security.
+ */
 export const Logo: React.FC<LogoProps> = ({ size = 48, animated = false }) => {
-  const { theme } = useTheme();
-  const colors = getThemeColors(theme);
-
-  // Gold palette for shield + sword
   const goldPrimary = '#ffd700';
   const goldDark = '#b8860b';
-  const goldLight = '#ffe066';
-  const goldBright = '#fff4b0';
-  const shieldFill = '#080810';
+  const goldLight = '#ffe566';
+  const shieldFill = '#0a0a12';
 
   return (
     <svg
@@ -29,40 +31,29 @@ export const Logo: React.FC<LogoProps> = ({ size = 48, animated = false }) => {
       style={animated ? { animation: 'float 6s ease-in-out infinite' } : undefined}
     >
       <defs>
-        <linearGradient id="shieldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={goldBright} />
-          <stop offset="30%" stopColor={goldPrimary} />
-          <stop offset="70%" stopColor={goldDark} />
-          <stop offset="100%" stopColor={goldPrimary} />
+        <linearGradient id={`shieldBorder-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={goldLight} />
+          <stop offset="50%" stopColor={goldPrimary} />
+          <stop offset="100%" stopColor={goldDark} />
         </linearGradient>
-        <linearGradient id="swordBlade" x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor={goldBright} />
+        <linearGradient id={`blade-${size}`} x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" />
           <stop offset="20%" stopColor={goldLight} />
           <stop offset="60%" stopColor={goldPrimary} />
           <stop offset="100%" stopColor={goldDark} />
         </linearGradient>
-        <linearGradient id="crossGuard" x1="0%" y1="50%" x2="100%" y2="50%">
+        <linearGradient id={`guard-${size}`} x1="0%" y1="50%" x2="100%" y2="50%">
           <stop offset="0%" stopColor={goldDark} />
           <stop offset="50%" stopColor={goldPrimary} />
           <stop offset="100%" stopColor={goldDark} />
         </linearGradient>
-        <linearGradient id="handleGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+        <linearGradient id={`grip-${size}`} x1="50%" y1="0%" x2="50%" y2="100%">
           <stop offset="0%" stopColor={goldDark} />
-          <stop offset="50%" stopColor="#8B6914" />
-          <stop offset="100%" stopColor={goldDark} />
+          <stop offset="100%" stopColor="#8b6508" />
         </linearGradient>
-        <filter id="outerGlow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feFlood floodColor={goldPrimary} floodOpacity="0.5" result="color" />
-          <feComposite in="color" in2="blur" operator="in" result="glow" />
-          <feMerge>
-            <feMergeNode in="glow" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <filter id="swordGlow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feFlood floodColor={goldLight} floodOpacity="0.6" result="color" />
+        <filter id={`glow-${size}`}>
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feFlood floodColor={goldPrimary} floodOpacity="0.4" result="color" />
           <feComposite in="color" in2="blur" operator="in" result="glow" />
           <feMerge>
             <feMergeNode in="glow" />
@@ -71,64 +62,48 @@ export const Logo: React.FC<LogoProps> = ({ size = 48, animated = false }) => {
         </filter>
       </defs>
 
-      {/* Shield body */}
+      {/* Shield — bold, simple shape */}
       <path
-        d="M50 8L80 22v26c0 20-12 35-30 40C32 83 20 68 20 48V22L50 8z"
+        d="M50 6L82 21v28c0 21-13 36-32 41C31 85 18 70 18 49V21L50 6z"
         fill={shieldFill}
-        stroke="url(#shieldBorder)"
-        strokeWidth="4"
+        stroke={`url(#shieldBorder-${size})`}
+        strokeWidth="3.5"
         strokeLinejoin="round"
-        filter="url(#outerGlow)"
+        filter={`url(#glow-${size})`}
       />
 
-      {/* Inner shield bevel line */}
+      {/* Blade — slim, tapers to sharp tip at TOP */}
+      {/* Wide base (5px) near crossguard, narrows to sharp point at top */}
       <path
-        d="M50 16L72 27v21c0 16-9 28-22 32C39 76 30 64 30 48V27L50 16z"
-        fill="none"
-        stroke={goldDark}
-        strokeWidth="1"
-        strokeOpacity="0.4"
+        d="M50 14 L47.5 55 L50 56.5 L52.5 55 Z"
+        fill={`url(#blade-${size})`}
       />
 
-      {/* Sword blade - wide and bold, clearly a sword */}
-      <path
-        d="M47 18L50 14L53 18V56L50 60L47 56V18Z"
-        fill="url(#swordBlade)"
-        filter="url(#swordGlow)"
-      />
+      {/* Blade center highlight */}
+      <line x1="50" y1="16" x2="50" y2="54" stroke="white" strokeWidth="0.7" opacity="0.3" />
 
-      {/* Blade center line (fuller) */}
-      <line x1="50" y1="18" x2="50" y2="54" stroke={goldBright} strokeWidth="1" opacity="0.4" />
+      {/* Blade edge highlights */}
+      <line x1="48.8" y1="52" x2="50" y2="15" stroke="white" strokeWidth="0.3" opacity="0.15" />
+      <line x1="51.2" y1="52" x2="50" y2="15" stroke="white" strokeWidth="0.3" opacity="0.15" />
 
-      {/* Crossguard - wide and curved */}
-      <path
-        d="M36 44C36 42 38 40 40 40H60C62 40 64 42 64 44C64 46 62 48 60 48H40C38 48 36 46 36 44Z"
-        fill="url(#crossGuard)"
-      />
+      {/* Crossguard — wide, clearly below blade */}
+      <rect x="36" y="56" width="28" height="4.5" rx="2.25" fill={`url(#guard-${size})`} />
 
-      {/* Crossguard end caps */}
-      <circle cx="36" cy="44" r="3" fill={goldPrimary} />
-      <circle cx="64" cy="44" r="3" fill={goldPrimary} />
+      {/* Crossguard end details */}
+      <circle cx="36.5" cy="58.25" r="1.5" fill={goldPrimary} opacity="0.6" />
+      <circle cx="63.5" cy="58.25" r="1.5" fill={goldPrimary} opacity="0.6" />
 
-      {/* Handle (grip) */}
-      <rect x="47" y="48" width="6" height="14" rx="2" fill="url(#handleGrad)" />
+      {/* Grip — narrow, below crossguard */}
+      <rect x="48" y="61" width="4" height="13" rx="1.5" fill={`url(#grip-${size})`} />
 
-      {/* Handle wrap lines */}
-      <line x1="47.5" y1="51" x2="52.5" y2="51" stroke={goldPrimary} strokeWidth="0.8" opacity="0.5" />
-      <line x1="47.5" y1="54" x2="52.5" y2="54" stroke={goldPrimary} strokeWidth="0.8" opacity="0.5" />
-      <line x1="47.5" y1="57" x2="52.5" y2="57" stroke={goldPrimary} strokeWidth="0.8" opacity="0.5" />
+      {/* Grip wrap texture */}
+      <line x1="48.3" y1="64" x2="51.7" y2="63" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
+      <line x1="48.3" y1="67" x2="51.7" y2="66" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
+      <line x1="48.3" y1="70" x2="51.7" y2="69" stroke={goldPrimary} strokeWidth="0.4" opacity="0.25" />
 
-      {/* Pommel */}
-      <ellipse cx="50" cy="64" rx="5" ry="4" fill={goldPrimary} />
-      <ellipse cx="50" cy="63.5" rx="3" ry="2.5" fill={goldBright} opacity="0.4" />
-
-      {/* Blade tip highlight */}
-      <path d="M49 16L50 14L51 16" fill={goldBright} opacity="0.7" />
-
-      {/* Shield corner rivets */}
-      <circle cx="30" cy="30" r="1.5" fill={goldPrimary} opacity="0.6" />
-      <circle cx="70" cy="30" r="1.5" fill={goldPrimary} opacity="0.6" />
-      <circle cx="50" cy="75" r="1.5" fill={goldPrimary} opacity="0.4" />
+      {/* Pommel — small circle at bottom */}
+      <circle cx="50" cy="76" r="3" fill={goldPrimary} />
+      <circle cx="50" cy="76" r="1.5" fill={goldLight} opacity="0.5" />
     </svg>
   );
 };
