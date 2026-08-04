@@ -172,8 +172,8 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-2.5 relative">
             {/* Logo ambient glow */}
             <div className="absolute -inset-3 rounded-full opacity-40" style={{background: `radial-gradient(circle, ${colors.primary}15 0%, transparent 70%)`}} />
-            <Logo size={22} />
-            <p className="text-[0.6rem] font-bold tracking-[4px] uppercase relative" style={{color: `${colors.primary}90`}}>
+            <Logo size={24} />
+            <p className="text-[0.7rem] font-bold tracking-[4px] uppercase relative" style={{color: `${colors.primary}90`}}>
               Sentinel
             </p>
           </div>
@@ -294,9 +294,8 @@ export const App: React.FC = () => {
       <footer className="relative z-10 px-8 py-2.5 flex justify-between items-center" style={{borderTop: `1px solid ${colors.primary}06`}}>
         <MarketTimer />
         <div className="flex items-center gap-2 opacity-40">
-          <Logo size={12} />
-          <span className="text-[0.45rem] font-bold tracking-[3px] uppercase" style={{color: colors.primary}}>
-            Sentinel
+          <span className="text-[0.5rem] font-bold tracking-[3px] uppercase" style={{color: colors.primary}}>
+            Priisma
           </span>
         </div>
       </footer>
