@@ -83,17 +83,19 @@ export const DisciplineScore: React.FC = () => {
   return (
     <div className="max-w-lg">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-2 animate-reveal">
+      <div className="flex items-center gap-4 mb-6 animate-reveal">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `linear-gradient(135deg, ${themeColors.primary}20, ${themeColors.secondary}10)`, border: `1px solid ${themeColors.primary}20`}}>
           <BarChart3 size={18} style={{color: themeColors.primary, filter: `drop-shadow(0 0 4px ${themeColors.primary}80)`}} />
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-gradient">Discipline</h2>
+        <div>
+          <h2 className="text-3xl font-black tracking-tight text-gradient">Discipline</h2>
+          <p className="text-[0.6rem] text-white/30">Starts at 100. Drops when you break rules.</p>
+        </div>
       </div>
-      <p className="text-white/30 text-sm mb-8 leading-relaxed ml-14 animate-reveal">Starts at 100. Drops when you break rules.</p>
 
 
       {/* Today's Score - Circular Ring */}
-      <div className="relative rounded-xl p-8 overflow-hidden card-premium mb-6 text-center animate-reveal">
+      <div className="relative rounded-xl p-8 overflow-hidden card-premium mb-5 text-center animate-reveal">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.primary}40, transparent)`}} />
         <div className="relative z-10">
           <p className="text-[0.55rem] font-bold tracking-[3px] uppercase text-white/25 mb-6">Today</p>
@@ -174,7 +176,7 @@ export const DisciplineScore: React.FC = () => {
 
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3 mb-6 animate-reveal">
+      <div className="grid grid-cols-3 gap-3 mb-5 animate-reveal">
         <div className="relative rounded-xl p-5 overflow-hidden card-premium text-center hover-lift">
           <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.primary}30, transparent)`}} />
           <div className="relative z-10">
