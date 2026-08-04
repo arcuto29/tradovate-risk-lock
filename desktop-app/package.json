@@ -13,7 +13,16 @@
     "build:renderer": "vite build",
     "start": "electron dist/main/index.js",
     "package": "npm run build && electron-builder --win",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:lock": "vitest run --testPathPattern lock",
+    "test:extension": "vitest run --testPathPattern extension",
+    "test:loss-reaction": "vitest run --testPathPattern loss-reaction",
+    "test:win-streak": "vitest run --testPathPattern win-streak",
+    "test:database": "vitest run --testPathPattern database",
+    "test:release": "vitest run --testPathPattern release-gate",
+    "verify": "npm run build:main && npm run build:renderer && npm run test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -29,7 +38,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.11.0",
+    "@types/node": "^26.1.2",
     "@types/node-schedule": "^2.1.6",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
@@ -44,7 +53,8 @@
     "react-dom": "^18.2.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.3.3",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "vitest": "^4.1.10"
   },
   "build": {
     "appId": "com.tradovate-risk-lock.app",
