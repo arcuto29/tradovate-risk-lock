@@ -17,6 +17,7 @@ interface ActivePlan {
 interface Props {
   onLocked: () => void;
   limitsTightened: boolean;
+  onNavigate?: (page: string) => void;
 }
 
 /**
@@ -25,7 +26,7 @@ interface Props {
  * The trader should be able to lock within 3 seconds of seeing this screen.
  * No configuration needed daily — just confirm and lock.
  */
-export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened }) => {
+export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened, onNavigate }) => {
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
   const [activePlan, setActivePlan] = useState<ActivePlan | null>(null);
@@ -278,7 +279,7 @@ export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened }) =>
 
       {/* Edit Trading Plan link */}
       <button
-        onClick={() => {/* Will navigate to Protection page — handled by parent */}}
+        onClick={() => onNavigate?.('protection')}
         className="w-full mt-4 py-2 text-[0.55rem] text-white/15 hover:text-white/30 transition-all"
       >
         Edit Trading Plan

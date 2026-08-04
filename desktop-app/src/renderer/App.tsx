@@ -253,7 +253,7 @@ export const App: React.FC = () => {
                 </>
               : (!preMarketPassed && !devMode)
                 ? <TradingReadiness onComplete={(result) => { setPreMarketPassed(true); setLimitsTightened(result.tightened); localStorage.setItem('tg-premarket-date', new Date().toISOString().split('T')[0]); }} />
-                : <HomeDashboard onLocked={refreshState} limitsTightened={limitsTightened} />
+                : <HomeDashboard onLocked={refreshState} limitsTightened={limitsTightened} onNavigate={(page) => setCurrentPage(page as Page)} />
           )}
           {currentPage === 'protection' && (
             <>
