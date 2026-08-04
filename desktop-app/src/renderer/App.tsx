@@ -30,6 +30,7 @@ import { MarketTimer } from './components/MarketTimer';
 import { NewsBlocker } from './components/NewsBlocker';
 import { AdvancedProtection } from './components/AdvancedProtection';
 import { TradingProfileCard } from './components/TradingProfileCard';
+import { ProtectionPage } from './components/ProtectionPage';
 import { DailyMission } from './components/DailyMission';
 import { DisciplineRisk } from './components/DisciplineRisk';
 import { useTheme } from './ThemeContext';
@@ -258,14 +259,7 @@ export const App: React.FC = () => {
                 : <HomeDashboard onLocked={refreshState} limitsTightened={limitsTightened} onNavigate={(page) => setCurrentPage(page as Page)} />
           )}
           {currentPage === 'protection' && (
-            <>
-              <TradingProfileCard isLocked={lockState?.isLocked} />
-              <SessionHours isLocked={lockState?.isLocked} />
-              <div className="mt-8"><PsychologyCoach isLocked={lockState?.isLocked} /></div>
-              <div className="mt-8"><AdvancedProtection isLocked={lockState?.isLocked} /></div>
-              <div className="mt-8"><DayRules isLocked={lockState?.isLocked} /></div>
-              <div className="mt-8"><Blocklist isLocked={lockState?.isLocked} /></div>
-            </>
+            <ProtectionPage isLocked={lockState?.isLocked} />
           )}
           {currentPage === 'news' && <NewsBlocker isLocked={lockState?.isLocked} />}
           {currentPage === 'insights' && (
