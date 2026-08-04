@@ -921,7 +921,7 @@
           // 2. At least 30 seconds since last loss detection (separate trades)
           if (lossAmount >= 10 && (now - lastLossDetectedTime) > 30000) {
             lastLossDetectedTime = now;
-            console.log('[TradingGuardian] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+            console.log('[Sentinel PnL] Loss detected: -$' + lossAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ', Previous: $' + lastKnownPnL.toFixed(2) + ', ConsecLosses: ' + (consecutiveLosses + 1) + ', Time: ' + new Date().toISOString() + ')');
             
             // Post trade result so loss-reaction.js can trigger
             window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'loss', pnl: -lossAmount }, '*');
@@ -950,7 +950,7 @@
           var winAmount = currentPnl - lastKnownPnL;
           // Only count as real win if at least $10 (ignore small ticks)
           if (winAmount >= 10) {
-            console.log('[TradingGuardian] Win detected: +$' + winAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ')');
+            console.log('[Sentinel PnL] Win detected: +$' + winAmount.toFixed(2) + ' (Total P&L: $' + currentPnl.toFixed(2) + ', ConsecLosses was: ' + consecutiveLosses + ', Time: ' + new Date().toISOString() + ')');
             window.postMessage({ type: 'TRL_TRADE_RESULT', result: 'win', pnl: winAmount }, '*');
             consecutiveLosses = 0;
           }

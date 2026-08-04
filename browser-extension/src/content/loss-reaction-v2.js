@@ -9,6 +9,8 @@
 
   var consecutiveLosses = 0;
   var appConnected = false;
+  var lastTriggerTime = 0;
+  var MIN_TRIGGER_INTERVAL = 60000; // Don't trigger more than once per minute
 
   function handleMessage(event) {
     if (event.source !== window) return;
@@ -25,18 +27,32 @@
       var existing = document.getElementById('trl-reaction-overlay');
       if (existing) existing.remove();
     }
-    if (type === 'TRL_COACH_BLOCK' && (event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN')) {
-      if (appConnected) showReactionOverlay();
-    }
+    // REMOVED: TRL_COACH_BLOCK trigger — this was firing on ANY cooldown block
+    // regardless of how many losses occurred. The overlay should ONLY fire
+    // from TRL_TRADE_RESULT after verified consecutive losses.
+    
     if (type === 'TRL_TRADE_RESULT') {
+      var now = Date.now();
       if (event.data.result === 'loss') {
         consecutiveLosses++;
-        if (consecutiveLosses >= 2 && appConnected) {
+        console.log('[Sentinel LossReaction] Loss #' + consecutiveLosses + ' detected (pnl: ' + (event.data.pnl || 'unknown') + ', time: ' + new Date().toISOString() + ')');
+        if (consecutiveLosses >= 2 && appConnected && (now - lastTriggerTime) > MIN_TRIGGER_INTERVAL) {
+          console.log('[Sentinel LossReaction] TRIGGER: ' + consecutiveLosses + ' consecutive losses. Showing overlay.');
+          lastTriggerTime = now;
           showReactionOverlay();
         }
       } else if (event.data.result === 'win') {
+        if (consecutiveLosses > 0) {
+          console.log('[Sentinel LossReaction] Win detected. Resetting consecutiveLosses from ' + consecutiveLosses + ' to 0.');
+        }
         consecutiveLosses = 0;
       }
+    }
+    
+    // Reset on new day
+    if (type === 'TRL_SESSION_RESET' || type === 'TRL_DAY_RESET') {
+      console.log('[Sentinel LossReaction] Session/day reset. Clearing consecutiveLosses.');
+      consecutiveLosses = 0;
     }
   }
 
