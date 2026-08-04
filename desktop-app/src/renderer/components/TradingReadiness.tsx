@@ -192,10 +192,10 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
 
   const getLevelConfig = (l: string) => {
     switch (l) {
-      case 'ready': return { label: 'Ready', color: colors.primary, description: 'Normal trading. No changes to your plan.' };
-      case 'recommended': return { label: 'Recommended', color: '#fbbf24', description: 'Slightly tighter limits suggested.' };
-      case 'protected': return { label: 'Protected', color: '#f97316', description: 'Reduced contracts and tighter loss limit.' };
-      case 'maximum_protection': return { label: 'Maximum Protection', color: '#ef4444', description: 'Minimum settings recommended.' };
+      case 'ready': return { label: 'Ready', color: colors.primary, description: 'You\'re prepared. Full trading plan active.' };
+      case 'recommended': return { label: 'Recommended', color: '#fbbf24', description: 'Slightly tighter limits to match today\'s readiness.' };
+      case 'protected': return { label: 'Protected', color: '#f97316', description: 'Reduced exposure to protect your account today.' };
+      case 'maximum_protection': return { label: 'Maximum Protection', color: '#ef4444', description: 'Minimum settings to limit risk during elevated conditions.' };
       default: return { label: '', color: '', description: '' };
     }
   };
@@ -250,10 +250,29 @@ export const TradingReadiness: React.FC<Props> = ({ onComplete }) => {
             </div>
           </div>
         ) : (
-          <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5 text-center">
+          <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-5">
+            <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${cfg.color}30, transparent)` }} />
             <div className="relative z-10">
-              <p className="text-sm text-white/50">Your plan is unchanged today.</p>
-              <p className="text-[0.6rem] text-white/25 mt-1">All values remain at your Trading Plan baseline.</p>
+              <p className="text-[0.6rem] font-bold tracking-[2px] uppercase mb-4" style={{ color: `${cfg.color}80` }}>Today's Plan</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6rem] text-white/30">Contracts</span>
+                  <span className="text-[0.6rem] font-mono font-bold" style={{ color: colors.primary }}>{recommended.maxContracts}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6rem] text-white/30">Daily Loss</span>
+                  <span className="text-[0.6rem] font-mono font-bold" style={{ color: colors.primary }}>${recommended.dailyLoss}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6rem] text-white/30">Max Trades</span>
+                  <span className="text-[0.6rem] font-mono font-bold" style={{ color: colors.primary }}>{recommended.maxTrades}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6rem] text-white/30">Profit Target</span>
+                  <span className="text-[0.6rem] font-mono font-bold" style={{ color: colors.primary }}>${plan.profit_target}</span>
+                </div>
+              </div>
+              <p className="text-[0.5rem] text-white/15 mt-4 text-center italic">No changes — your full Trading Plan is active today.</p>
             </div>
           </div>
         )}
