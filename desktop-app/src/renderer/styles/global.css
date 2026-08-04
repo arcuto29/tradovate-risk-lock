@@ -2560,3 +2560,101 @@ select option {
 [data-theme="gold"] .input-premium:focus { border-color: rgba(255,215,0,0.4) !important; box-shadow: 0 0 0 3px rgba(255,215,0,0.05), 0 0 12px rgba(255,215,0,0.08) !important; }
 [data-theme="neon"] .input-premium:focus { border-color: rgba(244,114,182,0.4) !important; box-shadow: 0 0 0 3px rgba(244,114,182,0.06), 0 0 12px rgba(244,114,182,0.08) !important; }
 [data-theme="frost"] .input-premium:focus { border-color: rgba(148,163,184,0.35) !important; box-shadow: 0 0 0 3px rgba(148,163,184,0.05), 0 0 10px rgba(96,165,250,0.06) !important; }
+
+
+
+/* ═══ REDUCED MOTION: Respect user preference ═══ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .nebula-bg::before, .nebula-bg::after { animation: none !important; }
+  .stars { animation: none !important; }
+  .stars::before { animation: none !important; }
+  .sakura-petals::after { animation: none !important; }
+  .animate-float { animation: none !important; }
+  .animate-pulse-glow { animation: none !important; }
+  .shield-icon { animation: none !important; }
+}
+
+/* ═══ AMBIENT PULSE: Very subtle life to dark themes ═══ */
+/* Adds an extremely slow, low-opacity breathing effect to the background */
+
+.nebula-bg::before {
+  will-change: opacity;
+}
+
+/* Void (Matrix): Add faint vertical particle trails */
+[data-theme="void"] .stars::after {
+  content: '';
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(180deg, rgba(0,255,136,0.03) 0%, transparent 40%),
+    linear-gradient(180deg, transparent 60%, rgba(0,255,136,0.02) 100%);
+  animation: matrixRain 20s linear infinite;
+  opacity: 0.4;
+}
+
+@keyframes matrixRain {
+  0% { transform: translateY(-10%); }
+  100% { transform: translateY(10%); }
+}
+
+/* Frost (Arctic): Slow icy mist drift */
+[data-theme="frost"] .nebula-bg::before {
+  background:
+    radial-gradient(ellipse 70% 40% at 30% 30%, rgba(148,163,184,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 70% 60%, rgba(96,165,250,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 30% at 50% 80%, rgba(203,213,225,0.03) 0%, transparent 50%) !important;
+  animation: frostDrift 25s ease-in-out infinite alternate !important;
+}
+
+@keyframes frostDrift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(2%, -1%) scale(1.02); opacity: 0.9; }
+  100% { transform: translate(-1%, 1%) scale(1.01); opacity: 0.7; }
+}
+
+/* Neon (Rosé): Subtle pink haze pulse */
+[data-theme="neon"] .nebula-bg::before {
+  animation: neonHaze 18s ease-in-out infinite alternate !important;
+}
+
+@keyframes neonHaze {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.01); }
+  100% { opacity: 0.6; transform: scale(1.005); }
+}
+
+/* Gold (Luxe): Soft radial glow breathing */
+[data-theme="gold"] .nebula-bg::after {
+  animation: goldBreath 20s ease-in-out infinite alternate !important;
+}
+
+@keyframes goldBreath {
+  0% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.02); }
+  100% { opacity: 0.5; transform: scale(1.01); }
+}
+
+/* Midnight: Ambient red/blue glow shift */
+[data-theme="midnight"] .nebula-bg::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 40% 40% at 20% 50%, rgba(239,68,68,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 80% 50%, rgba(59,130,246,0.03) 0%, transparent 50%);
+  animation: midnightAmbient 30s ease-in-out infinite alternate;
+}
+
+@keyframes midnightAmbient {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

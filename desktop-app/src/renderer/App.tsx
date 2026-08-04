@@ -152,18 +152,23 @@ export const App: React.FC = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-8 pt-5 pb-0 glass-strong" style={{borderBottom: `1px solid ${colors.primary}08`}}>
-        {/* Brand */}
+      <header className="relative z-10 px-8 pt-5 pb-0" style={{borderBottom: `1px solid ${colors.primary}06`, background: 'rgba(5,3,15,0.6)', backdropFilter: 'blur(20px) saturate(1.2)'}}>
+        {/* Subtle gradient divider at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent 10%, ${colors.primary}15, ${colors.secondary}10, transparent 90%)`}} />
+        
+        {/* Brand with soft glow */}
         <div className="flex items-center justify-center mb-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 relative">
+            {/* Logo ambient glow */}
+            <div className="absolute -inset-3 rounded-full opacity-40" style={{background: `radial-gradient(circle, ${colors.primary}15 0%, transparent 70%)`}} />
             <Logo size={22} />
-            <p className="text-[0.6rem] font-bold tracking-[4px] uppercase" style={{color: `${colors.primary}90`}}>
+            <p className="text-[0.6rem] font-bold tracking-[4px] uppercase relative" style={{color: `${colors.primary}90`}}>
               Sentinel
             </p>
           </div>
         </div>
 
-        {/* Nav */}
+        {/* Nav with tab transition */}
         <nav className="flex justify-center gap-0.5">
           {NAV_ITEMS.filter(item => !item.devOnly || devMode).map(({ page, label, icon }) => {
             const isMidnight = theme === 'midnight';
@@ -182,7 +187,10 @@ export const App: React.FC = () => {
                 <span>{label}</span>
               </span>
               {isActive && (
-                <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, opacity: 0.8}} />
+                <>
+                  <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full transition-all duration-300" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, opacity: 0.8}} />
+                  <span className="absolute bottom-0 left-3 right-3 h-[4px] rounded-full blur-sm" style={{background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`, opacity: 0.3}} />
+                </>
               )}
             </button>
             );
