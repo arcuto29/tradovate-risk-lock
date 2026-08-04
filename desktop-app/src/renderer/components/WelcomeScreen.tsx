@@ -29,7 +29,7 @@ export const WelcomeScreen: React.FC<Props> = ({ onComplete }) => {
       <div className="relative z-10 text-center animate-reveal">
         {/* Logo */}
         <div className="mb-8 flex justify-center" style={{ animation: 'float 6s ease-in-out infinite' }}>
-          <Logo size={80} />
+          <Logo size={100} />
         </div>
 
         {/* Brand name */}

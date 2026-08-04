@@ -127,7 +127,9 @@ export const Onboarding: React.FC<Props> = ({ onComplete }) => {
         <div className="relative z-10 w-full max-w-md px-6 animate-reveal">
           {/* Header */}
           <div className="text-center mb-8">
-            <Logo size={48} />
+            <div className="flex justify-center mb-4">
+              <Logo size={120} />
+            </div>
             <h1 className="text-2xl font-black tracking-tight text-gradient mt-4 mb-1">Trading Profile</h1>
             <p className="text-[0.6rem] text-white/25 uppercase tracking-[2px]">Step 1 of 2</p>
           </div>
