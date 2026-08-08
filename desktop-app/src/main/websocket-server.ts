@@ -125,8 +125,22 @@ export class WebSocketServer {
         });
         break;
       case 'state_transition':
-        // Log behavioral state transition for Session Replay
-        this.db.logActivity('state_transition', `${message.from} → ${message.to}: ${message.reason}`);
+        // Log behavioral state transition for Session Replay (enriched with context)
+        this.db.logActivity('state_transition', JSON.stringify({
+          sessionId: message.sessionId,
+          from: message.from,
+          to: message.to,
+          reason: message.reason,
+          triggeringEvent: message.triggeringEvent,
+          tiltScore: message.tiltScore,
+          consecutiveLosses: message.consecutiveLosses,
+          tradeCount: message.tradeCount,
+          pnlSnapshot: message.pnlSnapshot,
+        }));
+        break;
+      case 'session_summary':
+        // Store session behavior summary for Review page
+        this.db.logActivity('session_summary', JSON.stringify(message));
         break;
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));

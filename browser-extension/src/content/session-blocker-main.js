@@ -113,8 +113,14 @@
       window.__sentinelNewsBlocked = isNewsBlocked;
       if (lockActive) {
         fomoSessionStartTime = Date.now(); // Track when session started for FOMO first-minutes rule
+        resetBehavioralStateEngine(); // New session → fresh state tracking
       }
       if (!lockActive) {
+        // Compute session summary before clearing state
+        if (sessionId && stateTransitionHistory.length > 0) {
+          var summary = getSessionBehaviorSummary();
+          window.postMessage({ type: 'TRL_SESSION_SUMMARY', ...summary }, '*');
+        }
         // Clear all enforcement when unlocked
         sessionEnded = false;
         cooldownActive = false;
@@ -126,9 +132,11 @@
         winStreakTriggered = false;
         fomoEntryTimestamps = []; // Reset FOMO tracking
       }
+      recalculateBehavioralState('lock_state_change');
     }
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
       fullDayBlocked = true;
+      recalculateBehavioralState('full_day_block');
     }
     if (event.data && event.data.type === 'TRL_EMERGENCY_FALLBACK') {
       // Desktop disconnected while locked - keep enforcement active
@@ -209,6 +217,7 @@
         consecutiveLosses++;
         consecutiveWins = 0;
         winStreakTriggered = false;
+        totalTradeCount++;
         if (coachEnabled) {
           lastLossTime = Date.now();
           cooldownActive = true;
@@ -225,9 +234,11 @@
           console.log('[TradingGuardian] Loss streak ' + consecutiveLosses + ' - Max size: ' + currentMaxSize);
           window.postMessage({ type: 'TRL_COACH_WARN', reason: 'SIZE REDUCED', message: 'After ' + consecutiveLosses + ' consecutive losses, your max size is now ' + currentMaxSize + ' contract(s). Protecting your capital.' }, '*');
         }
+        recalculateBehavioralState('trade_loss_' + consecutiveLosses);
       } else if (event.data.result === 'win') {
         consecutiveLosses = 0;
         consecutiveWins++;
+        totalTradeCount++;
         
         // WIN STREAK PROTECTION — fire ONE action only (most important)
         if (winStreakEnabled && consecutiveWins >= winStreakThreshold && !winStreakTriggered) {
@@ -260,6 +271,7 @@
             window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: 'You\'re on a ' + consecutiveWins + '-win streak. Protect your profits.' }, '*');
           }
         }
+        recalculateBehavioralState('trade_win_' + consecutiveWins);
       }
     }
   });
@@ -662,23 +674,39 @@
     return positionLimits.defaultMax || 2;
   }
 
+  /**
+   * getEffectiveMaxSize — Centralized function composing ALL temporary caps.
+   * Always returns the LOWEST active restriction. Never mutates baseline.
+   * Layered: plan max → loss streak → FOMO reduce → (future: readiness)
+   */
+  function getEffectiveMaxSize(symbol) {
+    // Layer 1: Base plan max (from position limits config)
+    var max = getMaxForSymbol(symbol);
+
+    // Layer 2: Loss streak reduction (if active and lower)
+    if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
+      max = currentMaxSize;
+    }
+
+    // Layer 3: FOMO reduce temporary cap (if active and lower)
+    if (fomoReducedUntil > 0 && Date.now() < fomoReducedUntil && fomoTemporaryMax > 0 && fomoTemporaryMax < max) {
+      max = fomoTemporaryMax;
+    }
+
+    // Layer 4: Win streak reduction (already folded into currentMaxSize above)
+    // (Win streak modifies currentMaxSize which is checked in Layer 2)
+
+    // Final: never below 1 (always allow at least 1 contract for exits)
+    return Math.max(1, max);
+  }
+
   function isOversized(body) {
     if (!body) return false;
     var size = body.positionSize || body.qty || body.quantity || body.amount || body.size || 0;
     size = Math.abs(size); // Handle negative values for sell/short orders
     if (!size || size <= 0) return false;
     var symbol = (body.symbolId || body.symbol || body.instrument || '').toUpperCase();
-    var max = getMaxForSymbol(symbol);
-    
-    // Apply loss-streak reduction if active
-    if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
-      max = currentMaxSize;
-    }
-
-    // Apply FOMO reduce temporary cap if active (never increases max, only reduces)
-    if (fomoReducedUntil > 0 && Date.now() < fomoReducedUntil && fomoTemporaryMax > 0 && fomoTemporaryMax < max) {
-      max = fomoTemporaryMax;
-    }
+    var max = getEffectiveMaxSize(symbol);
     
     // Only block if single order exceeds max (not cumulative)
     return size > max;
@@ -1017,11 +1045,12 @@
       } else if (fomoMode === 'reduce') {
         // Temporarily halve max size for the configured window duration
         var symbol = classification.symbol;
-        var currentMax = getMaxForSymbol(symbol);
+        var currentMax = getEffectiveMaxSize(symbol);
         fomoTemporaryMax = Math.max(1, Math.floor(currentMax / 2));
         fomoReducedUntil = Date.now() + (fomoWindowMinutes * 60000);
         window.postMessage({ type: 'TRL_COACH_WARN', reason: 'FOMO: SIZE REDUCED', message: fomoResult.reason + ' — Max size temporarily reduced to ' + fomoTemporaryMax + ' for ' + fomoWindowMinutes + ' min.' }, '*');
         logDiagnostic(url, method, body, classification, 'FOMO_REDUCE', true);
+        recalculateBehavioralState('fomo_reduce_triggered');
         // Re-check size with reduced cap — if current order exceeds it, block
         if (body && isOversized(body)) {
           decision.allow = false; decision.reason = 'FOMO reduce: size ' + classification.quantity + ' exceeds temporary max ' + fomoTemporaryMax; decision.playSound = true; decision.priority = 'HIGH';
@@ -1127,16 +1156,30 @@
   setInterval(checkOverrideIntegrity, TAMPER_CHECK_INTERVAL);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // BEHAVIORAL STATE TRANSITIONS — Session Replay
-  // Tracks: NORMAL → CAUTION → ELEVATED → HIGH_RISK → LOCKDOWN
-  // Posts TRL_STATE_TRANSITION when state changes. Deduplicated.
+  // BEHAVIORAL STATE ENGINE — Event-driven with 5s fallback reconciliation
+  // States: NORMAL → CAUTION → ELEVATED → HIGH_RISK → LOCKDOWN
+  // Recalculates IMMEDIATELY on meaningful events, 5s interval as safety net.
   // ═══════════════════════════════════════════════════════════════════════════
   var currentBehavioralState = 'NORMAL';
   var lastTransitionTime = 0;
-  var TRANSITION_DEDUP_MS = 10000; // Don't log same transition within 10s
+  var TRANSITION_DEDUP_MS = 3000; // Reduced from 10s to 3s to catch rapid transitions
+  var sessionId = ''; // Set on lock activation, used for grouping transitions
+  var stateTransitionHistory = []; // In-memory log for session summary
+  var stateTimeTracking = { NORMAL: 0, CAUTION: 0, ELEVATED: 0, HIGH_RISK: 0, LOCKDOWN: 0 };
+  var lastStateChangeTime = Date.now();
+  var peakState = 'NORMAL';
+  var escalationCount = 0;
+  var recoveryCount = 0;
+  var worstTrigger = '';
+  var firstEscalationTime = null;
+  var totalTradeCount = 0;
+  var STATE_LEVELS = { NORMAL: 0, CAUTION: 1, ELEVATED: 2, HIGH_RISK: 3, LOCKDOWN: 4 };
+
+  function generateSessionId() {
+    return 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  }
 
   function deriveBehavioralState() {
-    // Derive from observable signals (tilt score, session state, blocks)
     if (sessionEnded || fullDayBlocked || dailyLossBlocked) return 'LOCKDOWN';
     var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
     if (tiltScore >= 61 || profitLocked) return 'HIGH_RISK';
@@ -1145,49 +1188,141 @@
     return 'NORMAL';
   }
 
-  function checkBehavioralTransition() {
-    if (!lockActive) { currentBehavioralState = 'NORMAL'; return; }
+  function getTransitionReason(newState, triggeringEvent) {
+    var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
+    if (newState === 'LOCKDOWN') {
+      if (sessionEnded) return 'session ended by trader';
+      if (fullDayBlocked) return 'full day block active';
+      if (dailyLossBlocked) return 'daily loss limit hit';
+    } else if (newState === 'HIGH_RISK') {
+      if (tiltScore >= 61) return 'tilt meter red (score ' + tiltScore + ')';
+      if (profitLocked) return 'profit lock triggered';
+    } else if (newState === 'ELEVATED') {
+      if (cooldownActive) return 'cooldown after loss';
+      return 'tilt rising (score ' + tiltScore + ')';
+    } else if (newState === 'CAUTION') {
+      if (consecutiveLosses >= 2) return consecutiveLosses + ' consecutive losses';
+      return 'tilt increasing (score ' + tiltScore + ')';
+    } else if (newState === 'NORMAL') {
+      return 'risk reduced — behavior stabilized';
+    }
+    return triggeringEvent || 'state change';
+  }
+
+  /**
+   * recalculateBehavioralState — Called on every meaningful event + 5s fallback.
+   * @param {string} triggeringEvent — describes what triggered this recalculation
+   */
+  function recalculateBehavioralState(triggeringEvent) {
+    if (!lockActive) {
+      if (currentBehavioralState !== 'NORMAL') {
+        currentBehavioralState = 'NORMAL';
+      }
+      return;
+    }
+
     var newState = deriveBehavioralState();
     if (newState === currentBehavioralState) return;
 
     var now = Date.now();
-    if ((now - lastTransitionTime) < TRANSITION_DEDUP_MS) return;
-    lastTransitionTime = now;
+    if ((now - lastTransitionTime) < TRANSITION_DEDUP_MS && newState === currentBehavioralState) return;
 
-    var reason = '';
-    if (newState === 'LOCKDOWN') {
-      if (sessionEnded) reason = 'session ended by trader';
-      else if (fullDayBlocked) reason = 'full day block active';
-      else if (dailyLossBlocked) reason = 'daily loss limit hit';
-    } else if (newState === 'HIGH_RISK') {
-      var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
-      if (tiltScore >= 61) reason = 'tilt meter red (score ' + tiltScore + ')';
-      else if (profitLocked) reason = 'profit lock triggered';
-    } else if (newState === 'ELEVATED') {
-      var ts = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
-      if (cooldownActive) reason = 'cooldown after loss';
-      else reason = 'tilt rising (score ' + ts + ')';
-    } else if (newState === 'CAUTION') {
-      if (consecutiveLosses >= 2) reason = consecutiveLosses + ' consecutive losses';
-      else reason = 'tilt increasing';
-    } else if (newState === 'NORMAL') {
-      reason = 'risk reduced — behavior stabilized';
+    // Track time spent in previous state
+    var timeInPrevState = now - lastStateChangeTime;
+    stateTimeTracking[currentBehavioralState] = (stateTimeTracking[currentBehavioralState] || 0) + timeInPrevState;
+    lastStateChangeTime = now;
+
+    // Track escalation vs recovery
+    var isEscalation = STATE_LEVELS[newState] > STATE_LEVELS[currentBehavioralState];
+    var isRecovery = STATE_LEVELS[newState] < STATE_LEVELS[currentBehavioralState];
+    if (isEscalation) {
+      escalationCount++;
+      if (!firstEscalationTime) firstEscalationTime = now;
+    }
+    if (isRecovery) recoveryCount++;
+
+    // Track peak state
+    if (STATE_LEVELS[newState] > STATE_LEVELS[peakState]) {
+      peakState = newState;
+      worstTrigger = triggeringEvent || getTransitionReason(newState, triggeringEvent);
     }
 
+    lastTransitionTime = now;
+    var reason = getTransitionReason(newState, triggeringEvent);
+    var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
+
     var transition = {
+      sessionId: sessionId,
       from: currentBehavioralState,
       to: newState,
       reason: reason,
+      triggeringEvent: triggeringEvent || 'unknown',
       timestamp: new Date().toISOString(),
+      tiltScore: tiltScore,
+      consecutiveLosses: consecutiveLosses,
+      tradeCount: totalTradeCount,
+      pnlSnapshot: (typeof lastKnownPnL === 'number') ? lastKnownPnL : null,
     };
 
     currentBehavioralState = newState;
+    stateTransitionHistory.push(transition);
+
     window.postMessage({ type: 'TRL_STATE_TRANSITION', ...transition }, '*');
     window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: { type: 'state_transition', ...transition } }, '*');
   }
 
-  // Check for state transitions every 5 seconds
-  setInterval(checkBehavioralTransition, 5000);
+  /**
+   * getSessionBehaviorSummary — Computes session summary from accumulated data.
+   * Called at session end (End My Session or lock expiry).
+   */
+  function getSessionBehaviorSummary() {
+    // Finalize time tracking for current state
+    var now = Date.now();
+    var timeInCurrentState = now - lastStateChangeTime;
+    stateTimeTracking[currentBehavioralState] = (stateTimeTracking[currentBehavioralState] || 0) + timeInCurrentState;
+
+    var startingState = stateTransitionHistory.length > 0 ? stateTransitionHistory[0].from : 'NORMAL';
+    var recoveredBeforeEnd = currentBehavioralState === 'NORMAL' || currentBehavioralState === 'CAUTION';
+
+    return {
+      sessionId: sessionId,
+      startingState: startingState,
+      endingState: currentBehavioralState,
+      peakState: peakState,
+      timeInNormal: stateTimeTracking.NORMAL || 0,
+      timeInCaution: stateTimeTracking.CAUTION || 0,
+      timeInElevated: stateTimeTracking.ELEVATED || 0,
+      timeInHighRisk: stateTimeTracking.HIGH_RISK || 0,
+      timeInLockdown: stateTimeTracking.LOCKDOWN || 0,
+      escalationCount: escalationCount,
+      recoveryCount: recoveryCount,
+      worstTrigger: worstTrigger,
+      firstEscalationTime: firstEscalationTime ? new Date(firstEscalationTime).toISOString() : null,
+      transitionCount: stateTransitionHistory.length,
+      tradeCount: totalTradeCount,
+      recoveredBeforeEnd: recoveredBeforeEnd,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Reset behavioral state tracking on new session
+  function resetBehavioralStateEngine() {
+    currentBehavioralState = 'NORMAL';
+    lastTransitionTime = 0;
+    stateTransitionHistory = [];
+    stateTimeTracking = { NORMAL: 0, CAUTION: 0, ELEVATED: 0, HIGH_RISK: 0, LOCKDOWN: 0 };
+    lastStateChangeTime = Date.now();
+    peakState = 'NORMAL';
+    escalationCount = 0;
+    recoveryCount = 0;
+    worstTrigger = '';
+    firstEscalationTime = null;
+    totalTradeCount = 0;
+    sessionId = generateSessionId();
+  }
+
+  // 5-second fallback reconciliation (safety net only)
+  setInterval(function() { recalculateBehavioralState('periodic_reconciliation'); }, 5000);
 
   // ─── P&L Tracking: Monitor incoming WebSocket messages for trade results ───
   // TopstepX sends trade results back through WebSocket.
@@ -1236,6 +1371,7 @@
           profitLocked = true;
           console.log('[TradingGuardian] PROFIT TARGET HIT: $' + currentPnl.toFixed(2) + ' >= $' + profitLockThreshold);
           window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'PROFIT PROTECTED', message: 'You hit your profit target of $' + profitLockThreshold + '. Your green day is locked in. Walk away a winner.' }, '*');
+          recalculateBehavioralState('profit_lock_triggered');
         }
         
         // DRAWDOWN FROM HIGH: If P&L drops too much from peak
@@ -1243,6 +1379,7 @@
           profitLocked = true;
           console.log('[TradingGuardian] DRAWDOWN FROM HIGH: Peak $' + highWaterMark.toFixed(2) + ', Now $' + currentPnl.toFixed(2) + ', Gave back $' + (highWaterMark - currentPnl).toFixed(2));
           window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'GIVING IT BACK', message: 'You were up $' + highWaterMark.toFixed(0) + ' and gave back $' + (highWaterMark - currentPnl).toFixed(0) + '. Protecting what is left. Session over.' }, '*');
+          recalculateBehavioralState('drawdown_from_high');
         }
         
         if (lastKnownPnL !== null && currentPnl < lastKnownPnL) {
@@ -1276,6 +1413,7 @@
               dailyLossBlocked = true;
               console.log('[TradingGuardian] DAILY LOSS LIMIT HIT: $' + currentPnl.toFixed(2));
               window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'DAILY LOSS REACHED', message: 'You have reached your maximum daily loss ($' + Math.abs(currentPnl).toFixed(2) + '). Protecting your capital is the priority. Step away and reset for tomorrow.' }, '*');
+              recalculateBehavioralState('daily_loss_hit');
             }
           
             window.postMessage({ type: 'TRL_LOSS_DETECTED', amount: lossAmount, totalPnl: currentPnl }, '*');

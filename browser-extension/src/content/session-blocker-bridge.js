@@ -141,7 +141,11 @@
     }
 
     if (event.data && event.data.type === 'TRL_STATE_TRANSITION') {
-      try { chrome.runtime.sendMessage({ type: 'STATE_TRANSITION', from: event.data.from, to: event.data.to, reason: event.data.reason, timestamp: event.data.timestamp }); } catch(e) {}
+      try { chrome.runtime.sendMessage({ type: 'STATE_TRANSITION', from: event.data.from, to: event.data.to, reason: event.data.reason, timestamp: event.data.timestamp, sessionId: event.data.sessionId, triggeringEvent: event.data.triggeringEvent, tiltScore: event.data.tiltScore, consecutiveLosses: event.data.consecutiveLosses, tradeCount: event.data.tradeCount, pnlSnapshot: event.data.pnlSnapshot }); } catch(e) {}
+    }
+
+    if (event.data && event.data.type === 'TRL_SESSION_SUMMARY') {
+      try { chrome.runtime.sendMessage({ type: 'SESSION_SUMMARY', ...event.data }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_DIAGNOSTIC_LOG') {

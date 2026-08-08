@@ -292,7 +292,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ success: true });
       break;
     case 'STATE_TRANSITION':
-      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'state_transition', from: msg.from, to: msg.to, reason: msg.reason, timestamp: msg.timestamp }));
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'state_transition', sessionId: msg.sessionId, from: msg.from, to: msg.to, reason: msg.reason, timestamp: msg.timestamp, triggeringEvent: msg.triggeringEvent, tiltScore: msg.tiltScore, consecutiveLosses: msg.consecutiveLosses, tradeCount: msg.tradeCount, pnlSnapshot: msg.pnlSnapshot }));
+      sendResponse({ success: true });
+      break;
+    case 'SESSION_SUMMARY':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'session_summary', ...msg }));
       sendResponse({ success: true });
       break;
     case 'REPORT_SETTINGS_ACCESS':
