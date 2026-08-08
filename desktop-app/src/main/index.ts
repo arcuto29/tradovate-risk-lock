@@ -170,13 +170,13 @@ function setupIPC(): void {
     return { success: true };
   });
 
-  // End My Session — graceful session termination (no 24h block)
+  // End My Session — persistent SESSION_ENDED state (blocks new entries, allows exits, lock remains)
   ipcMain.handle('end-session', () => {
     const result = lockManager.endSession();
     if (result.success) {
-      wsServer.broadcastLockChange();
-      updateTrayMenu();
-      platformBlocker?.deactivate();
+      // Broadcast session-ended state to extension (NOT a full unlock)
+      wsServer.broadcastSessionEnded(true);
+      // Platform blocker stays active — enforcement continues via extension
     }
     return result;
   });

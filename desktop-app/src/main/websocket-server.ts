@@ -78,7 +78,7 @@ export class WebSocketServer {
     switch (message.type) {
       case 'check_lock':
         const state = this.lockManager.getState();
-        ws.send(JSON.stringify({ type: 'lock_state', locked: state.isLocked, settings: state.isLocked ? { ...state.settings, resetTimeISO: state.resetTime, timeRemaining: state.timeRemaining } : null }));
+        ws.send(JSON.stringify({ type: 'lock_state', locked: state.isLocked, sessionEnded: state.sessionEnded, settings: state.isLocked ? { ...state.settings, resetTimeISO: state.resetTime, timeRemaining: state.timeRemaining } : null }));
         break;
       case 'report_bypass':
         // Log the bypass with the correct type for discipline scoring
@@ -124,6 +124,10 @@ export class WebSocketServer {
           result: message.result || (message.pnl >= 0 ? 'win' : 'loss'),
         });
         break;
+      case 'state_transition':
+        // Log behavioral state transition for Session Replay
+        this.db.logActivity('state_transition', `${message.from} → ${message.to}: ${message.reason}`);
+        break;
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));
         break;
@@ -131,7 +135,13 @@ export class WebSocketServer {
   }
 
   broadcastLockChange(): void {
-    const msg = JSON.stringify({ type: 'lock_state_changed', locked: this.lockManager.isLocked() });
+    const state = this.lockManager.getState();
+    const msg = JSON.stringify({ type: 'lock_state_changed', locked: state.isLocked, sessionEnded: state.sessionEnded });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  broadcastSessionEnded(sessionEnded: boolean): void {
+    const msg = JSON.stringify({ type: 'session_ended', sessionEnded });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 

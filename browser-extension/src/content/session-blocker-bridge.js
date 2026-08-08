@@ -38,7 +38,7 @@
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'SESSION_STATE_UPDATE') { sessionBlocked = msg.blocked; sessionHours = msg.sessionHours; sendStateToPage(); }
-    if (msg.type === 'LOCK_STATE_UPDATE') { window.postMessage({ type: 'TRL_LOCK_STATE', locked: msg.locked }, '*'); }
+    if (msg.type === 'LOCK_STATE_UPDATE') { window.postMessage({ type: 'TRL_LOCK_STATE', locked: msg.locked, sessionEnded: msg.sessionEnded || false }, '*'); }
     if (msg.type === 'EMERGENCY_FALLBACK') { window.postMessage({ type: 'TRL_EMERGENCY_FALLBACK', locked: true, settings: msg.settings }, '*'); }
     if (msg.type === 'COACH_CONFIG_UPDATE') sendCoachToPage(msg);
     if (msg.type === 'POSITION_LIMITS_UPDATE') sendLimitsToPage(msg);
@@ -138,6 +138,10 @@
 
     if (event.data && event.data.type === 'TRL_TRADE_FILL') {
       try { chrome.runtime.sendMessage({ type: 'TRADE_FILL', symbol: event.data.symbol, size: event.data.size, direction: event.data.direction, entryTime: event.data.entryTime, exitTime: event.data.exitTime, pnl: event.data.pnl, result: event.data.result }); } catch(e) {}
+    }
+
+    if (event.data && event.data.type === 'TRL_STATE_TRANSITION') {
+      try { chrome.runtime.sendMessage({ type: 'STATE_TRANSITION', from: event.data.from, to: event.data.to, reason: event.data.reason, timestamp: event.data.timestamp }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_DIAGNOSTIC_LOG') {

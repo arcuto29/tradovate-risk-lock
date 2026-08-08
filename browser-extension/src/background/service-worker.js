@@ -1,7 +1,7 @@
 import { WS_URL, WS_RECONNECT_INTERVAL, STORAGE_KEYS } from '../shared/constants.js';
 
 let ws = null;
-let lockState = { locked: false, settings: null };
+let lockState = { locked: false, settings: null, sessionEnded: false };
 let sessionState = { blocked: false, sessionHours: null, enabled: false };
 let reconnectTimer = null;
 
@@ -18,7 +18,7 @@ function connectToDesktopApp() {
         if (resetTimeISO && new Date(resetTimeISO) < new Date()) {
           // Lock expired - clear emergency mode
           chrome.storage.local.set({ sentinel_emergency_mode: false });
-          lockState = { locked: false, settings: null };
+          lockState = { locked: false, settings: null, sessionEnded: false };
           updateRules(false);
           chrome.action.setBadgeText({ text: '' });
           return;
@@ -97,7 +97,7 @@ function clearAllState() {
   }
 
   // UNLOCKED DISCONNECT - safe to disable everything
-  lockState = { locked: false, settings: null };
+  lockState = { locked: false, settings: null, sessionEnded: false };
   sessionState = { blocked: false, sessionHours: null, enabled: false };
   chrome.storage.local.set({
     [STORAGE_KEYS.CONNECTION_STATUS]: false,
@@ -126,7 +126,7 @@ function clearAllState() {
 
 function handleMessage(msg) {
   if (msg.type === 'connected' || msg.type === 'lock_state') {
-    lockState = { locked: msg.locked, settings: msg.settings || null };
+    lockState = { locked: msg.locked, settings: msg.settings || null, sessionEnded: msg.sessionEnded || false };
     updateRules(msg.locked);
     broadcastLock();
     // Clear emergency mode on reconnect
@@ -134,11 +134,16 @@ function handleMessage(msg) {
   }
   if (msg.type === 'lock_state_changed') {
     lockState.locked = msg.locked;
+    lockState.sessionEnded = msg.sessionEnded || false;
     updateRules(msg.locked);
     broadcastLock();
     ws?.send(JSON.stringify({ type: 'check_lock' }));
     // Clear emergency mode on state change from desktop
     chrome.storage.local.set({ sentinel_emergency_mode: false });
+  }
+  if (msg.type === 'session_ended') {
+    lockState.sessionEnded = msg.sessionEnded || false;
+    broadcastLock();
   }
   if (msg.type === 'session_state') { sessionState = { blocked: msg.blocked, sessionHours: msg.sessionHours, enabled: msg.enabled }; broadcastSession(); }
   if (msg.type === 'session_state_changed') { sessionState = { blocked: msg.blocked, sessionHours: msg.sessionHours, enabled: msg.enabled }; broadcastSession(); }
@@ -168,7 +173,7 @@ function broadcastLock() {
   const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
   urls.forEach(pattern => {
     chrome.tabs.query({ url: pattern }, (tabs) => {
-      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'LOCK_STATE_UPDATE', locked: lockState.locked, settings: lockState.settings }).catch(() => {}));
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'LOCK_STATE_UPDATE', locked: lockState.locked, sessionEnded: lockState.sessionEnded, settings: lockState.settings }).catch(() => {}));
     });
   });
 }
@@ -284,6 +289,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       break;
     case 'TRADE_FILL':
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'trade_fill', symbol: msg.symbol, size: msg.size, direction: msg.direction, entryTime: msg.entryTime, exitTime: msg.exitTime, pnl: msg.pnl, result: msg.result }));
+      sendResponse({ success: true });
+      break;
+    case 'STATE_TRANSITION':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'state_transition', from: msg.from, to: msg.to, reason: msg.reason, timestamp: msg.timestamp }));
       sendResponse({ success: true });
       break;
     case 'REPORT_SETTINGS_ACCESS':

@@ -18,6 +18,7 @@ export interface RiskSettings {
 
 export interface LockState {
   isLocked: boolean;
+  sessionEnded: boolean;
   settings: RiskSettings | null;
   lockTime: string | null;
   resetTime: string | null;
@@ -31,6 +32,7 @@ export class LockManager {
   private db: DatabaseManager;
   private resetJob: schedule.Job | null = null;
   private locked: boolean = false;
+  private sessionEnded: boolean = false;
   private currentSettings: RiskSettings | null = null;
   private lockTime: string | null = null;
   private lockExpiresAt: string | null = null;
@@ -45,6 +47,7 @@ export class LockManager {
     const state = this.db.getLockState();
     if (state && state.is_locked) {
       this.locked = true;
+      this.sessionEnded = state.session_ended === 1;
       this.lockTime = state.lock_time;
       this.lockExpiresAt = state.reset_time; // Stored as ISO timestamp
       this.currentSettings = {
@@ -83,10 +86,11 @@ export class LockManager {
 
   private performReset(): void {
     this.locked = false;
+    this.sessionEnded = false;
     this.lockTime = null;
     this.lockExpiresAt = null;
     this.currentSettings = null;
-    this.db.saveLockState({ isLocked: false, lockTime: null, resetTime: null, resetTimezone: null, dailyLossLimit: null, dailyProfitTarget: null, maxContracts: null, platform: null });
+    this.db.saveLockState({ isLocked: false, sessionEnded: false, lockTime: null, resetTime: null, resetTimezone: null, dailyLossLimit: null, dailyProfitTarget: null, maxContracts: null, platform: null });
     this.db.resetBypassAttempts();
     this.db.logActivity('auto_reset', 'Lock automatically reset at scheduled time');
     if (this.resetJob) { this.resetJob.cancel(); this.resetJob = null; }
@@ -94,7 +98,7 @@ export class LockManager {
 
   private saveState(): void {
     this.db.saveLockState({
-      isLocked: this.locked, lockTime: this.lockTime, resetTime: this.lockExpiresAt,
+      isLocked: this.locked, sessionEnded: this.sessionEnded, lockTime: this.lockTime, resetTime: this.lockExpiresAt,
       resetTimezone: this.currentSettings?.resetTimezone || null,
       dailyLossLimit: this.currentSettings?.dailyLossLimit || null,
       dailyProfitTarget: this.currentSettings?.dailyProfitTarget || null,
@@ -116,7 +120,7 @@ export class LockManager {
     }
 
     return {
-      isLocked: this.locked, settings: this.currentSettings, lockTime: this.lockTime,
+      isLocked: this.locked, sessionEnded: this.sessionEnded, settings: this.currentSettings, lockTime: this.lockTime,
       resetTime: this.lockExpiresAt, timeRemaining, bypassAttempts: this.db.getBypassAttemptCount(),
       earlyUnlockRequest: this.db.getActiveUnlockRequest(),
       trustedPersonEnabled: settings?.trusted_person_enabled === 1,
@@ -194,10 +198,14 @@ export class LockManager {
 
   endSession(): { success: boolean; error?: string } {
     if (!this.locked) return { success: false, error: 'No active session to end' };
-    this.db.logActivity('session_ended', 'User ended session voluntarily');
-    this.performReset();
+    if (this.sessionEnded) return { success: false, error: 'Session already ended' };
+    this.sessionEnded = true;
+    this.saveState();
+    this.db.logActivity('session_ended', 'User ended session — new entries blocked, exits allowed, lock remains until ' + (this.lockExpiresAt || 'scheduled reset'));
     return { success: true };
   }
+
+  isSessionEnded(): boolean { return this.sessionEnded; }
 
   requestEarlyUnlock(reason: string): { success: boolean; error?: string } {
     if (!this.locked) return { success: false, error: 'Settings are not locked' };

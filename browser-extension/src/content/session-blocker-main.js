@@ -11,9 +11,21 @@
 (function() {
   'use strict';
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INJECTION GUARD: Prevent double-injection on SPA navigation or re-injection.
+  // If this script runs again (extension reload, SPA soft nav), skip entirely.
+  // There must always be EXACTLY ONE effective enforcement layer.
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (window.__sentinelInterceptorActive === true) {
+    console.log('[Sentinel] Interceptor already active — skipping duplicate injection.');
+    return;
+  }
+  window.__sentinelInterceptorActive = true;
+
   var sessionBlocked = false; // Start unblocked — only block when we KNOW session is blocked
   var fullDayBlocked = false; // Pre-market check blocked for the day
   var lockActive = false; // Only enforce limits when locked
+  var sessionEnded = false; // SESSION_ENDED: blocks new entries, allows exits
   var newsBlockerEnabled = false;
   var newsBlockMinBefore = 30;
   var newsBlockMinAfter = 15;
@@ -77,6 +89,8 @@
   var fomoBlockFirstMinutes = 0;
   var fomoEntryTimestamps = []; // timestamps of recent entries
   var fomoSessionStartTime = Date.now(); // when lock was activated
+  var fomoReducedUntil = 0; // timestamp when FOMO reduce expires (0 = not active)
+  var fomoTemporaryMax = 0; // temporary max size during FOMO reduce (0 = not active)
 
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
@@ -88,8 +102,10 @@
     }
     if (event.data && event.data.type === 'TRL_LOCK_STATE') {
       lockActive = event.data.locked === true;
+      sessionEnded = event.data.sessionEnded === true;
       // Expose lock state globally for WebSocket interceptor
       window.__sentinelLockActive = lockActive;
+      window.__sentinelSessionEnded = sessionEnded;
       window.__sentinelSessionBlocked = sessionBlocked;
       window.__sentinelFullDayBlocked = fullDayBlocked;
       window.__sentinelBlockedSymbols = blockedSymbols;
@@ -100,6 +116,7 @@
       }
       if (!lockActive) {
         // Clear all enforcement when unlocked
+        sessionEnded = false;
         cooldownActive = false;
         dailyLossBlocked = false;
         profitLocked = false;
@@ -122,6 +139,7 @@
       // Desktop app is not running — disable ALL enforcement
       sessionBlocked = false;
       fullDayBlocked = false;
+      sessionEnded = false;
       coachEnabled = false;
       cooldownActive = false;
       dailyLossBlocked = false;
@@ -656,6 +674,11 @@
     if (lossStreakEnabled && currentMaxSize > 0 && currentMaxSize < max) {
       max = currentMaxSize;
     }
+
+    // Apply FOMO reduce temporary cap if active (never increases max, only reduces)
+    if (fomoReducedUntil > 0 && Date.now() < fomoReducedUntil && fomoTemporaryMax > 0 && fomoTemporaryMax < max) {
+      max = fomoTemporaryMax;
+    }
     
     // Only block if single order exceeds max (not cumulative)
     return size > max;
@@ -814,6 +837,20 @@
    *   MEDIUM   — small non-blocking toast (coach warnings, passive notifications)
    *   HIGH     — persistent warning (coach blocks: daily loss, profit lock, trade limit, cooldown)
    *   CRITICAL — full block overlay (hard blocks: session, full-day, symbol, size, stacking, tilt, news)
+   *
+   * STATE PRECEDENCE (first match wins, only one overlay/action per order):
+   *   1. EXIT_SAFETY      — CLOSE/REDUCE/CANCEL/MODIFY/QUERY always allowed (no check needed)
+   *   2. SESSION_ENDED    — blocks ALL new/increase (user ended session voluntarily)
+   *   3. FULL_DAY_BLOCK   — 24h hard lockout (kill switch / pre-market check)
+   *   4. BLOCKED_SYMBOL   — instrument restriction
+   *   5. SESSION_HOURS    — outside trading window
+   *   6. NEWS_BLOCKER     — economic event window
+   *   7. POSITION_SIZE    — exceeds max contracts (includes loss-streak + FOMO reduce caps)
+   *   8. STACKING         — pyramiding disabled
+   *   9. TILT_METER       — behavioral score ≥ 61
+   *  10. COACH            — daily loss / profit lock / trade limit / cooldown
+   *  11. FOMO             — rapid entry detection (user-defined rules)
+   *  12. NORMAL           — all rules passed, order allowed
    */
   function evaluateTradingRequest(url, method, body) {
     var classification = classifyOrder(url, body);
@@ -831,6 +868,16 @@
         lastCloseOrderTime = Date.now();
       }
       logDiagnostic(url, method, body, classification, 'ALLOWED', true);
+      return decision;
+    }
+
+    // ─── SESSION_ENDED: Block all new/increase exposure ─────────────────────
+    if (sessionEnded) {
+      decision.allow = false;
+      decision.reason = 'Session ended — new entries blocked until lock expires. Exits allowed.';
+      decision.playSound = true; decision.priority = 'HIGH';
+      logDiagnostic(url, method, body, classification, 'BLOCKED_SESSION_ENDED', false);
+      window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'SESSION ENDED', message: 'You ended your session. New entries blocked until your lock expires. Close/reduce/cancel still allowed.', priority: 'HIGH' }, '*');
       return decision;
     }
 
@@ -967,11 +1014,24 @@
         // Allow but warn
         window.postMessage({ type: 'TRL_COACH_WARN', reason: 'FOMO DETECTED', message: fomoResult.reason }, '*');
         logDiagnostic(url, method, body, classification, 'FOMO_WARN', true);
+      } else if (fomoMode === 'reduce') {
+        // Temporarily halve max size for the configured window duration
+        var symbol = classification.symbol;
+        var currentMax = getMaxForSymbol(symbol);
+        fomoTemporaryMax = Math.max(1, Math.floor(currentMax / 2));
+        fomoReducedUntil = Date.now() + (fomoWindowMinutes * 60000);
+        window.postMessage({ type: 'TRL_COACH_WARN', reason: 'FOMO: SIZE REDUCED', message: fomoResult.reason + ' — Max size temporarily reduced to ' + fomoTemporaryMax + ' for ' + fomoWindowMinutes + ' min.' }, '*');
+        logDiagnostic(url, method, body, classification, 'FOMO_REDUCE', true);
+        // Re-check size with reduced cap — if current order exceeds it, block
+        if (body && isOversized(body)) {
+          decision.allow = false; decision.reason = 'FOMO reduce: size ' + classification.quantity + ' exceeds temporary max ' + fomoTemporaryMax; decision.playSound = true; decision.priority = 'HIGH';
+          logDiagnostic(url, method, body, classification, 'BLOCKED_FOMO_REDUCE', false);
+          return decision;
+        }
       } else if (fomoMode === 'observe') {
         // Log only
         logDiagnostic(url, method, body, classification, 'FOMO_OBSERVED', true);
       }
-      // 'reduce' mode is handled below when the order passes — halves the max size
     }
 
     // ─── ALL CHECKS PASSED: Allow the order ───────────────────────────────
@@ -1048,10 +1108,12 @@
       console.warn('[Sentinel] TAMPER DETECTED: XMLHttpRequest.prototype.send was reassigned. Override restored.');
     }
 
-    // Check XHR open override (simpler check — just verify it's not the original)
+    // Check XHR open override (verify our wrapped version is still in place)
     if (XMLHttpRequest.prototype.open === origOpen) {
       tampered = true;
-      XMLHttpRequest.prototype.open = function(m, url) { this._tgUrl = url; this._tgMethod = m; return origOpen.apply(this, arguments); };
+      var wrappedOpen = function(m, url) { this._tgUrl = url; this._tgMethod = m; return origOpen.apply(this, arguments); };
+      wrappedOpen._sentinelMarker = sentinelXhrMarker;
+      XMLHttpRequest.prototype.open = wrappedOpen;
       console.warn('[Sentinel] TAMPER DETECTED: XMLHttpRequest.prototype.open was restored. Override re-applied.');
     }
 
@@ -1065,39 +1127,67 @@
   setInterval(checkOverrideIntegrity, TAMPER_CHECK_INTERVAL);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DEVTOOLS DETECTION — Detect if user opens DevTools on trading platform
-  // Uses timing-based detection (debugger statement pauses execution when DevTools open).
-  // Does NOT block trading — just logs the attempt and shows a warning.
+  // BEHAVIORAL STATE TRANSITIONS — Session Replay
+  // Tracks: NORMAL → CAUTION → ELEVATED → HIGH_RISK → LOCKDOWN
+  // Posts TRL_STATE_TRANSITION when state changes. Deduplicated.
   // ═══════════════════════════════════════════════════════════════════════════
-  var devToolsOpen = false;
-  var devToolsWarned = false;
-  var DEVTOOLS_CHECK_INTERVAL = 4000;
+  var currentBehavioralState = 'NORMAL';
+  var lastTransitionTime = 0;
+  var TRANSITION_DEDUP_MS = 10000; // Don't log same transition within 10s
 
-  function checkDevTools() {
-    if (!lockActive) { devToolsOpen = false; devToolsWarned = false; return; }
-
-    var threshold = 100; // ms — debugger pauses execution for much longer than this
-    var before = performance.now();
-    (function() { debugger; })(); // eslint-disable-line no-debugger
-    var after = performance.now();
-
-    var wasOpen = devToolsOpen;
-    devToolsOpen = (after - before) > threshold;
-
-    if (devToolsOpen && !wasOpen && !devToolsWarned) {
-      devToolsWarned = true;
-      console.warn('[Sentinel] DevTools detected while locked. This is logged as a potential bypass attempt.');
-      window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: { type: 'devtools_opened', timestamp: Date.now() } }, '*');
-      // Report to desktop app (logged, not blocked)
-      window.postMessage({ type: 'TRL_COACH_WARN', reason: 'DEVTOOLS DETECTED', message: 'DevTools opened while locked. This does not disable protection — interceptors will self-heal if tampered with.' }, '*');
-    }
-
-    if (!devToolsOpen && wasOpen) {
-      devToolsWarned = false; // Reset so we can warn again if reopened
-    }
+  function deriveBehavioralState() {
+    // Derive from observable signals (tilt score, session state, blocks)
+    if (sessionEnded || fullDayBlocked || dailyLossBlocked) return 'LOCKDOWN';
+    var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
+    if (tiltScore >= 61 || profitLocked) return 'HIGH_RISK';
+    if (tiltScore >= 41 || cooldownActive) return 'ELEVATED';
+    if (tiltScore >= 21 || consecutiveLosses >= 2) return 'CAUTION';
+    return 'NORMAL';
   }
 
-  setInterval(checkDevTools, DEVTOOLS_CHECK_INTERVAL);
+  function checkBehavioralTransition() {
+    if (!lockActive) { currentBehavioralState = 'NORMAL'; return; }
+    var newState = deriveBehavioralState();
+    if (newState === currentBehavioralState) return;
+
+    var now = Date.now();
+    if ((now - lastTransitionTime) < TRANSITION_DEDUP_MS) return;
+    lastTransitionTime = now;
+
+    var reason = '';
+    if (newState === 'LOCKDOWN') {
+      if (sessionEnded) reason = 'session ended by trader';
+      else if (fullDayBlocked) reason = 'full day block active';
+      else if (dailyLossBlocked) reason = 'daily loss limit hit';
+    } else if (newState === 'HIGH_RISK') {
+      var tiltScore = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
+      if (tiltScore >= 61) reason = 'tilt meter red (score ' + tiltScore + ')';
+      else if (profitLocked) reason = 'profit lock triggered';
+    } else if (newState === 'ELEVATED') {
+      var ts = (window.__tiltMeter && window.__tiltMeter.getScore) ? window.__tiltMeter.getScore() : 0;
+      if (cooldownActive) reason = 'cooldown after loss';
+      else reason = 'tilt rising (score ' + ts + ')';
+    } else if (newState === 'CAUTION') {
+      if (consecutiveLosses >= 2) reason = consecutiveLosses + ' consecutive losses';
+      else reason = 'tilt increasing';
+    } else if (newState === 'NORMAL') {
+      reason = 'risk reduced — behavior stabilized';
+    }
+
+    var transition = {
+      from: currentBehavioralState,
+      to: newState,
+      reason: reason,
+      timestamp: new Date().toISOString(),
+    };
+
+    currentBehavioralState = newState;
+    window.postMessage({ type: 'TRL_STATE_TRANSITION', ...transition }, '*');
+    window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: { type: 'state_transition', ...transition } }, '*');
+  }
+
+  // Check for state transitions every 5 seconds
+  setInterval(checkBehavioralTransition, 5000);
 
   // ─── P&L Tracking: Monitor incoming WebSocket messages for trade results ───
   // TopstepX sends trade results back through WebSocket.

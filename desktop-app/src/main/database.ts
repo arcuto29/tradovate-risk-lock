@@ -226,13 +226,15 @@ export class DatabaseManager {
   }
 
   saveLockState(state: {
-    isLocked: boolean; lockTime: string | null; resetTime: string | null;
+    isLocked: boolean; sessionEnded?: boolean; lockTime: string | null; resetTime: string | null;
     resetTimezone: string | null; dailyLossLimit: number | null;
     dailyProfitTarget: number | null; maxContracts: number | null; platform: string | null;
   }): void {
+    // Ensure session_ended column exists
+    try { this.db.run('ALTER TABLE lock_state ADD COLUMN session_ended INTEGER DEFAULT 0'); } catch {}
     this.db.run(
-      'UPDATE lock_state SET is_locked=?, lock_time=?, reset_time=?, reset_timezone=?, daily_loss_limit=?, daily_profit_target=?, max_contracts=?, platform=? WHERE id=1',
-      [state.isLocked ? 1 : 0, state.lockTime, state.resetTime, state.resetTimezone, state.dailyLossLimit, state.dailyProfitTarget, state.maxContracts, state.platform]
+      'UPDATE lock_state SET is_locked=?, session_ended=?, lock_time=?, reset_time=?, reset_timezone=?, daily_loss_limit=?, daily_profit_target=?, max_contracts=?, platform=? WHERE id=1',
+      [state.isLocked ? 1 : 0, state.sessionEnded ? 1 : 0, state.lockTime, state.resetTime, state.resetTimezone, state.dailyLossLimit, state.dailyProfitTarget, state.maxContracts, state.platform]
     );
     this.save();
   }
