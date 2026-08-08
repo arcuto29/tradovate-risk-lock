@@ -90,20 +90,22 @@ export const TradingProfileCard: React.FC<{ isLocked: boolean }> = ({ isLocked }
       <div className="relative rounded-xl p-5 overflow-hidden card-premium mb-4 animate-reveal">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)` }} />
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase" style={{ color: `${colors.primary}80` }}>Trading Profile</p>
-            {profile && (
-              <span className="text-[0.55rem] text-white/20">
-                {firmLabel(profile.firm)} • ${profile.account_size?.replace('k', 'K')} • {profile.account_stage}
+            {profile ? (
+              <span className="text-[0.55rem] text-white/30">
+                {firmLabel(profile.firm)} • {profile.account_size ? `$${profile.account_size.replace('k', 'K')}` : 'Custom'} • {profile.account_stage || 'Active'}
               </span>
+            ) : (
+              <span className="text-[0.55rem] text-white/15 italic">Not configured</span>
             )}
           </div>
           {profile?.firm_max_contracts && (
-            <div className="flex items-center gap-4 text-[0.55rem] text-white/15">
+            <div className="flex items-center gap-4 text-[0.55rem] text-white/15 mt-2">
               <span>Firm: {profile.firm_max_contracts} contracts</span>
-              <span>|</span>
+              <span>•</span>
               <span>${profile.firm_daily_loss?.toLocaleString()} loss</span>
-              <span>|</span>
+              <span>•</span>
               <span>${profile.firm_drawdown?.toLocaleString()} drawdown</span>
             </div>
           )}
