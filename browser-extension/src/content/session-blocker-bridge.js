@@ -47,6 +47,7 @@
     if (msg.type === 'NEWS_CONFIG') { window.postMessage({ type: 'TRL_NEWS_CONFIG', enabled: msg.enabled, blockMinutesBefore: msg.blockMinutesBefore, blockMinutesAfter: msg.blockMinutesAfter, events: msg.events || [] }, '*'); }
     if (msg.type === 'SOUND_CONFIG') { window.postMessage({ type: 'TRL_SOUND_CONFIG', soundOnBlock: msg.soundOnBlock }, '*'); }
     if (msg.type === 'FOMO_CONFIG') { window.postMessage({ type: 'TRL_FOMO_CONFIG', fomoEnabled: msg.fomoEnabled, fomoMode: msg.fomoMode, fomoMaxEntriesPerWindow: msg.fomoMaxEntriesPerWindow, fomoWindowMinutes: msg.fomoWindowMinutes, fomoMinSecondsBetween: msg.fomoMinSecondsBetween, fomoBlockFirstMinutes: msg.fomoBlockFirstMinutes }, '*'); }
+    if (msg.type === 'CERT_INJECT') { window.postMessage({ type: 'TRL_CERT_INJECT', inject: msg.inject, value: msg.value }, '*'); }
     if (msg.type === 'APP_DISCONNECTED') {
       // App is not running - disable all enforcement
       sessionBlocked = false;
@@ -146,6 +147,10 @@
 
     if (event.data && event.data.type === 'TRL_SESSION_SUMMARY') {
       try { chrome.runtime.sendMessage({ type: 'SESSION_SUMMARY', ...event.data }); } catch(e) {}
+    }
+
+    if (event.data && event.data.type === 'TRL_CERT_DIAGNOSTIC') {
+      try { chrome.runtime.sendMessage({ type: 'CERT_DIAGNOSTIC', ...event.data }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_DIAGNOSTIC_LOG') {

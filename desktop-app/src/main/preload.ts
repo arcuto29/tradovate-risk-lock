@@ -36,6 +36,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Session journey (Review)
   getSessionJourney: (sessionId: string) => ipcRenderer.invoke('get-session-journey', sessionId),
   getActiveSession: () => ipcRenderer.invoke('get-active-session'),
+  // Platform Certification
+  startCertification: (platform: string) => ipcRenderer.invoke('start-certification', platform),
+  activateCertTest: (testId: string) => ipcRenderer.invoke('activate-cert-test', testId),
+  skipCertTest: (testId: string) => ipcRenderer.invoke('skip-cert-test', testId),
+  manualPassCertTest: (testId: string) => ipcRenderer.invoke('manual-pass-cert-test', testId),
+  finishCertification: () => ipcRenderer.invoke('finish-certification'),
+  getCertificationHistory: () => ipcRenderer.invoke('get-certification-history'),
+  onCertTestResult: (callback: (event: any, data: any) => void) => { ipcRenderer.on('cert-test-result', callback); },
+  offCertTestResult: (callback: (event: any, data: any) => void) => { ipcRenderer.removeListener('cert-test-result', callback); },
   // Trade analytics
   getTrades: (limit?: number) => ipcRenderer.invoke('get-trades', limit),
   getTradeStats: () => ipcRenderer.invoke('get-trade-stats'),

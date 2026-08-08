@@ -154,6 +154,7 @@ function handleMessage(msg) {
   if (msg.type === 'news_config') { chrome.storage.local.set({ news_config: msg }); broadcastNewsConfig(msg); }
   if (msg.type === 'sound_config') { chrome.storage.local.set({ sound_on_block: msg.soundOnBlock }); broadcastSoundConfig(msg.soundOnBlock); }
   if (msg.type === 'fomo_config') { chrome.storage.local.set({ fomo_config: msg }); broadcastFomoConfig(msg); }
+  if (msg.type === 'cert_inject') { broadcastCertInjection(msg); }
   if (msg.type === 'pong') { lockState.locked = msg.locked; }
   chrome.storage.local.set({ [STORAGE_KEYS.LOCK_STATE]: lockState });
 }
@@ -254,6 +255,15 @@ function broadcastFomoConfig(config) {
   });
 }
 
+function broadcastCertInjection(injection) {
+  const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+  urls.forEach(pattern => {
+    chrome.tabs.query({ url: pattern }, (tabs) => {
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'CERT_INJECT', ...injection }).catch(() => {}));
+    });
+  });
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case 'GET_LOCK_STATE':
@@ -297,6 +307,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       break;
     case 'SESSION_SUMMARY':
       if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'session_summary', ...msg }));
+      sendResponse({ success: true });
+      break;
+    case 'CERT_DIAGNOSTIC':
+      if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'cert_diagnostic', ...msg }));
       sendResponse({ success: true });
       break;
     case 'REPORT_SETTINGS_ACCESS':

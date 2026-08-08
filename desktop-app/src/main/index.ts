@@ -690,6 +690,101 @@ function setupIPC(): void {
     return db.getActiveSession();
   });
 
+  // ─── Platform Certification ──────────────────────────────────────────────
+  let certificationTests: any[] = [];
+  let certificationPlatform: string = '';
+  let certificationActiveTest: string = '';
+
+  ipcMain.handle('start-certification', (_e, platform: string) => {
+    const { getCertificationTests } = require('./certification-engine');
+    certificationPlatform = platform;
+    certificationTests = getCertificationTests();
+    // Set first test to WAITING
+    if (certificationTests.length > 0) certificationTests[0].status = 'WAITING';
+    db.logActivity('certification_started', `Platform: ${platform}`);
+    return certificationTests;
+  });
+
+  ipcMain.handle('activate-cert-test', (_e, testId: string) => {
+    certificationActiveTest = testId;
+    const test = certificationTests.find((t: any) => t.id === testId);
+    if (test) {
+      test.status = 'WAITING';
+      // Inject test state if needed
+      if (test.requiresInjection) {
+        if (testId === 'oversize_block') {
+          wsServer.broadcastCertInjection({ type: 'cert_inject', inject: 'max_contracts', value: 1 });
+        } else if (testId === 'trade_limit') {
+          wsServer.broadcastCertInjection({ type: 'cert_inject', inject: 'trade_limit_reached', value: true });
+        } else if (testId === 'daily_loss') {
+          wsServer.broadcastCertInjection({ type: 'cert_inject', inject: 'daily_loss_reached', value: true });
+        } else if (testId === 'fomo_protection') {
+          wsServer.broadcastCertInjection({ type: 'cert_inject', inject: 'fomo_config', value: { fomoEnabled: true, fomoMode: 'block', fomoMaxEntriesPerWindow: 1, fomoWindowMinutes: 3, fomoMinSecondsBetween: 60, fomoBlockFirstMinutes: 0 } });
+        }
+      }
+    }
+    return { success: true };
+  });
+
+  ipcMain.handle('skip-cert-test', (_e, testId: string) => {
+    const test = certificationTests.find((t: any) => t.id === testId);
+    if (test) { test.status = 'SKIPPED'; test.timestamp = new Date().toISOString(); }
+    return { success: true };
+  });
+
+  ipcMain.handle('manual-pass-cert-test', (_e, testId: string) => {
+    const test = certificationTests.find((t: any) => t.id === testId);
+    if (test) { test.status = 'PASS'; test.actualBehavior = 'Manually verified'; test.timestamp = new Date().toISOString(); }
+    return { success: true };
+  });
+
+  ipcMain.handle('finish-certification', () => {
+    const { generateReport } = require('./certification-engine');
+    // Clear any injected test states
+    wsServer.broadcastCertInjection({ type: 'cert_inject', inject: 'clear_all', value: null });
+    const report = generateReport(certificationPlatform, certificationTests, '2.2.0');
+    // Store in DB
+    db.logActivity('certification_completed', JSON.stringify(report));
+    return report;
+  });
+
+  ipcMain.handle('get-certification-history', () => {
+    const results = db.getActivityLog(100);
+    return (results || [])
+      .filter((e: any) => e.type === 'certification_completed')
+      .map((e: any) => { try { return JSON.parse(e.details); } catch { return null; } })
+      .filter(Boolean)
+      .slice(0, 10);
+  });
+
+  // Handle certification diagnostic events from extension
+  wsServer.onCertDiagnostic = (diagnostic: any) => {
+    if (!certificationActiveTest || !mainWindow) return;
+    const { evaluateTestResult } = require('./certification-engine');
+    const test = certificationTests.find((t: any) => t.id === certificationActiveTest);
+    if (!test || test.status === 'PASS' || test.status === 'SKIPPED') return;
+
+    test.diagnostics.push(diagnostic);
+    const result = evaluateTestResult(certificationActiveTest, diagnostic);
+
+    if (result.pass) {
+      test.status = 'PASS';
+      test.actualBehavior = result.reason;
+      test.timestamp = new Date().toISOString();
+    } else if (test.status !== 'PASS') {
+      test.status = 'DETECTED';
+      test.actualBehavior = result.reason;
+    }
+
+    mainWindow.webContents.send('cert-test-result', {
+      testId: certificationActiveTest,
+      status: test.status,
+      actualBehavior: test.actualBehavior,
+      timestamp: test.timestamp,
+      diagnostic,
+    });
+  };
+
   ipcMain.handle('update-advanced-config', (_e, config) => {
     db.saveAdvancedConfig(JSON.stringify(config));
     db.logActivity('advanced_config_updated', 'Advanced protection settings updated');

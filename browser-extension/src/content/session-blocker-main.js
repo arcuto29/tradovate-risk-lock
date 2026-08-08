@@ -189,6 +189,25 @@
       fomoMinSecondsBetween = event.data.fomoMinSecondsBetween || 30;
       fomoBlockFirstMinutes = event.data.fomoBlockFirstMinutes || 0;
     }
+    // ─── Certification Mode: State Injection ──────────────────────────────────
+    if (event.data && event.data.type === 'TRL_CERT_INJECT') {
+      var inject = event.data.inject;
+      var val = event.data.value;
+      if (inject === 'max_contracts') { positionLimits.defaultMax = val; }
+      else if (inject === 'trade_limit_reached') { maxTradesPerDay = 1; trades = [{timestamp: Date.now()}, {timestamp: Date.now()}]; }
+      else if (inject === 'daily_loss_reached') { dailyLossBlocked = true; recalculateBehavioralState('cert_inject_daily_loss'); }
+      else if (inject === 'fomo_config') {
+        fomoEnabled = val.fomoEnabled; fomoMode = val.fomoMode;
+        fomoMaxEntriesPerWindow = val.fomoMaxEntriesPerWindow; fomoWindowMinutes = val.fomoWindowMinutes;
+        fomoMinSecondsBetween = val.fomoMinSecondsBetween; fomoBlockFirstMinutes = val.fomoBlockFirstMinutes;
+      }
+      else if (inject === 'clear_all') {
+        // Reset all injected states
+        dailyLossBlocked = false; trades = []; fomoEnabled = false;
+        recalculateBehavioralState('cert_inject_cleared');
+      }
+      console.log('[Sentinel CERT] Injected:', inject, val);
+    }
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       coachEnabled = event.data.enabled !== false;
       maxTradesPerDay = event.data.maxTradesPerDay || 10;
@@ -816,6 +835,21 @@
 
       // ═══ USE UNIFIED EVALUATOR ═══
       var decision = evaluateTradingRequest(url, method, body);
+
+      // ═══ CERTIFICATION DIAGNOSTIC — emit for Platform Certification Mode ═══
+      window.postMessage({ type: 'TRL_CERT_DIAGNOSTIC',
+        platform: window.location.hostname,
+        endpoint: url.replace(/https?:\/\/[^/]+/, '').split('?')[0],
+        method: method,
+        detectedAction: decision.classification.action,
+        detectedSide: decision.classification.side,
+        detectedSymbol: decision.classification.symbol,
+        detectedQuantity: decision.classification.quantity,
+        classifierConfidence: decision.classification.confidence,
+        decision: decision.allow ? 'ALLOWED' : 'BLOCKED',
+        reason: decision.reason,
+        timestamp: new Date().toISOString(),
+      }, '*');
       
       if (!decision.allow) {
         if (decision.playSound && soundOnBlock) playBlockSound();

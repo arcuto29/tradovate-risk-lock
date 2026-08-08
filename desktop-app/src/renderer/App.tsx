@@ -24,6 +24,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { Onboarding } from './components/Onboarding';
 import { HomeDashboard } from './components/HomeDashboard';
 import { TradingSimulator } from './components/TradingSimulator';
+import { PlatformCertification } from './components/PlatformCertification';
 import { Analytics } from './components/Analytics';
 import { RuleReplay } from './components/RuleReplay';
 import { Logo } from './components/Logo';
@@ -280,7 +281,7 @@ export const App: React.FC = () => {
           )}
           {currentPage === 'review' && <RuleReplay />}
           {currentPage === 'settings' && <AppSettingsPanel isLocked={lockState?.isLocked} />}
-          {currentPage === 'simulator' && <TradingSimulator />}
+          {currentPage === 'simulator' && <PlatformCertification />}
         </div>
       </main>
 

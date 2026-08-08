@@ -175,6 +175,10 @@ export class WebSocketServer {
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));
         break;
+      case 'cert_diagnostic':
+        // Forward to the certification engine for evaluation
+        if (this.onCertDiagnostic) this.onCertDiagnostic(message);
+        break;
     }
   }
 
@@ -231,6 +235,13 @@ export class WebSocketServer {
     });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
+
+  broadcastCertInjection(injection: any): void {
+    const msg = JSON.stringify(injection);
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  onCertDiagnostic: ((diagnostic: any) => void) | null = null;
 
   broadcastPositionLimits(): void {
     const settings = this.db.getSettings();
