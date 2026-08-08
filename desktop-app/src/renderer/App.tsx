@@ -284,7 +284,7 @@ export const App: React.FC = () => {
       {/* Footer */}
       <footer className="relative z-10 px-8 py-2.5 flex justify-between items-center" style={{borderTop: `1px solid rgba(255,255,255,0.03)`}}>
         <MarketTimer />
-        <span className="text-[0.55rem] tracking-[1.5px] opacity-50 text-gradient">
+        <span className="text-[0.6rem] tracking-[1.5px] text-gradient opacity-60">
           Powered by Priisma
         </span>
       </footer>
