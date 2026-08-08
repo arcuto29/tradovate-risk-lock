@@ -87,4 +87,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   economicGetSourceStatuses: () => ipcRenderer.invoke('economic-get-source-statuses'),
   economicGetLastSync: () => ipcRenderer.invoke('economic-get-last-sync'),
   economicGetBlocking: () => ipcRenderer.invoke('economic-get-blocking'),
+  // NFP
+  nfpGetStatus: () => ipcRenderer.invoke('nfp-get-status'),
+  nfpGetSettings: () => ipcRenderer.invoke('nfp-get-settings'),
+  nfpSaveSettings: (settings: any) => ipcRenderer.invoke('nfp-save-settings', settings),
 });

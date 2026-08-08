@@ -33,6 +33,7 @@ import { TradingProfileCard } from './components/TradingProfileCard';
 import { ProtectionPage } from './components/ProtectionPage';
 import { DailyMission } from './components/DailyMission';
 import { DisciplineRisk } from './components/DisciplineRisk';
+import { NfpIndicator } from './components/NfpIndicator';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeColors';
 
@@ -206,6 +207,7 @@ export const App: React.FC = () => {
             lockState?.isLocked
               ? <>
                   <DailyMission />
+                  <NfpIndicator />
                   <div className="mt-5">
                     <DisciplineRisk />
                   </div>

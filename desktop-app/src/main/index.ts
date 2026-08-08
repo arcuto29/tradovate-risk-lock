@@ -7,7 +7,7 @@ import { TamperGuard } from './tamper-guard';
 import { ProcessBlocker } from './process-blocker';
 import { PlatformBlocker } from './platform-blocker';
 import { setupAutoUpdater } from './auto-updater';
-import { EconomicCalendarSyncService } from './economic-calendar';
+import { EconomicCalendarSyncService, NfpDetector } from './economic-calendar';
 import { isActivated, activate, generateLicenseKey, getLicenseInfo } from './license';
 
 // Set app user model ID so Windows can pin it to taskbar
@@ -23,6 +23,7 @@ let tamperGuard: TamperGuard;
 let processBlocker: ProcessBlocker;
 let platformBlocker: PlatformBlocker;
 let economicCalendar: EconomicCalendarSyncService;
+let nfpDetector: NfpDetector;
 let bypassWarningActive = false;
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -719,6 +720,19 @@ function setupIPC(): void {
     if (!economicCalendar) return [];
     return economicCalendar.getCurrentlyBlockingEvents();
   });
+  ipcMain.handle('nfp-get-status', () => {
+    if (!nfpDetector) return null;
+    return nfpDetector.getStatus();
+  });
+  ipcMain.handle('nfp-get-settings', () => {
+    if (!nfpDetector) return null;
+    return nfpDetector.getSettings();
+  });
+  ipcMain.handle('nfp-save-settings', (_e, settings) => {
+    if (!nfpDetector) return { success: false };
+    nfpDetector.saveSettings(settings);
+    return { success: true };
+  });
 
   // Trade Analytics
   ipcMain.handle('get-trades', (_e, limit?) => {
@@ -868,6 +882,7 @@ app.whenReady().then(async () => {
   // ─── Economic Calendar Sync Service ────────────────────────────────────
   economicCalendar = new EconomicCalendarSyncService(db);
   economicCalendar.start();
+  nfpDetector = new NfpDetector(db);
 
   // ─── News Event Notification Timer ─────────────────────────────────────
   // Check every 60 seconds for upcoming high-impact events and send desktop notification
