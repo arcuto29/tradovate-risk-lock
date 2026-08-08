@@ -88,7 +88,7 @@ export const Analytics: React.FC = () => {
       </div>
 
       {/* Daily Report Card */}
-      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-5 animate-reveal">
+      <div className="relative rounded-2xl p-6 overflow-hidden card-glow mb-5 animate-reveal">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)`}} />
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-5">

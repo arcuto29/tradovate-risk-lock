@@ -197,7 +197,7 @@ export const HomeDashboard: React.FC<Props> = ({ onLocked, limitsTightened, onNa
       )}
 
       {/* Today's Active Plan */}
-      <div className="relative rounded-xl p-6 overflow-hidden card-premium mb-5">
+      <div className="relative rounded-2xl p-6 overflow-hidden card-glow mb-5">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${colors.primary}30, transparent)` }} />
         <div className="relative z-10">
           <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase mb-5" style={{ color: `${colors.primary}80` }}>Today's Active Plan</p>

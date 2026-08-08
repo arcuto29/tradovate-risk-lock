@@ -95,7 +95,7 @@ export const DisciplineScore: React.FC = () => {
 
 
       {/* Today's Score - Circular Ring */}
-      <div className="relative rounded-xl p-8 overflow-hidden card-premium mb-5 text-center animate-reveal">
+      <div className="relative rounded-2xl p-8 overflow-hidden card-glow mb-5 text-center animate-reveal">
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, ${themeColors.primary}40, transparent)`}} />
         <div className="relative z-10">
           <p className="text-[0.55rem] font-bold tracking-[3px] uppercase text-white/25 mb-6">Today</p>
