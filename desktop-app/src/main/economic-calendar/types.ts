@@ -3,7 +3,17 @@
  * 
  * Normalized model for all economic event data regardless of source.
  * All timestamps are absolute UTC to avoid DST bugs.
+ * 
+ * CRITICAL SAFETY RULE:
+ * ESTIMATED events must NEVER silently become authoritative blocking events.
+ * Only VERIFIED events should trigger automatic order blocking.
  */
+
+export type VerificationStatus =
+  | 'VERIFIED'         // Confirmed from official source with specific date
+  | 'CACHED_VERIFIED'  // Was verified, source temporarily unavailable
+  | 'ESTIMATED'        // Generated from formula/pattern, not officially confirmed
+  | 'STALE';           // Last verification too old, may be inaccurate
 
 export interface EconomicEvent {
   id: string;
@@ -12,9 +22,12 @@ export interface EconomicEvent {
   startsAtUtc: string; // ISO 8601 UTC timestamp
   impact: 'high' | 'medium' | 'low';
   source: string;
+  sourceUrl?: string;  // Official source URL for audit trail
   affectedMarkets: string[];
   blockMinutesBefore: number;
   blockMinutesAfter: number;
+  verificationStatus: VerificationStatus;
+  verifiedAt?: string; // ISO timestamp when last verified
 }
 
 export type EconomicEventType =
@@ -85,3 +98,59 @@ export const EVENT_BLOCK_WINDOWS: Record<EconomicEventType, { before: number; af
   ISM: { before: 15, after: 10 },
   OTHER: { before: 15, after: 10 },
 };
+
+/**
+ * Convert a date + time in US Eastern to UTC.
+ * Handles DST correctly: EDT (March-Nov) vs EST (Nov-March).
+ * 
+ * 8:30 AM ET:
+ *   - During EDT: 12:30 UTC
+ *   - During EST: 13:30 UTC
+ * 
+ * 2:00 PM ET:
+ *   - During EDT: 18:00 UTC
+ *   - During EST: 19:00 UTC
+ */
+export function easternToUtc(dateStr: string, hours: number, minutes: number): string {
+  // Create a date in the target timezone by constructing it
+  const date = new Date(`${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+  
+  // Determine if this date falls in EDT or EST
+  // EDT: Second Sunday of March to First Sunday of November
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0-indexed
+  
+  // March: Second Sunday
+  const marchFirst = new Date(year, 2, 1);
+  const marchSecondSunday = 14 - marchFirst.getDay(); // day of month for second Sunday
+  const edtStart = new Date(year, 2, marchSecondSunday, 2, 0, 0);
+  
+  // November: First Sunday
+  const novFirst = new Date(year, 10, 1);
+  const novFirstSunday = novFirst.getDay() === 0 ? 1 : 8 - novFirst.getDay();
+  const edtEnd = new Date(year, 10, novFirstSunday, 2, 0, 0);
+  
+  const isEdt = date >= edtStart && date < edtEnd;
+  const utcOffset = isEdt ? 4 : 5; // EDT = UTC-4, EST = UTC-5
+  
+  const utcHours = hours + utcOffset;
+  const utcDate = new Date(Date.UTC(
+    parseInt(dateStr.split('-')[0]),
+    parseInt(dateStr.split('-')[1]) - 1,
+    parseInt(dateStr.split('-')[2]),
+    utcHours,
+    minutes,
+    0
+  ));
+  
+  return utcDate.toISOString();
+}
+
+/**
+ * Determine if an event should trigger blocking.
+ * Only VERIFIED and CACHED_VERIFIED events can block.
+ * ESTIMATED events generate warnings but do NOT automatically block.
+ */
+export function canEventBlock(event: EconomicEvent): boolean {
+  return event.verificationStatus === 'VERIFIED' || event.verificationStatus === 'CACHED_VERIFIED';
+}

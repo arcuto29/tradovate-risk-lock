@@ -140,9 +140,12 @@ export class DatabaseManager {
         starts_at_utc TEXT NOT NULL,
         impact TEXT NOT NULL DEFAULT 'high',
         source TEXT NOT NULL,
+        source_url TEXT,
         affected_markets TEXT DEFAULT '[]',
         block_minutes_before INTEGER DEFAULT 30,
         block_minutes_after INTEGER DEFAULT 15,
+        verification_status TEXT NOT NULL DEFAULT 'ESTIMATED',
+        verified_at TEXT,
         last_verified_at TEXT NOT NULL DEFAULT (datetime('now')),
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -496,29 +499,35 @@ export class DatabaseManager {
 
   upsertEconomicEvent(event: {
     id: string; name: string; eventType: string; startsAtUtc: string;
-    impact: string; source: string; affectedMarkets: string[];
+    impact: string; source: string; sourceUrl?: string; affectedMarkets: string[];
     blockMinutesBefore?: number; blockMinutesAfter?: number;
+    verificationStatus?: string; verifiedAt?: string;
   }): void {
     this.db.run(
-      `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, affected_markets, block_minutes_before, block_minutes_after, last_verified_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, source_url, affected_markets, block_minutes_before, block_minutes_after, verification_status, verified_at, last_verified_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
       [event.id, event.name, event.eventType, event.startsAtUtc, event.impact, event.source,
-       JSON.stringify(event.affectedMarkets), event.blockMinutesBefore || 30, event.blockMinutesAfter || 15]
+       event.sourceUrl || null, JSON.stringify(event.affectedMarkets),
+       event.blockMinutesBefore || 30, event.blockMinutesAfter || 15,
+       event.verificationStatus || 'ESTIMATED', event.verifiedAt || null]
     );
     this.save();
   }
 
   upsertManyEconomicEvents(events: Array<{
     id: string; name: string; eventType: string; startsAtUtc: string;
-    impact: string; source: string; affectedMarkets: string[];
+    impact: string; source: string; sourceUrl?: string; affectedMarkets: string[];
     blockMinutesBefore?: number; blockMinutesAfter?: number;
+    verificationStatus?: string; verifiedAt?: string;
   }>): void {
     events.forEach(event => {
       this.db.run(
-        `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, affected_markets, block_minutes_before, block_minutes_after, last_verified_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+        `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, source_url, affected_markets, block_minutes_before, block_minutes_after, verification_status, verified_at, last_verified_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
         [event.id, event.name, event.eventType, event.startsAtUtc, event.impact, event.source,
-         JSON.stringify(event.affectedMarkets), event.blockMinutesBefore || 30, event.blockMinutesAfter || 15]
+         event.sourceUrl || null, JSON.stringify(event.affectedMarkets),
+         event.blockMinutesBefore || 30, event.blockMinutesAfter || 15,
+         event.verificationStatus || 'ESTIMATED', event.verifiedAt || null]
       );
     });
     this.save();
