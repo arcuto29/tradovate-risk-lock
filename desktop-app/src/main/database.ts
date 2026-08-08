@@ -210,6 +210,13 @@ export class DatabaseManager {
     `);
     // Index for quick lookup by status
     this.db.run('CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status)');
+    this.db.run('CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at)');
+
+    // ─── Add session_id columns (safe migration for existing DBs) ────────────
+    try { this.db.run('ALTER TABLE activity_log ADD COLUMN session_id TEXT'); } catch {}
+    try { this.db.run('ALTER TABLE trades ADD COLUMN session_id TEXT'); } catch {}
+    this.db.run('CREATE INDEX IF NOT EXISTS idx_activity_log_session_id ON activity_log(session_id)');
+    this.db.run('CREATE INDEX IF NOT EXISTS idx_trades_session_id ON trades(session_id)');
 
     this.save();
   }
@@ -222,8 +229,12 @@ export class DatabaseManager {
     fs.writeFileSync(this.dbPath, buffer);
   }
 
-  logActivity(type: string, details: string): void {
-    this.db.run('INSERT INTO activity_log (type, details) VALUES (?, ?)', [type, details]);
+  logActivity(type: string, details: string, sessionId?: string | null): void {
+    if (sessionId) {
+      this.db.run('INSERT INTO activity_log (type, details, session_id) VALUES (?, ?, ?)', [type, details, sessionId]);
+    } else {
+      this.db.run('INSERT INTO activity_log (type, details) VALUES (?, ?)', [type, details]);
+    }
     this.save();
   }
 
@@ -812,8 +823,10 @@ export class DatabaseManager {
     this.save();
   }
 
-  insertTrade(trade: { symbol: string; size: number; direction: string; entryTime: string; exitTime: string; pnl: number; result: string }): void {
+  insertTrade(trade: { symbol: string; size: number; direction: string; entryTime: string; exitTime: string; pnl: number; result: string }, sessionId?: string | null): void {
     this.initTradesTable();
+    // Ensure session_id column exists
+    try { this.db.run('ALTER TABLE trades ADD COLUMN session_id TEXT'); } catch {}
     // Calculate duration
     let duration = 0;
     try {
@@ -822,8 +835,8 @@ export class DatabaseManager {
       duration = Math.max(0, Math.floor((exit - entry) / 1000));
     } catch {}
     this.db.run(
-      'INSERT INTO trades (symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [trade.symbol, trade.size, trade.direction, trade.entryTime, trade.exitTime, trade.pnl, trade.result, duration]
+      'INSERT INTO trades (symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [trade.symbol, trade.size, trade.direction, trade.entryTime, trade.exitTime, trade.pnl, trade.result, duration, sessionId || null]
     );
     this.save();
   }
@@ -1023,51 +1036,78 @@ export class DatabaseManager {
     this.save();
   }
 
-  getSessionJourney(sessionId: string): { session: any; transitions: any[]; trades: any[]; blocks: any[] } {
+  getSessionJourney(sessionId: string): { session: any; transitions: any[]; trades: any[]; blocks: any[]; warnings: any[] } {
     const session = this.getSessionById(sessionId);
-    if (!session) return { session: null, transitions: [], trades: [], blocks: [] };
+    if (!session) return { session: null, transitions: [], trades: [], blocks: [], warnings: [] };
 
-    // Get state transitions for this session
-    const transResults = this.db.exec(
-      "SELECT id, timestamp, type, details FROM activity_log WHERE type = 'state_transition' AND details LIKE ? ORDER BY timestamp ASC",
-      [`%${sessionId}%`]
+    // Prefer direct session_id queries (exact match, no ambiguity)
+    // Fallback to time-range for legacy records without session_id
+
+    // State transitions — prefer session_id match
+    let transitions: any[] = [];
+    const transById = this.db.exec(
+      "SELECT id, timestamp, type, details FROM activity_log WHERE session_id = ? AND type = 'state_transition' ORDER BY timestamp ASC",
+      [sessionId]
     );
-    const transitions = transResults.length ? transResults[0].values.map((row: any) => ({
-      id: row[0], timestamp: row[1], type: row[2], details: row[3],
-    })) : [];
-
-    // Get trades during session period
-    let trades: any[] = [];
-    if (session.started_at) {
+    if (transById.length && transById[0].values.length > 0) {
+      transitions = transById[0].values.map((row: any) => ({ id: row[0], timestamp: row[1], type: row[2], details: row[3] }));
+    } else if (session.started_at) {
+      // Legacy fallback: search by sessionId in details JSON + time range
       const endTime = session.ended_at || new Date().toISOString();
-      const tradeResults = this.db.exec(
+      const transLegacy = this.db.exec(
+        "SELECT id, timestamp, type, details FROM activity_log WHERE type = 'state_transition' AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC",
+        [session.started_at, endTime]
+      );
+      if (transLegacy.length) transitions = transLegacy[0].values.map((row: any) => ({ id: row[0], timestamp: row[1], type: row[2], details: row[3] }));
+    }
+
+    // Trades — prefer session_id match
+    let trades: any[] = [];
+    const tradesById = this.db.exec(
+      'SELECT id, symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds FROM trades WHERE session_id = ? ORDER BY entry_time ASC',
+      [sessionId]
+    );
+    if (tradesById.length && tradesById[0].values.length > 0) {
+      trades = tradesById[0].values.map((row: any) => ({ id: row[0], symbol: row[1], size: row[2], direction: row[3], entryTime: row[4], exitTime: row[5], pnl: row[6], result: row[7], durationSeconds: row[8] }));
+    } else if (session.started_at) {
+      // Legacy fallback: time range
+      const endTime = session.ended_at || new Date().toISOString();
+      const tradesLegacy = this.db.exec(
         'SELECT id, symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds FROM trades WHERE entry_time >= ? AND entry_time <= ? ORDER BY entry_time ASC',
         [session.started_at, endTime]
       );
-      if (tradeResults.length) {
-        trades = tradeResults[0].values.map((row: any) => ({
-          id: row[0], symbol: row[1], size: row[2], direction: row[3],
-          entryTime: row[4], exitTime: row[5], pnl: row[6], result: row[7], durationSeconds: row[8],
-        }));
-      }
+      if (tradesLegacy.length) trades = tradesLegacy[0].values.map((row: any) => ({ id: row[0], symbol: row[1], size: row[2], direction: row[3], entryTime: row[4], exitTime: row[5], pnl: row[6], result: row[7], durationSeconds: row[8] }));
     }
 
-    // Get blocks/violations during session period
+    // Blocks — prefer session_id match
+    const BLOCK_TYPES = "('size_blocked', 'session_blocked', 'symbol_blocked', 'coach_blocked', 'stacking_blocked', 'bypass_attempt')";
     let blocks: any[] = [];
-    if (session.started_at) {
+    const blocksById = this.db.exec(
+      `SELECT id, timestamp, type, details FROM activity_log WHERE session_id = ? AND type IN ${BLOCK_TYPES} ORDER BY timestamp ASC`,
+      [sessionId]
+    );
+    if (blocksById.length && blocksById[0].values.length > 0) {
+      blocks = blocksById[0].values.map((row: any) => ({ id: row[0], timestamp: row[1], type: row[2], details: row[3] }));
+    } else if (session.started_at) {
       const endTime = session.ended_at || new Date().toISOString();
-      const blockResults = this.db.exec(
-        "SELECT id, timestamp, type, details FROM activity_log WHERE timestamp >= ? AND timestamp <= ? AND type IN ('size_blocked', 'session_blocked', 'symbol_blocked', 'coach_blocked', 'stacking_blocked', 'bypass_attempt') ORDER BY timestamp ASC",
+      const blocksLegacy = this.db.exec(
+        `SELECT id, timestamp, type, details FROM activity_log WHERE timestamp >= ? AND timestamp <= ? AND type IN ${BLOCK_TYPES} ORDER BY timestamp ASC`,
         [session.started_at, endTime]
       );
-      if (blockResults.length) {
-        blocks = blockResults[0].values.map((row: any) => ({
-          id: row[0], timestamp: row[1], type: row[2], details: row[3],
-        }));
-      }
+      if (blocksLegacy.length) blocks = blocksLegacy[0].values.map((row: any) => ({ id: row[0], timestamp: row[1], type: row[2], details: row[3] }));
     }
 
-    return { session, transitions, trades, blocks };
+    // Warnings — session_id match
+    let warnings: any[] = [];
+    const warningsById = this.db.exec(
+      "SELECT id, timestamp, type, details FROM activity_log WHERE session_id = ? AND type IN ('coach_warn', 'fomo_warn', 'win_streak_warn') ORDER BY timestamp ASC",
+      [sessionId]
+    );
+    if (warningsById.length && warningsById[0].values.length > 0) {
+      warnings = warningsById[0].values.map((row: any) => ({ id: row[0], timestamp: row[1], type: row[2], details: row[3] }));
+    }
+
+    return { session, transitions, trades, blocks, warnings };
   }
 
   recoverCrashedSessions(): void {

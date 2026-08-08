@@ -91,7 +91,7 @@ export class WebSocketServer {
         else if (details.includes('Stacking')) logType = 'stacking_blocked';
         
         console.log('[WebSocket] Bypass report received:', logType, details);
-        this.db.logActivity(logType, details);
+        this.db.logActivity(logType, details, this.lockManager.getSessionId());
         if (this.lockManager.isLocked()) { this.lockManager.recordBypassAttempt(details, false); }
         ws.send(JSON.stringify({ type: 'bypass_recorded' }));
         break;
@@ -113,7 +113,7 @@ export class WebSocketServer {
         if (this.onTiltUpdate) this.onTiltUpdate(message);
         break;
       case 'trade_fill':
-        // Store trade in database for analytics
+        // Store trade in database for analytics (tagged with session_id)
         this.db.insertTrade({
           symbol: message.symbol || 'UNKNOWN',
           size: message.size || 1,
@@ -122,7 +122,7 @@ export class WebSocketServer {
           exitTime: message.exitTime || new Date().toISOString(),
           pnl: message.pnl || 0,
           result: message.result || (message.pnl >= 0 ? 'win' : 'loss'),
-        });
+        }, this.lockManager.getSessionId());
         break;
       case 'state_transition':
         // Log behavioral state transition for Session Replay (enriched with context)
@@ -136,7 +136,7 @@ export class WebSocketServer {
           consecutiveLosses: message.consecutiveLosses,
           tradeCount: message.tradeCount,
           pnlSnapshot: message.pnlSnapshot,
-        }));
+        }), this.lockManager.getSessionId());
         // Checkpoint the active session with latest state
         if (this.lockManager.getSessionId()) {
           this.lockManager.checkpointSession({
@@ -152,7 +152,7 @@ export class WebSocketServer {
         break;
       case 'session_summary':
         // Store session behavior summary and finalize session
-        this.db.logActivity('session_summary', JSON.stringify(message));
+        this.db.logActivity('session_summary', JSON.stringify(message), this.lockManager.getSessionId());
         if (this.lockManager.getSessionId()) {
           this.lockManager.checkpointSession({
             currentState: message.endingState,

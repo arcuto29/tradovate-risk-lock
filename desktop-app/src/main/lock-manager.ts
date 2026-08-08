@@ -40,10 +40,32 @@ export class LockManager {
 
   constructor(db: DatabaseManager) {
     this.db = db;
-    // Recover any sessions that were ACTIVE when the app crashed
-    this.db.recoverCrashedSessions();
     this.restoreState();
+    this.restoreOrRecoverSession();
     this.scheduleReset();
+  }
+
+  /**
+   * restoreOrRecoverSession — Smart crash recovery.
+   * If lock is still active + expiry in future → resume the ACTIVE session (same session_id).
+   * If lock expired or not active → mark orphaned ACTIVE sessions as CRASH_RECOVERED.
+   */
+  private restoreOrRecoverSession(): void {
+    const activeSession = this.db.getActiveSession();
+    if (!activeSession) return; // No orphaned sessions
+
+    if (this.locked && this.lockExpiresAt) {
+      const expiryDT = DateTime.fromISO(this.lockExpiresAt);
+      if (expiryDT > DateTime.now()) {
+        // Lock still active + not expired → RESUME this session
+        this.currentSessionId = activeSession.id;
+        this.db.logActivity('session_resumed', `Session ${activeSession.id} resumed after app restart`);
+        return;
+      }
+    }
+
+    // Lock expired or not active → cannot resume, mark as CRASH_RECOVERED
+    this.db.recoverCrashedSessions();
   }
 
   private restoreState(): void {
