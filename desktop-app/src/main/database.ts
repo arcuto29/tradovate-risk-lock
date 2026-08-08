@@ -251,10 +251,12 @@ export class DatabaseManager {
     cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
     // Ensure kill_browser column exists
     try { this.db.run('ALTER TABLE app_settings ADD COLUMN kill_browser_on_bypass INTEGER DEFAULT 0'); } catch {}
+    // Ensure sound_on_block column exists (opt-in: default OFF)
+    try { this.db.run('ALTER TABLE app_settings ADD COLUMN sound_on_block INTEGER DEFAULT 0'); } catch {}
     return obj;
   }
 
-  updateSettings(settings: Partial<{ cooldownHours: number; startWithWindows: boolean; minimizeToTray: boolean; trustedPersonEnabled: boolean; trustedPasswordHash: string | null; killBrowserOnBypass: boolean; }>): void {
+  updateSettings(settings: Partial<{ cooldownHours: number; startWithWindows: boolean; minimizeToTray: boolean; trustedPersonEnabled: boolean; trustedPasswordHash: string | null; killBrowserOnBypass: boolean; soundOnBlock: boolean; }>): void {
     const current = this.getSettings();
     this.db.run(
       'UPDATE app_settings SET cooldown_hours=?, start_with_windows=?, minimize_to_tray=?, trusted_person_enabled=?, trusted_password_hash=? WHERE id=1',
@@ -270,6 +272,11 @@ export class DatabaseManager {
     if (settings.killBrowserOnBypass !== undefined) {
       try { this.db.run('ALTER TABLE app_settings ADD COLUMN kill_browser_on_bypass INTEGER DEFAULT 0'); } catch {}
       this.db.run('UPDATE app_settings SET kill_browser_on_bypass=? WHERE id=1', [settings.killBrowserOnBypass ? 1 : 0]);
+    }
+    // Sound on block setting (opt-in)
+    if (settings.soundOnBlock !== undefined) {
+      try { this.db.run('ALTER TABLE app_settings ADD COLUMN sound_on_block INTEGER DEFAULT 0'); } catch {}
+      this.db.run('UPDATE app_settings SET sound_on_block=? WHERE id=1', [settings.soundOnBlock ? 1 : 0]);
     }
     this.save();
   }

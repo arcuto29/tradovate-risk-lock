@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTradesByDate: (startDate: string, endDate: string) => ipcRenderer.invoke('get-trades-by-date', startDate, endDate),
   fullDayBlock: () => ipcRenderer.invoke('full-day-block'),
   killSwitch: () => ipcRenderer.invoke('kill-switch'),
+  endSession: () => ipcRenderer.invoke('end-session'),
   toggleGhostMode: (enabled: boolean) => ipcRenderer.invoke('toggle-ghost-mode', enabled),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   updateSettings: (settings: any) => ipcRenderer.invoke('update-settings', settings),

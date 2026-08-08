@@ -227,7 +227,7 @@
         if (blockDecision && !blockDecision.allow) {
           // BLOCK: Do NOT call original send
           console.log('[Sentinel] BLOCKED WebSocket order:', blockDecision.reason);
-          if (typeof playBlockSound === 'function') playBlockSound();
+          if (typeof playBlockSound === 'function' && window.__sentinelSoundOnBlock) playBlockSound();
           window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: blockDecision.reason }, '*');
           
           // Log diagnostic

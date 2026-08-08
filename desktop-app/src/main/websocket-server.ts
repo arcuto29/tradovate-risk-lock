@@ -36,6 +36,10 @@ export class WebSocketServer {
     ws.on('error', () => this.clients.delete(ws));
     ws.send(JSON.stringify({ type: 'connected', locked: this.lockManager.isLocked(), token: this.authToken }));
 
+    // Send sound preference on connection
+    const appSettings = this.db.getSettings();
+    ws.send(JSON.stringify({ type: 'sound_config', soundOnBlock: appSettings?.sound_on_block === 1 }));
+
     // Send position limits on connection
     const settings = this.db.getSettings();
     let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };
@@ -129,6 +133,11 @@ export class WebSocketServer {
 
   broadcastGhostMode(enabled: boolean): void {
     const msg = JSON.stringify({ type: 'ghost_mode', enabled });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  broadcastSoundConfig(soundOnBlock: boolean): void {
+    const msg = JSON.stringify({ type: 'sound_config', soundOnBlock });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 

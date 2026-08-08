@@ -192,6 +192,13 @@ export class LockManager {
     this.db.logActivity('dev_force_unlock', 'Force unlocked via dev shortcut');
   }
 
+  endSession(): { success: boolean; error?: string } {
+    if (!this.locked) return { success: false, error: 'No active session to end' };
+    this.db.logActivity('session_ended', 'User ended session voluntarily');
+    this.performReset();
+    return { success: true };
+  }
+
   requestEarlyUnlock(reason: string): { success: boolean; error?: string } {
     if (!this.locked) return { success: false, error: 'Settings are not locked' };
     if (!reason || reason.trim().length < 10) return { success: false, error: 'Please provide a detailed reason (at least 10 characters)' };
@@ -226,7 +233,7 @@ export class LockManager {
 
   getSettings(): any {
     const s = this.db.getSettings();
-    return { cooldownHours: s.cooldown_hours, startWithWindows: s.start_with_windows === 1, minimizeToTray: s.minimize_to_tray === 1, trustedPersonEnabled: s.trusted_person_enabled === 1, killBrowserOnBypass: s.kill_browser_on_bypass === 1 };
+    return { cooldownHours: s.cooldown_hours, startWithWindows: s.start_with_windows === 1, minimizeToTray: s.minimize_to_tray === 1, trustedPersonEnabled: s.trusted_person_enabled === 1, killBrowserOnBypass: s.kill_browser_on_bypass === 1, soundOnBlock: s.sound_on_block === 1 };
   }
 
   updateSettings(newSettings: any): { success: boolean } {

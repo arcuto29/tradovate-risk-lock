@@ -170,6 +170,17 @@ function setupIPC(): void {
     return { success: true };
   });
 
+  // End My Session — graceful session termination (no 24h block)
+  ipcMain.handle('end-session', () => {
+    const result = lockManager.endSession();
+    if (result.success) {
+      wsServer.broadcastLockChange();
+      updateTrayMenu();
+      platformBlocker?.deactivate();
+    }
+    return result;
+  });
+
   // Ghost Mode
   ipcMain.handle('toggle-ghost-mode', (_e, enabled) => {
     wsServer.broadcastGhostMode(enabled);
@@ -391,6 +402,9 @@ function setupIPC(): void {
     const result = lockManager.updateSettings(settings);
     if (settings.startWithWindows !== undefined) {
       applyStartupSetting(settings.startWithWindows);
+    }
+    if (settings.soundOnBlock !== undefined) {
+      wsServer.broadcastSoundConfig(settings.soundOnBlock);
     }
     return result;
   });

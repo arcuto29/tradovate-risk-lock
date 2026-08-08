@@ -65,6 +65,9 @@
   var consecutiveWins = 0;
   var winStreakTriggered = false;
 
+  // Sound on block (opt-in: off by default)
+  var soundOnBlock = false;
+
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
@@ -133,6 +136,10 @@
     }
     if (event.data && event.data.type === 'TRL_BLOCKED_SYMBOLS') {
       blockedSymbols = event.data.symbols || [];
+    }
+    if (event.data && event.data.type === 'TRL_SOUND_CONFIG') {
+      soundOnBlock = event.data.soundOnBlock === true;
+      window.__sentinelSoundOnBlock = soundOnBlock;
     }
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       coachEnabled = event.data.enabled !== false;
@@ -693,8 +700,8 @@
       var decision = evaluateTradingRequest(url, method, body);
       
       if (!decision.allow) {
-        if (decision.playSound) playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason }, '*');
+        if (decision.playSound && soundOnBlock) playBlockSound();
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason, priority: decision.priority }, '*');
         window.postMessage({ type: 'TRL_ORDER_PLACED', size: 0 }, '*'); // Track blocked attempt for tilt
         return Promise.reject(new Error('Blocked: ' + decision.reason));
       }
@@ -736,11 +743,17 @@
    * @param {string} url - The request URL
    * @param {string} method - HTTP method
    * @param {object|null} body - Parsed request body
-   * @returns {{ allow: boolean, reason: string, classification: object, playSound: boolean }}
+   * @returns {{ allow: boolean, reason: string, classification: object, playSound: boolean, priority: string }}
+   *
+   * Priority levels:
+   *   LOW      — silently logged (allowed orders, queries)
+   *   MEDIUM   — small non-blocking toast (coach warnings, passive notifications)
+   *   HIGH     — persistent warning (coach blocks: daily loss, profit lock, trade limit, cooldown)
+   *   CRITICAL — full block overlay (hard blocks: session, full-day, symbol, size, stacking, tilt, news)
    */
   function evaluateTradingRequest(url, method, body) {
     var classification = classifyOrder(url, body);
-    var decision = { allow: true, reason: '', classification: classification, playSound: false, requestReached: false };
+    var decision = { allow: true, reason: '', classification: classification, playSound: false, requestReached: false, priority: 'LOW' };
 
     // ─── EXIT SAFETY: Always allow risk-reducing actions FIRST ─────────────
     if (classification.action === 'CLOSE_POSITION' || classification.action === 'REDUCE_POSITION' ||
@@ -769,7 +782,7 @@
         if (newRiskQty > max) {
           decision.allow = false;
           decision.reason = 'Reversal blocked: new exposure ' + newRiskQty + ' exceeds max ' + max + ' for ' + symbol;
-          decision.playSound = true;
+          decision.playSound = true; decision.priority = 'CRITICAL';
           logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SIZE', false);
           return decision;
         }
@@ -778,21 +791,21 @@
       if (lockActive && symbol && isBlockedSymbol(body)) {
         decision.allow = false;
         decision.reason = 'Reversal blocked: ' + symbol + ' is a blocked symbol';
-        decision.playSound = true;
+        decision.playSound = true; decision.priority = 'CRITICAL';
         logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SYMBOL', false);
         return decision;
       }
       if (lockActive && sessionBlocked) {
         decision.allow = false;
         decision.reason = 'Reversal blocked: outside session hours';
-        decision.playSound = true;
+        decision.playSound = true; decision.priority = 'CRITICAL';
         logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SESSION', false);
         return decision;
       }
       if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
         decision.allow = false;
         decision.reason = 'Reversal blocked: news event window';
-        decision.playSound = true;
+        decision.playSound = true; decision.priority = 'CRITICAL';
         logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_NEWS', false);
         return decision;
       }
@@ -822,49 +835,49 @@
 
     // Full day block
     if (fullDayBlocked) {
-      decision.allow = false; decision.reason = 'Full day block active'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'Full day block active'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_FULL_DAY', false);
       return decision;
     }
 
     // Blocked symbol
     if (lockActive && body && isBlockedSymbol(body)) {
-      decision.allow = false; decision.reason = 'Symbol is blocked'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'Symbol is blocked'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_SYMBOL', false);
       return decision;
     }
 
     // Session hours
     if (lockActive && sessionBlocked) {
-      decision.allow = false; decision.reason = 'Outside trading hours'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'Outside trading hours'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_SESSION', false);
       return decision;
     }
 
     // News block
     if (lockActive && newsBlockerEnabled && isNewsBlocked()) {
-      decision.allow = false; decision.reason = 'News event window active'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'News event window active'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_NEWS', false);
       return decision;
     }
 
     // Position size
     if (lockActive && body && isOversized(body)) {
-      decision.allow = false; decision.reason = 'Position size exceeds limit'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'Position size exceeds limit'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_SIZE', false);
       return decision;
     }
 
     // Pyramiding/stacking
     if (lockActive && body && classification.action === 'INCREASE_POSITION' && !pyramidingEnabled) {
-      decision.allow = false; decision.reason = 'Stacking blocked - already in position'; decision.playSound = true;
+      decision.allow = false; decision.reason = 'Stacking blocked - already in position'; decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_STACKING', false);
       return decision;
     }
 
     // Tilt meter
     if (lockActive && window.__tiltMeter && window.__tiltMeter.shouldBlock()) {
-      decision.allow = false; decision.reason = 'Tilt meter red - score ' + window.__tiltMeter.getScore(); decision.playSound = true;
+      decision.allow = false; decision.reason = 'Tilt meter red - score ' + window.__tiltMeter.getScore(); decision.playSound = true; decision.priority = 'CRITICAL';
       logDiagnostic(url, method, body, classification, 'BLOCKED_TILT', false);
       return decision;
     }
@@ -872,9 +885,9 @@
     // Psychology coach
     var coachResult = checkCoach(body);
     if (coachResult && coachResult.block) {
-      decision.allow = false; decision.reason = coachResult.reason + ': ' + coachResult.message; decision.playSound = true;
+      decision.allow = false; decision.reason = coachResult.reason + ': ' + coachResult.message; decision.playSound = true; decision.priority = 'HIGH';
       logDiagnostic(url, method, body, classification, 'BLOCKED_COACH', false);
-      window.postMessage({ type: 'TRL_COACH_BLOCK', reason: coachResult.reason, message: coachResult.message }, '*');
+      window.postMessage({ type: 'TRL_COACH_BLOCK', reason: coachResult.reason, message: coachResult.message, priority: 'HIGH' }, '*');
       return decision;
     }
 
@@ -904,8 +917,8 @@
       var decision = evaluateTradingRequest(this._tgUrl, method, parsed);
       
       if (!decision.allow) {
-        if (decision.playSound) playBlockSound();
-        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason }, '*');
+        if (decision.playSound && soundOnBlock) playBlockSound();
+        window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: decision.reason, priority: decision.priority }, '*');
         return; // Block the XHR - don't call origSend
       }
       

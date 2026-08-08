@@ -14,6 +14,7 @@ import { DisciplineScore } from './components/DisciplineScore';
 import { PreMarketCheck } from './components/PreMarketCheck';
 import { TradingReadiness } from './components/TradingReadiness';
 import { KillSwitch } from './components/KillSwitch';
+import { EndSession } from './components/EndSession';
 import { DailyReport } from './components/DailyReport';
 import { StreakRewards } from './components/StreakRewards';
 import { ActivationScreen } from './components/ActivationScreen';
@@ -217,6 +218,9 @@ export const App: React.FC = () => {
                   <LockStatus lockState={lockState} onRefresh={refreshState} />
                   <div className="mt-6">
                     <KillSwitch onActivated={refreshState} />
+                  </div>
+                  <div className="mt-3">
+                    <EndSession onEnded={refreshState} />
                   </div>
                   <div className="mt-4 relative rounded-xl p-5 overflow-hidden card-premium">
                     <div className="relative z-10 flex items-center justify-between">

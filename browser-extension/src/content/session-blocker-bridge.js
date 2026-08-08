@@ -15,6 +15,11 @@
     if (r) { sessionBlocked = r.blocked; sessionHours = r.sessionHours; sendStateToPage(); }
   });
 
+  // Get sound config
+  chrome.storage.local.get('sound_on_block', (r) => {
+    window.postMessage({ type: 'TRL_SOUND_CONFIG', soundOnBlock: r?.sound_on_block || false }, '*');
+  });
+
   // Get lock state
   chrome.runtime.sendMessage({ type: 'GET_LOCK_STATE' }, (r) => {
     if (r) { window.postMessage({ type: 'TRL_LOCK_STATE', locked: r.locked }, '*'); }
@@ -33,6 +38,7 @@
     if (msg.type === 'FULL_DAY_BLOCK') { window.postMessage({ type: 'TRL_FULL_BLOCK' }, '*'); }
     if (msg.type === 'GHOST_MODE') { window.postMessage({ type: 'TRL_GHOST_MODE', enabled: msg.enabled }, '*'); }
     if (msg.type === 'NEWS_CONFIG') { window.postMessage({ type: 'TRL_NEWS_CONFIG', enabled: msg.enabled, blockMinutesBefore: msg.blockMinutesBefore, blockMinutesAfter: msg.blockMinutesAfter, events: msg.events || [] }, '*'); }
+    if (msg.type === 'SOUND_CONFIG') { window.postMessage({ type: 'TRL_SOUND_CONFIG', soundOnBlock: msg.soundOnBlock }, '*'); }
     if (msg.type === 'APP_DISCONNECTED') {
       // App is not running - disable all enforcement
       sessionBlocked = false;
@@ -86,8 +92,16 @@
     if (event.source !== window) return;
 
     if (event.data && event.data.type === 'TRL_ORDER_BLOCKED') {
-      showOverlay(event.data.reason);
-      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `BLOCKED on ${window.location.hostname}: ${event.data.reason}` }); } catch(e) {}
+      var priority = event.data.priority || 'CRITICAL';
+      if (priority === 'CRITICAL') {
+        showOverlay(event.data.reason);
+      } else if (priority === 'HIGH') {
+        showBlock(event.data.reason, event.data.reason);
+      } else if (priority === 'MEDIUM') {
+        showWarning('ORDER BLOCKED', event.data.reason);
+      }
+      // LOW = silently logged (no visual)
+      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `BLOCKED on ${window.location.hostname}: ${event.data.reason}`, priority: priority }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_COACH_WARN') {
@@ -99,10 +113,15 @@
     if (event.data && event.data.type === 'TRL_COACH_BLOCK') {
       // Don't show regular overlay if loss reaction timer will handle it
       var isCooldown = event.data.reason === 'COOLDOWN ACTIVE' || event.data.reason === 'COOLDOWN';
+      var priority = event.data.priority || 'HIGH';
       if (!isCooldown) {
-        showBlock(event.data.reason, event.data.message);
+        if (priority === 'CRITICAL') {
+          showOverlay(event.data.reason);
+        } else {
+          showBlock(event.data.reason, event.data.message);
+        }
       }
-      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}` }); } catch(e) {}
+      try { chrome.runtime.sendMessage({ type: 'REPORT_BYPASS_ATTEMPT', details: `COACH BLOCK: ${event.data.reason}`, priority: priority }); } catch(e) {}
     }
 
     if (event.data && event.data.type === 'TRL_TILT_UPDATE') {
