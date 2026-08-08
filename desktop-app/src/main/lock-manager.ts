@@ -36,9 +36,12 @@ export class LockManager {
   private currentSettings: RiskSettings | null = null;
   private lockTime: string | null = null;
   private lockExpiresAt: string | null = null;
+  private currentSessionId: string | null = null;
 
   constructor(db: DatabaseManager) {
     this.db = db;
+    // Recover any sessions that were ACTIVE when the app crashed
+    this.db.recoverCrashedSessions();
     this.restoreState();
     this.scheduleReset();
   }
@@ -85,6 +88,11 @@ export class LockManager {
   }
 
   private performReset(): void {
+    // Finalize session before resetting state
+    if (this.currentSessionId) {
+      this.db.finalizeSession(this.currentSessionId, 'COMPLETED');
+      this.currentSessionId = null;
+    }
     this.locked = false;
     this.sessionEnded = false;
     this.lockTime = null;
@@ -159,6 +167,11 @@ export class LockManager {
     this.saveState();
     this.scheduleReset();
     this.db.logActivity('lock_activated', JSON.stringify({ ...settings, lockExpiresAt: this.lockExpiresAt }));
+
+    // Create persistent session record
+    this.currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    this.db.createSession(this.currentSessionId);
+
     return { success: true };
   }
 
@@ -206,6 +219,13 @@ export class LockManager {
   }
 
   isSessionEnded(): boolean { return this.sessionEnded; }
+
+  getSessionId(): string | null { return this.currentSessionId; }
+
+  checkpointSession(checkpoint: any): void {
+    if (!this.currentSessionId) return;
+    this.db.checkpointSession(this.currentSessionId, checkpoint);
+  }
 
   requestEarlyUnlock(reason: string): { success: boolean; error?: string } {
     if (!this.locked) return { success: false, error: 'Settings are not locked' };

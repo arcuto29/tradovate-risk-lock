@@ -137,10 +137,40 @@ export class WebSocketServer {
           tradeCount: message.tradeCount,
           pnlSnapshot: message.pnlSnapshot,
         }));
+        // Checkpoint the active session with latest state
+        if (this.lockManager.getSessionId()) {
+          this.lockManager.checkpointSession({
+            currentState: message.to,
+            peakState: message.peakState,
+            totalTrades: message.tradeCount,
+            pnl: message.pnlSnapshot,
+            escalationCount: message.escalationCount,
+            recoveryCount: message.recoveryCount,
+            worstTrigger: message.worstTrigger,
+          });
+        }
         break;
       case 'session_summary':
-        // Store session behavior summary for Review page
+        // Store session behavior summary and finalize session
         this.db.logActivity('session_summary', JSON.stringify(message));
+        if (this.lockManager.getSessionId()) {
+          this.lockManager.checkpointSession({
+            currentState: message.endingState,
+            peakState: message.peakState,
+            totalTrades: message.tradeCount,
+            escalationCount: message.escalationCount,
+            recoveryCount: message.recoveryCount,
+            worstTrigger: message.worstTrigger,
+            firstEscalationAt: message.firstEscalationTime,
+            recoveredBeforeEnd: message.recoveredBeforeEnd,
+            timeInNormal: message.timeInNormal,
+            timeInCaution: message.timeInCaution,
+            timeInElevated: message.timeInElevated,
+            timeInHighRisk: message.timeInHighRisk,
+            timeInLockdown: message.timeInLockdown,
+            checkpointJson: JSON.stringify(message),
+          });
+        }
         break;
       case 'check_session':
         ws.send(JSON.stringify(this.getSessionState()));

@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Advanced protection
   getAdvancedConfig: () => ipcRenderer.invoke('get-advanced-config'),
   updateAdvancedConfig: (config: any) => ipcRenderer.invoke('update-advanced-config', config),
+  // Session journey (Review)
+  getSessionJourney: (sessionId: string) => ipcRenderer.invoke('get-session-journey', sessionId),
+  getActiveSession: () => ipcRenderer.invoke('get-active-session'),
   // Trade analytics
   getTrades: (limit?: number) => ipcRenderer.invoke('get-trades', limit),
   getTradeStats: () => ipcRenderer.invoke('get-trade-stats'),

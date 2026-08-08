@@ -182,6 +182,35 @@ export class DatabaseManager {
     // ─── Migration: Existing users → populate trading_plan from position_limits ─
     this.migrateExistingPlanData();
 
+    // ─── Sessions Table (persistent session tracking for Review) ──────────────
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id TEXT PRIMARY KEY,
+        started_at TEXT NOT NULL,
+        ended_at TEXT,
+        starting_state TEXT NOT NULL DEFAULT 'NORMAL',
+        ending_state TEXT,
+        peak_state TEXT DEFAULT 'NORMAL',
+        total_trades INTEGER DEFAULT 0,
+        pnl REAL DEFAULT 0,
+        escalation_count INTEGER DEFAULT 0,
+        recovery_count INTEGER DEFAULT 0,
+        first_escalation_at TEXT,
+        worst_trigger TEXT,
+        recovered_before_end INTEGER DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'ACTIVE',
+        time_in_normal INTEGER DEFAULT 0,
+        time_in_caution INTEGER DEFAULT 0,
+        time_in_elevated INTEGER DEFAULT 0,
+        time_in_high_risk INTEGER DEFAULT 0,
+        time_in_lockdown INTEGER DEFAULT 0,
+        checkpoint_json TEXT,
+        summary_json TEXT
+      );
+    `);
+    // Index for quick lookup by status
+    this.db.run('CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status)');
+
     this.save();
   }
 
@@ -920,5 +949,133 @@ export class DatabaseManager {
       equityCurve,
       tradesPerDay: dailyPnLs.length > 0 ? Math.round((all.length / dailyPnLs.length) * 10) / 10 : 0,
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SESSIONS — Persistent session tracking for Review
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  createSession(sessionId: string): void {
+    this.db.run(
+      'INSERT OR IGNORE INTO sessions (id, started_at, status) VALUES (?, ?, ?)',
+      [sessionId, new Date().toISOString(), 'ACTIVE']
+    );
+    this.save();
+  }
+
+  getActiveSession(): any {
+    const results = this.db.exec("SELECT * FROM sessions WHERE status = 'ACTIVE' ORDER BY started_at DESC LIMIT 1");
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    return obj;
+  }
+
+  getSessionById(sessionId: string): any {
+    const results = this.db.exec('SELECT * FROM sessions WHERE id = ?', [sessionId]);
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    return obj;
+  }
+
+  checkpointSession(sessionId: string, checkpoint: {
+    currentState?: string; peakState?: string; totalTrades?: number; pnl?: number;
+    escalationCount?: number; recoveryCount?: number; firstEscalationAt?: string | null;
+    worstTrigger?: string; recoveredBeforeEnd?: boolean;
+    timeInNormal?: number; timeInCaution?: number; timeInElevated?: number;
+    timeInHighRisk?: number; timeInLockdown?: number; checkpointJson?: string;
+  }): void {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (checkpoint.currentState !== undefined) { fields.push('ending_state = ?'); values.push(checkpoint.currentState); }
+    if (checkpoint.peakState !== undefined) { fields.push('peak_state = ?'); values.push(checkpoint.peakState); }
+    if (checkpoint.totalTrades !== undefined) { fields.push('total_trades = ?'); values.push(checkpoint.totalTrades); }
+    if (checkpoint.pnl !== undefined) { fields.push('pnl = ?'); values.push(checkpoint.pnl); }
+    if (checkpoint.escalationCount !== undefined) { fields.push('escalation_count = ?'); values.push(checkpoint.escalationCount); }
+    if (checkpoint.recoveryCount !== undefined) { fields.push('recovery_count = ?'); values.push(checkpoint.recoveryCount); }
+    if (checkpoint.firstEscalationAt !== undefined) { fields.push('first_escalation_at = ?'); values.push(checkpoint.firstEscalationAt); }
+    if (checkpoint.worstTrigger !== undefined) { fields.push('worst_trigger = ?'); values.push(checkpoint.worstTrigger); }
+    if (checkpoint.recoveredBeforeEnd !== undefined) { fields.push('recovered_before_end = ?'); values.push(checkpoint.recoveredBeforeEnd ? 1 : 0); }
+    if (checkpoint.timeInNormal !== undefined) { fields.push('time_in_normal = ?'); values.push(checkpoint.timeInNormal); }
+    if (checkpoint.timeInCaution !== undefined) { fields.push('time_in_caution = ?'); values.push(checkpoint.timeInCaution); }
+    if (checkpoint.timeInElevated !== undefined) { fields.push('time_in_elevated = ?'); values.push(checkpoint.timeInElevated); }
+    if (checkpoint.timeInHighRisk !== undefined) { fields.push('time_in_high_risk = ?'); values.push(checkpoint.timeInHighRisk); }
+    if (checkpoint.timeInLockdown !== undefined) { fields.push('time_in_lockdown = ?'); values.push(checkpoint.timeInLockdown); }
+    if (checkpoint.checkpointJson !== undefined) { fields.push('checkpoint_json = ?'); values.push(checkpoint.checkpointJson); }
+
+    if (fields.length === 0) return;
+    values.push(sessionId);
+    this.db.run(`UPDATE sessions SET ${fields.join(', ')} WHERE id = ?`, values);
+    this.save();
+  }
+
+  finalizeSession(sessionId: string, status: string, summaryJson?: string): void {
+    this.db.run(
+      'UPDATE sessions SET status = ?, ended_at = ?, summary_json = ? WHERE id = ?',
+      [status, new Date().toISOString(), summaryJson || null, sessionId]
+    );
+    this.save();
+  }
+
+  getSessionJourney(sessionId: string): { session: any; transitions: any[]; trades: any[]; blocks: any[] } {
+    const session = this.getSessionById(sessionId);
+    if (!session) return { session: null, transitions: [], trades: [], blocks: [] };
+
+    // Get state transitions for this session
+    const transResults = this.db.exec(
+      "SELECT id, timestamp, type, details FROM activity_log WHERE type = 'state_transition' AND details LIKE ? ORDER BY timestamp ASC",
+      [`%${sessionId}%`]
+    );
+    const transitions = transResults.length ? transResults[0].values.map((row: any) => ({
+      id: row[0], timestamp: row[1], type: row[2], details: row[3],
+    })) : [];
+
+    // Get trades during session period
+    let trades: any[] = [];
+    if (session.started_at) {
+      const endTime = session.ended_at || new Date().toISOString();
+      const tradeResults = this.db.exec(
+        'SELECT id, symbol, size, direction, entry_time, exit_time, pnl, result, duration_seconds FROM trades WHERE entry_time >= ? AND entry_time <= ? ORDER BY entry_time ASC',
+        [session.started_at, endTime]
+      );
+      if (tradeResults.length) {
+        trades = tradeResults[0].values.map((row: any) => ({
+          id: row[0], symbol: row[1], size: row[2], direction: row[3],
+          entryTime: row[4], exitTime: row[5], pnl: row[6], result: row[7], durationSeconds: row[8],
+        }));
+      }
+    }
+
+    // Get blocks/violations during session period
+    let blocks: any[] = [];
+    if (session.started_at) {
+      const endTime = session.ended_at || new Date().toISOString();
+      const blockResults = this.db.exec(
+        "SELECT id, timestamp, type, details FROM activity_log WHERE timestamp >= ? AND timestamp <= ? AND type IN ('size_blocked', 'session_blocked', 'symbol_blocked', 'coach_blocked', 'stacking_blocked', 'bypass_attempt') ORDER BY timestamp ASC",
+        [session.started_at, endTime]
+      );
+      if (blockResults.length) {
+        blocks = blockResults[0].values.map((row: any) => ({
+          id: row[0], timestamp: row[1], type: row[2], details: row[3],
+        }));
+      }
+    }
+
+    return { session, transitions, trades, blocks };
+  }
+
+  recoverCrashedSessions(): void {
+    // Find any ACTIVE sessions and mark them as CRASH_RECOVERED
+    this.db.run(
+      "UPDATE sessions SET status = 'CRASH_RECOVERED', ended_at = ? WHERE status = 'ACTIVE'",
+      [new Date().toISOString()]
+    );
+    this.save();
   }
 }

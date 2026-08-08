@@ -681,6 +681,15 @@ function setupIPC(): void {
     return null;
   });
 
+  // Session Journey (for Review page)
+  ipcMain.handle('get-session-journey', (_e, sessionId: string) => {
+    return db.getSessionJourney(sessionId);
+  });
+
+  ipcMain.handle('get-active-session', () => {
+    return db.getActiveSession();
+  });
+
   ipcMain.handle('update-advanced-config', (_e, config) => {
     db.saveAdvancedConfig(JSON.stringify(config));
     db.logActivity('advanced_config_updated', 'Advanced protection settings updated');

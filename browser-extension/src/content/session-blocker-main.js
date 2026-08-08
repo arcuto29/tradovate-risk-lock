@@ -915,12 +915,12 @@
       var newRiskQty = classification.newRiskQuantity || 0;
       var symbol = classification.symbol;
       
-      // Check new-risk portion against max contracts
+      // Check new-risk portion against max contracts (uses ALL active caps)
       if (lockActive && newRiskQty > 0 && symbol) {
-        var max = getMaxForSymbol(symbol);
+        var max = getEffectiveMaxSize(symbol);
         if (newRiskQty > max) {
           decision.allow = false;
-          decision.reason = 'Reversal blocked: new exposure ' + newRiskQty + ' exceeds max ' + max + ' for ' + symbol;
+          decision.reason = 'Reversal blocked: new exposure ' + newRiskQty + ' exceeds effective max ' + max + ' for ' + symbol;
           decision.playSound = true; decision.priority = 'CRITICAL';
           logDiagnostic(url, method, body, classification, 'BLOCKED_REVERSAL_SIZE', false);
           return decision;
@@ -1167,6 +1167,7 @@
   var stateTransitionHistory = []; // In-memory log for session summary
   var stateTimeTracking = { NORMAL: 0, CAUTION: 0, ELEVATED: 0, HIGH_RISK: 0, LOCKDOWN: 0 };
   var lastStateChangeTime = Date.now();
+  var lastStateChangeMonotonic = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   var peakState = 'NORMAL';
   var escalationCount = 0;
   var recoveryCount = 0;
@@ -1227,10 +1228,14 @@
     var now = Date.now();
     if ((now - lastTransitionTime) < TRANSITION_DEDUP_MS && newState === currentBehavioralState) return;
 
-    // Track time spent in previous state
-    var timeInPrevState = now - lastStateChangeTime;
+    // Track time spent in previous state using monotonic clock (immune to clock jumps)
+    var monoNow = (typeof performance !== 'undefined' && performance.now) ? performance.now() : now;
+    var timeInPrevState = monoNow - lastStateChangeMonotonic;
+    // Sanity check: reject impossible durations (> 24h or negative = clock jump)
+    if (timeInPrevState < 0 || timeInPrevState > 86400000) timeInPrevState = 0;
     stateTimeTracking[currentBehavioralState] = (stateTimeTracking[currentBehavioralState] || 0) + timeInPrevState;
     lastStateChangeTime = now;
+    lastStateChangeMonotonic = monoNow;
 
     // Track escalation vs recovery
     var isEscalation = STATE_LEVELS[newState] > STATE_LEVELS[currentBehavioralState];
@@ -1262,6 +1267,9 @@
       consecutiveLosses: consecutiveLosses,
       tradeCount: totalTradeCount,
       pnlSnapshot: (typeof lastKnownPnL === 'number') ? lastKnownPnL : null,
+      pnlSnapshotAt: lastPnlUpdateTime > 0 ? new Date(lastPnlUpdateTime).toISOString() : null,
+      pnlSource: 'DOM',
+      pnlConfidence: (lastPnlUpdateTime > 0 && (Date.now() - lastPnlUpdateTime) < PNL_STALE_THRESHOLD_MS) ? 'approximate' : 'stale',
     };
 
     currentBehavioralState = newState;
@@ -1276,10 +1284,14 @@
    * Called at session end (End My Session or lock expiry).
    */
   function getSessionBehaviorSummary() {
-    // Finalize time tracking for current state
-    var now = Date.now();
-    var timeInCurrentState = now - lastStateChangeTime;
-    stateTimeTracking[currentBehavioralState] = (stateTimeTracking[currentBehavioralState] || 0) + timeInCurrentState;
+    // Finalize time tracking for current state using monotonic clock
+    var monoNow = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    var timeInCurrentState = monoNow - lastStateChangeMonotonic;
+    // Sanity: reject impossible durations
+    if (timeInCurrentState < 0 || timeInCurrentState > 86400000) timeInCurrentState = 0;
+    var finalTimeTracking = {};
+    for (var key in stateTimeTracking) { finalTimeTracking[key] = stateTimeTracking[key]; }
+    finalTimeTracking[currentBehavioralState] = (finalTimeTracking[currentBehavioralState] || 0) + timeInCurrentState;
 
     var startingState = stateTransitionHistory.length > 0 ? stateTransitionHistory[0].from : 'NORMAL';
     var recoveredBeforeEnd = currentBehavioralState === 'NORMAL' || currentBehavioralState === 'CAUTION';
@@ -1289,11 +1301,11 @@
       startingState: startingState,
       endingState: currentBehavioralState,
       peakState: peakState,
-      timeInNormal: stateTimeTracking.NORMAL || 0,
-      timeInCaution: stateTimeTracking.CAUTION || 0,
-      timeInElevated: stateTimeTracking.ELEVATED || 0,
-      timeInHighRisk: stateTimeTracking.HIGH_RISK || 0,
-      timeInLockdown: stateTimeTracking.LOCKDOWN || 0,
+      timeInNormal: finalTimeTracking.NORMAL || 0,
+      timeInCaution: finalTimeTracking.CAUTION || 0,
+      timeInElevated: finalTimeTracking.ELEVATED || 0,
+      timeInHighRisk: finalTimeTracking.HIGH_RISK || 0,
+      timeInLockdown: finalTimeTracking.LOCKDOWN || 0,
       escalationCount: escalationCount,
       recoveryCount: recoveryCount,
       worstTrigger: worstTrigger,
@@ -1312,6 +1324,7 @@
     stateTransitionHistory = [];
     stateTimeTracking = { NORMAL: 0, CAUTION: 0, ELEVATED: 0, HIGH_RISK: 0, LOCKDOWN: 0 };
     lastStateChangeTime = Date.now();
+    lastStateChangeMonotonic = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     peakState = 'NORMAL';
     escalationCount = 0;
     recoveryCount = 0;
@@ -1342,6 +1355,8 @@
   // This is more reliable than intercepting WebSocket since TopstepX's WS is already connected
   
   var lastKnownPnL = null;
+  var lastPnlUpdateTime = 0; // Monotonic timestamp of last P&L DOM read
+  var PNL_STALE_THRESHOLD_MS = 10000; // 10 seconds = stale
   var pnlCheckInterval = setInterval(function() {
     // Always scan P&L even if coach is disabled - loss-reaction needs it
     
@@ -1430,6 +1445,7 @@
         }
         
         lastKnownPnL = currentPnl;
+        lastPnlUpdateTime = Date.now();
       }
     }
   }, 2000); // Check every 2 seconds
