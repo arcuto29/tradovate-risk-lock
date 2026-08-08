@@ -68,6 +68,16 @@
   // Sound on block (opt-in: off by default)
   var soundOnBlock = false;
 
+  // FOMO / Late Entry Protection
+  var fomoEnabled = false;
+  var fomoMode = 'warn'; // observe | warn | confirm | reduce | block
+  var fomoMaxEntriesPerWindow = 3;
+  var fomoWindowMinutes = 5;
+  var fomoMinSecondsBetween = 30;
+  var fomoBlockFirstMinutes = 0;
+  var fomoEntryTimestamps = []; // timestamps of recent entries
+  var fomoSessionStartTime = Date.now(); // when lock was activated
+
   // Listen for config from bridge content script
   window.addEventListener('message', function(event) {
     if (event.source !== window) return;
@@ -85,6 +95,9 @@
       window.__sentinelBlockedSymbols = blockedSymbols;
       window.__sentinelGetMax = getMaxForSymbol;
       window.__sentinelNewsBlocked = isNewsBlocked;
+      if (lockActive) {
+        fomoSessionStartTime = Date.now(); // Track when session started for FOMO first-minutes rule
+      }
       if (!lockActive) {
         // Clear all enforcement when unlocked
         cooldownActive = false;
@@ -94,6 +107,7 @@
         currentOpenPositions = {}; // Reset position tracking
         consecutiveWins = 0;
         winStreakTriggered = false;
+        fomoEntryTimestamps = []; // Reset FOMO tracking
       }
     }
     if (event.data && event.data.type === 'TRL_FULL_BLOCK') {
@@ -140,6 +154,14 @@
     if (event.data && event.data.type === 'TRL_SOUND_CONFIG') {
       soundOnBlock = event.data.soundOnBlock === true;
       window.__sentinelSoundOnBlock = soundOnBlock;
+    }
+    if (event.data && event.data.type === 'TRL_FOMO_CONFIG') {
+      fomoEnabled = event.data.fomoEnabled === true;
+      fomoMode = event.data.fomoMode || 'warn';
+      fomoMaxEntriesPerWindow = event.data.fomoMaxEntriesPerWindow || 3;
+      fomoWindowMinutes = event.data.fomoWindowMinutes || 5;
+      fomoMinSecondsBetween = event.data.fomoMinSecondsBetween || 30;
+      fomoBlockFirstMinutes = event.data.fomoBlockFirstMinutes || 0;
     }
     if (event.data && event.data.type === 'TRL_COACH_CONFIG') {
       coachEnabled = event.data.enabled !== false;
@@ -639,6 +661,50 @@
     return size > max;
   }
 
+  // ─── FOMO / Late Entry Check ────────────────────────────────────────────────
+  // Returns: null (no issue), or { triggered: true, reason: string }
+  function checkFomo() {
+    if (!fomoEnabled || !lockActive) return null;
+    var now = Date.now();
+
+    // Rule 1: Block entries in first N minutes of session
+    if (fomoBlockFirstMinutes > 0) {
+      var sessionElapsed = (now - fomoSessionStartTime) / 60000; // minutes
+      if (sessionElapsed < fomoBlockFirstMinutes) {
+        return { triggered: true, reason: 'FOMO: Wait ' + Math.ceil(fomoBlockFirstMinutes - sessionElapsed) + ' more minutes before first entry (first ' + fomoBlockFirstMinutes + 'min rule)' };
+      }
+    }
+
+    // Rule 2: Min seconds between entries
+    if (fomoMinSecondsBetween > 0 && fomoEntryTimestamps.length > 0) {
+      var lastEntry = fomoEntryTimestamps[fomoEntryTimestamps.length - 1];
+      var elapsed = (now - lastEntry) / 1000;
+      if (elapsed < fomoMinSecondsBetween) {
+        return { triggered: true, reason: 'FOMO: Only ' + Math.floor(elapsed) + 's since last entry (min ' + fomoMinSecondsBetween + 's rule)' };
+      }
+    }
+
+    // Rule 3: Max entries per time window
+    if (fomoMaxEntriesPerWindow > 0 && fomoWindowMinutes > 0) {
+      var windowStart = now - (fomoWindowMinutes * 60000);
+      var entriesInWindow = fomoEntryTimestamps.filter(function(t) { return t > windowStart; }).length;
+      if (entriesInWindow >= fomoMaxEntriesPerWindow) {
+        return { triggered: true, reason: 'FOMO: ' + entriesInWindow + ' entries in last ' + fomoWindowMinutes + ' minutes (max ' + fomoMaxEntriesPerWindow + ' rule)' };
+      }
+    }
+
+    return null;
+  }
+
+  // Record an entry for FOMO tracking (called when order passes all checks)
+  function recordFomoEntry() {
+    var now = Date.now();
+    fomoEntryTimestamps.push(now);
+    // Keep last 30 minutes of entries
+    var cutoff = now - 1800000;
+    fomoEntryTimestamps = fomoEntryTimestamps.filter(function(t) { return t > cutoff; });
+  }
+
   // ─── Psychology coach check ────────────────────────────────────────────────
   // Coach ONLY handles: cooldown after loss, profit lock, daily loss.
   // Trade count and rapid-fire are handled by the tilt meter now.
@@ -889,10 +955,33 @@
       return decision;
     }
 
+    // FOMO / Late Entry Protection
+    var fomoResult = checkFomo();
+    if (fomoResult && fomoResult.triggered) {
+      if (fomoMode === 'block') {
+        decision.allow = false; decision.reason = fomoResult.reason; decision.playSound = true; decision.priority = 'HIGH';
+        logDiagnostic(url, method, body, classification, 'BLOCKED_FOMO', false);
+        window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'FOMO DETECTED', message: fomoResult.reason, priority: 'HIGH' }, '*');
+        return decision;
+      } else if (fomoMode === 'warn') {
+        // Allow but warn
+        window.postMessage({ type: 'TRL_COACH_WARN', reason: 'FOMO DETECTED', message: fomoResult.reason }, '*');
+        logDiagnostic(url, method, body, classification, 'FOMO_WARN', true);
+      } else if (fomoMode === 'observe') {
+        // Log only
+        logDiagnostic(url, method, body, classification, 'FOMO_OBSERVED', true);
+      }
+      // 'reduce' mode is handled below when the order passes — halves the max size
+    }
+
     // ─── ALL CHECKS PASSED: Allow the order ───────────────────────────────
     decision.allow = true;
     decision.reason = 'All rules passed';
     decision.requestReached = true;
+    // Track for FOMO (only risk-increasing orders count)
+    if (classification.action === 'OPEN_POSITION' || classification.action === 'INCREASE_POSITION') {
+      recordFomoEntry();
+    }
     logDiagnostic(url, method, body, classification, 'ALLOWED', true);
     return decision;
   }

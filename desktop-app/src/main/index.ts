@@ -684,6 +684,10 @@ function setupIPC(): void {
   ipcMain.handle('update-advanced-config', (_e, config) => {
     db.saveAdvancedConfig(JSON.stringify(config));
     db.logActivity('advanced_config_updated', 'Advanced protection settings updated');
+    // Broadcast FOMO config to extension if present
+    if (config.fomoEnabled !== undefined) {
+      wsServer.broadcastFomoConfig(config);
+    }
     return { success: true };
   });
 

@@ -20,6 +20,13 @@
     window.postMessage({ type: 'TRL_SOUND_CONFIG', soundOnBlock: r?.sound_on_block || false }, '*');
   });
 
+  // Get FOMO config
+  chrome.storage.local.get('fomo_config', (r) => {
+    if (r?.fomo_config) {
+      window.postMessage({ type: 'TRL_FOMO_CONFIG', fomoEnabled: r.fomo_config.fomoEnabled, fomoMode: r.fomo_config.fomoMode, fomoMaxEntriesPerWindow: r.fomo_config.fomoMaxEntriesPerWindow, fomoWindowMinutes: r.fomo_config.fomoWindowMinutes, fomoMinSecondsBetween: r.fomo_config.fomoMinSecondsBetween, fomoBlockFirstMinutes: r.fomo_config.fomoBlockFirstMinutes }, '*');
+    }
+  });
+
   // Get lock state
   chrome.runtime.sendMessage({ type: 'GET_LOCK_STATE' }, (r) => {
     if (r) { window.postMessage({ type: 'TRL_LOCK_STATE', locked: r.locked }, '*'); }
@@ -39,6 +46,7 @@
     if (msg.type === 'GHOST_MODE') { window.postMessage({ type: 'TRL_GHOST_MODE', enabled: msg.enabled }, '*'); }
     if (msg.type === 'NEWS_CONFIG') { window.postMessage({ type: 'TRL_NEWS_CONFIG', enabled: msg.enabled, blockMinutesBefore: msg.blockMinutesBefore, blockMinutesAfter: msg.blockMinutesAfter, events: msg.events || [] }, '*'); }
     if (msg.type === 'SOUND_CONFIG') { window.postMessage({ type: 'TRL_SOUND_CONFIG', soundOnBlock: msg.soundOnBlock }, '*'); }
+    if (msg.type === 'FOMO_CONFIG') { window.postMessage({ type: 'TRL_FOMO_CONFIG', fomoEnabled: msg.fomoEnabled, fomoMode: msg.fomoMode, fomoMaxEntriesPerWindow: msg.fomoMaxEntriesPerWindow, fomoWindowMinutes: msg.fomoWindowMinutes, fomoMinSecondsBetween: msg.fomoMinSecondsBetween, fomoBlockFirstMinutes: msg.fomoBlockFirstMinutes }, '*'); }
     if (msg.type === 'APP_DISCONNECTED') {
       // App is not running - disable all enforcement
       sessionBlocked = false;

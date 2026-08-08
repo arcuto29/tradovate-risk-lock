@@ -148,6 +148,7 @@ function handleMessage(msg) {
   if (msg.type === 'ghost_mode') { chrome.storage.local.set({ ghost_mode: msg.enabled }); broadcastGhostMode(msg.enabled); }
   if (msg.type === 'news_config') { chrome.storage.local.set({ news_config: msg }); broadcastNewsConfig(msg); }
   if (msg.type === 'sound_config') { chrome.storage.local.set({ sound_on_block: msg.soundOnBlock }); broadcastSoundConfig(msg.soundOnBlock); }
+  if (msg.type === 'fomo_config') { chrome.storage.local.set({ fomo_config: msg }); broadcastFomoConfig(msg); }
   if (msg.type === 'pong') { lockState.locked = msg.locked; }
   chrome.storage.local.set({ [STORAGE_KEYS.LOCK_STATE]: lockState });
 }
@@ -235,6 +236,15 @@ function broadcastSoundConfig(soundOnBlock) {
   urls.forEach(pattern => {
     chrome.tabs.query({ url: pattern }, (tabs) => {
       tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'SOUND_CONFIG', soundOnBlock }).catch(() => {}));
+    });
+  });
+}
+
+function broadcastFomoConfig(config) {
+  const urls = ['https://trader.tradovate.com/*', 'https://app.tradesea.ai/*', 'https://topstepx.com/*', 'https://*.topstepx.com/*', 'https://www.tradingview.com/*'];
+  urls.forEach(pattern => {
+    chrome.tabs.query({ url: pattern }, (tabs) => {
+      tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, { type: 'FOMO_CONFIG', ...config }).catch(() => {}));
     });
   });
 }

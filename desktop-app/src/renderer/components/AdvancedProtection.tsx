@@ -20,6 +20,13 @@ interface AdvancedConfig {
   commitmentText: string;
   // Time of Day Tracker (always on, just shows data)
   timeTrackerEnabled: boolean;
+  // FOMO / Late Entry Protection
+  fomoEnabled: boolean;
+  fomoMode: 'observe' | 'warn' | 'confirm' | 'reduce' | 'block';
+  fomoMaxEntriesPerWindow: number; // max entries allowed in window
+  fomoWindowMinutes: number; // time window size in minutes
+  fomoMinSecondsBetween: number; // minimum seconds between entries
+  fomoBlockFirstMinutes: number; // block entries for first N minutes of session (0 = disabled)
 }
 
 const DEFAULT_CONFIG: AdvancedConfig = {
@@ -34,6 +41,12 @@ const DEFAULT_CONFIG: AdvancedConfig = {
   commitmentEnabled: false,
   commitmentText: '',
   timeTrackerEnabled: true,
+  fomoEnabled: false,
+  fomoMode: 'warn',
+  fomoMaxEntriesPerWindow: 3,
+  fomoWindowMinutes: 5,
+  fomoMinSecondsBetween: 30,
+  fomoBlockFirstMinutes: 0,
 };
 
 export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }) => {
@@ -235,6 +248,89 @@ export const AdvancedProtection: React.FC<{ isLocked: boolean }> = ({ isLocked }
             </div>
             <p className="text-xs text-white/25">Tracks which hours you break rules most. After enough data, shows patterns like "You break rules 73% more after 2pm."</p>
             <p className="text-[0.55rem] text-white/10 mt-3">Data collected automatically. Insights appear after 2 weeks of use.</p>
+          </div>
+        </div>
+
+        {/* 6. FOMO / Late Entry Protection */}
+        <div className="relative rounded-xl p-6 overflow-hidden card-premium animate-reveal stagger-6">
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{background: `linear-gradient(90deg, transparent, #fb923c30, transparent)`}} />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Zap size={14} className="text-orange-400/60" />
+                <p className="text-[0.6rem] font-bold tracking-[2.5px] uppercase text-orange-400/60">FOMO / Late Entry</p>
+              </div>
+              <div
+                className={`toggle-premium ${config.fomoEnabled ? 'active' : ''}`}
+                onClick={() => !isLocked && update('fomoEnabled', !config.fomoEnabled)}
+                style={{ opacity: isLocked ? 0.3 : 1, cursor: isLocked ? 'not-allowed' : 'pointer' }}
+              />
+            </div>
+            <p className="text-xs text-white/25 mb-4">Detects rapid-fire entries and chasing. You define when you are entering too fast.</p>
+            {config.fomoEnabled && (
+              <div className="pt-3 border-t border-white/[0.04] space-y-4">
+                <div>
+                  <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">Protection mode</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(['observe', 'warn', 'reduce', 'block'] as const).map(mode => (
+                      <button key={mode} onClick={() => !isLocked && update('fomoMode', mode)}
+                        className={`px-3 py-2 rounded-lg text-[0.55rem] font-bold uppercase tracking-[1px] transition-all press-scale ${config.fomoMode === mode ? 'btn-premium' : 'bg-white/[0.03] border border-white/[0.08] text-white/30'}`}
+                      >{mode}</button>
+                    ))}
+                  </div>
+                  <p className="text-[0.5rem] text-white/15 mt-1.5">
+                    {config.fomoMode === 'observe' && 'Log only — no interference'}
+                    {config.fomoMode === 'warn' && 'Small toast notification — order still goes through'}
+                    {config.fomoMode === 'reduce' && 'Halves your max position size during FOMO'}
+                    {config.fomoMode === 'block' && 'Blocks new entries when FOMO detected'}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">Max entries per window</label>
+                    <div className="flex gap-1.5">
+                      {[2, 3, 4, 5].map(n => (
+                        <button key={n} onClick={() => !isLocked && update('fomoMaxEntriesPerWindow', n)}
+                          className={`w-9 h-9 rounded-lg text-xs font-bold transition-all press-scale ${config.fomoMaxEntriesPerWindow === n ? 'btn-premium' : 'bg-white/[0.03] border border-white/[0.08] text-white/30'}`}
+                        >{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">Window size</label>
+                    <div className="flex gap-1.5">
+                      {[3, 5, 10, 15].map(m => (
+                        <button key={m} onClick={() => !isLocked && update('fomoWindowMinutes', m)}
+                          className={`px-2.5 h-9 rounded-lg text-[0.55rem] font-bold transition-all press-scale ${config.fomoWindowMinutes === m ? 'btn-premium' : 'bg-white/[0.03] border border-white/[0.08] text-white/30'}`}
+                        >{m}m</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">Min seconds between entries</label>
+                    <div className="flex gap-1.5">
+                      {[15, 30, 60, 120].map(s => (
+                        <button key={s} onClick={() => !isLocked && update('fomoMinSecondsBetween', s)}
+                          className={`px-2.5 h-9 rounded-lg text-[0.55rem] font-bold transition-all press-scale ${config.fomoMinSecondsBetween === s ? 'btn-premium' : 'bg-white/[0.03] border border-white/[0.08] text-white/30'}`}
+                        >{s < 60 ? s + 's' : (s/60) + 'm'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[0.6rem] font-semibold tracking-[1px] uppercase text-white/25 mb-2">No entry first N min</label>
+                    <div className="flex gap-1.5">
+                      {[0, 5, 10, 15].map(m => (
+                        <button key={m} onClick={() => !isLocked && update('fomoBlockFirstMinutes', m)}
+                          className={`px-2.5 h-9 rounded-lg text-[0.55rem] font-bold transition-all press-scale ${config.fomoBlockFirstMinutes === m ? 'btn-premium' : 'bg-white/[0.03] border border-white/[0.08] text-white/30'}`}
+                        >{m === 0 ? 'Off' : m + 'm'}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

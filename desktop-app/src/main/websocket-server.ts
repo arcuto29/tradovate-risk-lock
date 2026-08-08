@@ -40,6 +40,25 @@ export class WebSocketServer {
     const appSettings = this.db.getSettings();
     ws.send(JSON.stringify({ type: 'sound_config', soundOnBlock: appSettings?.sound_on_block === 1 }));
 
+    // Send FOMO config on connection
+    try {
+      const advConfigStr = this.db.getAdvancedConfig();
+      if (advConfigStr) {
+        const advConfig = JSON.parse(advConfigStr);
+        if (advConfig.fomoEnabled) {
+          ws.send(JSON.stringify({
+            type: 'fomo_config',
+            fomoEnabled: advConfig.fomoEnabled || false,
+            fomoMode: advConfig.fomoMode || 'warn',
+            fomoMaxEntriesPerWindow: advConfig.fomoMaxEntriesPerWindow || 3,
+            fomoWindowMinutes: advConfig.fomoWindowMinutes || 5,
+            fomoMinSecondsBetween: advConfig.fomoMinSecondsBetween || 30,
+            fomoBlockFirstMinutes: advConfig.fomoBlockFirstMinutes || 0,
+          }));
+        }
+      }
+    } catch {}
+
     // Send position limits on connection
     const settings = this.db.getSettings();
     let limitsData: any = { limits: [], defaultMax: 2, blockedSymbols: [], lossLimitAmount: 0 };
@@ -143,6 +162,19 @@ export class WebSocketServer {
 
   broadcastNewsConfig(config: any): void {
     const msg = JSON.stringify({ type: 'news_config', ...config });
+    this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  }
+
+  broadcastFomoConfig(config: any): void {
+    const msg = JSON.stringify({
+      type: 'fomo_config',
+      fomoEnabled: config.fomoEnabled || false,
+      fomoMode: config.fomoMode || 'warn',
+      fomoMaxEntriesPerWindow: config.fomoMaxEntriesPerWindow || 3,
+      fomoWindowMinutes: config.fomoWindowMinutes || 5,
+      fomoMinSecondsBetween: config.fomoMinSecondsBetween || 30,
+      fomoBlockFirstMinutes: config.fomoBlockFirstMinutes || 0,
+    });
     this.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
   }
 
