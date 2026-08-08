@@ -182,38 +182,35 @@
         consecutiveLosses = 0;
         consecutiveWins++;
         
-        // WIN STREAK PROTECTION
+        // WIN STREAK PROTECTION — fire ONE action only (most important)
         if (winStreakEnabled && consecutiveWins >= winStreakThreshold && !winStreakTriggered) {
           winStreakTriggered = true;
           console.log('[Sentinel] Win streak triggered: ' + consecutiveWins + ' consecutive wins (threshold: ' + winStreakThreshold + ')');
           
-          // Action: Reminder
-          if (winStreakReminder) {
-            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: 'You\'re on a ' + consecutiveWins + '-win streak. Protect your profits — don\'t give them back.' }, '*');
-          }
-          
-          // Action: Reduce size
-          if (winStreakReduceSize) {
-            currentMaxSize = Math.max(1, Math.ceil(originalMaxSize / 2));
-            console.log('[Sentinel] Win streak: Size reduced to ' + currentMaxSize);
-            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'SIZE REDUCED (WIN STREAK)', message: 'Size reduced to ' + currentMaxSize + ' contract(s) to protect your streak.' }, '*');
-          }
-          
-          // Action: Force cooldown
-          if (winStreakCooldown) {
-            cooldownActive = true;
-            cooldownUntil = Date.now() + (winStreakCooldownSeconds * 1000);
-            console.log('[Sentinel] Win streak: Cooldown activated for ' + winStreakCooldownSeconds + 's');
-          }
-          
-          // Action: Suggest stopping
-          if (winStreakSuggestStop) {
-            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'TAKE THE WIN', message: 'You\'re up ' + consecutiveWins + ' in a row. Consider ending on a high note.' }, '*');
-          }
-          
-          // Action: Auto-lock (most aggressive)
+          // Action: Auto-lock takes priority (most aggressive — blocks everything)
           if (winStreakAutoLock) {
             window.postMessage({ type: 'TRL_COACH_BLOCK', reason: 'WIN STREAK LOCK', message: 'Session locked after ' + consecutiveWins + ' consecutive wins. Protecting your profits.' }, '*');
+          }
+          // Action: Reduce size (silent enforcement, no popup)
+          else if (winStreakReduceSize) {
+            currentMaxSize = Math.max(1, Math.ceil(originalMaxSize / 2));
+            console.log('[Sentinel] Win streak: Size reduced to ' + currentMaxSize);
+            // Single non-blocking notification
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: 'Size reduced to ' + currentMaxSize + ' after ' + consecutiveWins + ' wins. Protecting profits.' }, '*');
+          }
+          // Action: Cooldown (silent enforcement)
+          else if (winStreakCooldown) {
+            cooldownActive = true;
+            cooldownUntil = Date.now() + (winStreakCooldownSeconds * 1000);
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: consecutiveWins + '-win streak. ' + winStreakCooldownSeconds + 's pause before next trade.' }, '*');
+          }
+          // Action: Suggest stopping (passive notification only)
+          else if (winStreakSuggestStop) {
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: consecutiveWins + ' wins in a row. Consider ending on a high note.' }, '*');
+          }
+          // Action: Reminder only (lightest touch)
+          else if (winStreakReminder) {
+            window.postMessage({ type: 'TRL_COACH_WARN', reason: 'WIN STREAK', message: 'You\'re on a ' + consecutiveWins + '-win streak. Protect your profits.' }, '*');
           }
         }
       }
