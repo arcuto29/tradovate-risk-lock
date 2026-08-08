@@ -131,6 +131,51 @@ export class DatabaseManager {
       );
     `);
 
+    // ─── Economic Calendar Tables ───────────────────────────────────────────
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS economic_events (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        starts_at_utc TEXT NOT NULL,
+        impact TEXT NOT NULL DEFAULT 'high',
+        source TEXT NOT NULL,
+        affected_markets TEXT DEFAULT '[]',
+        block_minutes_before INTEGER DEFAULT 30,
+        block_minutes_after INTEGER DEFAULT 15,
+        last_verified_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS economic_source_status (
+        id TEXT PRIMARY KEY,
+        source_name TEXT NOT NULL,
+        last_sync_at TEXT,
+        last_success_at TEXT,
+        last_error TEXT,
+        events_count INTEGER DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS economic_sync_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sync_type TEXT NOT NULL,
+        started_at TEXT NOT NULL DEFAULT (datetime('now')),
+        completed_at TEXT,
+        events_added INTEGER DEFAULT 0,
+        events_updated INTEGER DEFAULT 0,
+        errors TEXT,
+        status TEXT NOT NULL DEFAULT 'running'
+      );
+    `);
+
     // ─── Migration: Existing users → populate trading_plan from position_limits ─
     this.migrateExistingPlanData();
 
@@ -445,6 +490,135 @@ export class DatabaseManager {
       if (obj.active_plan_snapshot) { try { obj.active_plan_snapshot = JSON.parse(obj.active_plan_snapshot); } catch {} }
       return obj;
     });
+  }
+
+  // ─── Economic Calendar CRUD ────────────────────────────────────────────
+
+  upsertEconomicEvent(event: {
+    id: string; name: string; eventType: string; startsAtUtc: string;
+    impact: string; source: string; affectedMarkets: string[];
+    blockMinutesBefore?: number; blockMinutesAfter?: number;
+  }): void {
+    this.db.run(
+      `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, affected_markets, block_minutes_before, block_minutes_after, last_verified_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      [event.id, event.name, event.eventType, event.startsAtUtc, event.impact, event.source,
+       JSON.stringify(event.affectedMarkets), event.blockMinutesBefore || 30, event.blockMinutesAfter || 15]
+    );
+    this.save();
+  }
+
+  upsertManyEconomicEvents(events: Array<{
+    id: string; name: string; eventType: string; startsAtUtc: string;
+    impact: string; source: string; affectedMarkets: string[];
+    blockMinutesBefore?: number; blockMinutesAfter?: number;
+  }>): void {
+    events.forEach(event => {
+      this.db.run(
+        `INSERT OR REPLACE INTO economic_events (id, name, event_type, starts_at_utc, impact, source, affected_markets, block_minutes_before, block_minutes_after, last_verified_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+        [event.id, event.name, event.eventType, event.startsAtUtc, event.impact, event.source,
+         JSON.stringify(event.affectedMarkets), event.blockMinutesBefore || 30, event.blockMinutesAfter || 15]
+      );
+    });
+    this.save();
+  }
+
+  getEconomicEvents(fromDate?: string, toDate?: string): any[] {
+    let sql = 'SELECT * FROM economic_events';
+    const params: any[] = [];
+    if (fromDate && toDate) {
+      sql += ' WHERE starts_at_utc >= ? AND starts_at_utc <= ?';
+      params.push(fromDate, toDate);
+    } else if (fromDate) {
+      sql += ' WHERE starts_at_utc >= ?';
+      params.push(fromDate);
+    }
+    sql += ' ORDER BY starts_at_utc ASC';
+    const results = this.db.exec(sql, params);
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => {
+      const cols = results[0].columns;
+      const obj: any = {};
+      cols.forEach((c: string, i: number) => { obj[c] = row[i]; });
+      if (obj.affected_markets) { try { obj.affected_markets = JSON.parse(obj.affected_markets); } catch {} }
+      return obj;
+    });
+  }
+
+  getUpcomingEconomicEvents(limit: number = 20): any[] {
+    const now = new Date().toISOString();
+    const results = this.db.exec(
+      'SELECT * FROM economic_events WHERE starts_at_utc >= ? ORDER BY starts_at_utc ASC LIMIT ?',
+      [now, limit]
+    );
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => {
+      const cols = results[0].columns;
+      const obj: any = {};
+      cols.forEach((c: string, i: number) => { obj[c] = row[i]; });
+      if (obj.affected_markets) { try { obj.affected_markets = JSON.parse(obj.affected_markets); } catch {} }
+      return obj;
+    });
+  }
+
+  getNextNfpEvent(): any | null {
+    const now = new Date().toISOString();
+    const results = this.db.exec(
+      "SELECT * FROM economic_events WHERE event_type = 'NFP' AND starts_at_utc >= ? ORDER BY starts_at_utc ASC LIMIT 1",
+      [now]
+    );
+    if (!results.length || !results[0].values.length) return null;
+    const cols = results[0].columns;
+    const vals = results[0].values[0];
+    const obj: any = {};
+    cols.forEach((c: string, i: number) => { obj[c] = vals[i]; });
+    if (obj.affected_markets) { try { obj.affected_markets = JSON.parse(obj.affected_markets); } catch {} }
+    return obj;
+  }
+
+  updateSourceStatus(sourceId: string, status: { lastSyncAt?: string; lastSuccessAt?: string; lastError?: string; eventsCount?: number; status: string }): void {
+    this.db.run(
+      `INSERT OR REPLACE INTO economic_source_status (id, source_name, last_sync_at, last_success_at, last_error, events_count, status, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [sourceId, sourceId, status.lastSyncAt || null, status.lastSuccessAt || null, status.lastError || null, status.eventsCount || 0, status.status]
+    );
+    this.save();
+  }
+
+  getSourceStatuses(): any[] {
+    const results = this.db.exec('SELECT * FROM economic_source_status ORDER BY source_name ASC');
+    if (!results.length) return [];
+    return results[0].values.map((row: any) => {
+      const cols = results[0].columns;
+      const obj: any = {};
+      cols.forEach((c: string, i: number) => { obj[c] = row[i]; });
+      return obj;
+    });
+  }
+
+  addSyncHistoryEntry(entry: { syncType: string; status: string }): number {
+    this.db.run(
+      "INSERT INTO economic_sync_history (sync_type, status) VALUES (?, ?)",
+      [entry.syncType, entry.status]
+    );
+    this.save();
+    const result = this.db.exec('SELECT last_insert_rowid()');
+    return result[0]?.values[0]?.[0] as number || 0;
+  }
+
+  completeSyncHistoryEntry(id: number, result: { eventsAdded: number; eventsUpdated: number; errors?: string; status: string }): void {
+    this.db.run(
+      "UPDATE economic_sync_history SET completed_at=datetime('now'), events_added=?, events_updated=?, errors=?, status=? WHERE id=?",
+      [result.eventsAdded, result.eventsUpdated, result.errors || null, result.status, id]
+    );
+    this.save();
+  }
+
+  getLastSyncTime(): string | null {
+    const results = this.db.exec("SELECT completed_at FROM economic_sync_history WHERE status='success' ORDER BY completed_at DESC LIMIT 1");
+    if (!results.length || !results[0].values.length) return null;
+    return results[0].values[0][0] as string | null;
   }
 
   // Session hours

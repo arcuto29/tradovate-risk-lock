@@ -80,4 +80,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDailySessionPlan: (tradingDate: string) => ipcRenderer.invoke('get-daily-session-plan', tradingDate),
   saveDailySessionPlan: (plan: any) => ipcRenderer.invoke('save-daily-session-plan', plan),
   getRecentSessionPlans: (limit?: number) => ipcRenderer.invoke('get-recent-session-plans', limit),
+  // Economic Calendar
+  economicSync: () => ipcRenderer.invoke('economic-sync'),
+  economicGetUpcoming: (limit?: number) => ipcRenderer.invoke('economic-get-upcoming', limit),
+  economicGetNextNfp: () => ipcRenderer.invoke('economic-get-next-nfp'),
+  economicGetSourceStatuses: () => ipcRenderer.invoke('economic-get-source-statuses'),
+  economicGetLastSync: () => ipcRenderer.invoke('economic-get-last-sync'),
+  economicGetBlocking: () => ipcRenderer.invoke('economic-get-blocking'),
 });

@@ -7,6 +7,7 @@ import { TamperGuard } from './tamper-guard';
 import { ProcessBlocker } from './process-blocker';
 import { PlatformBlocker } from './platform-blocker';
 import { setupAutoUpdater } from './auto-updater';
+import { EconomicCalendarSyncService } from './economic-calendar';
 import { isActivated, activate, generateLicenseKey, getLicenseInfo } from './license';
 
 // Set app user model ID so Windows can pin it to taskbar
@@ -21,6 +22,7 @@ let wsServer: WebSocketServer;
 let tamperGuard: TamperGuard;
 let processBlocker: ProcessBlocker;
 let platformBlocker: PlatformBlocker;
+let economicCalendar: EconomicCalendarSyncService;
 let bypassWarningActive = false;
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -692,6 +694,32 @@ function setupIPC(): void {
   });
   ipcMain.handle('get-recent-session-plans', (_e, limit) => db.getRecentSessionPlans(limit || 30));
 
+  // ─── Economic Calendar ─────────────────────────────────────────────────
+  ipcMain.handle('economic-sync', async () => {
+    if (!economicCalendar) return { success: false, error: 'Sync service not initialized' };
+    return economicCalendar.forceSyncAll();
+  });
+  ipcMain.handle('economic-get-upcoming', (_e, limit) => {
+    if (!economicCalendar) return [];
+    return economicCalendar.getUpcomingEvents(limit || 20);
+  });
+  ipcMain.handle('economic-get-next-nfp', () => {
+    if (!economicCalendar) return null;
+    return economicCalendar.getNextNfp();
+  });
+  ipcMain.handle('economic-get-source-statuses', () => {
+    if (!economicCalendar) return [];
+    return economicCalendar.getSourceStatuses();
+  });
+  ipcMain.handle('economic-get-last-sync', () => {
+    if (!economicCalendar) return null;
+    return economicCalendar.getLastSyncTime();
+  });
+  ipcMain.handle('economic-get-blocking', () => {
+    if (!economicCalendar) return [];
+    return economicCalendar.getCurrentlyBlockingEvents();
+  });
+
   // Trade Analytics
   ipcMain.handle('get-trades', (_e, limit?) => {
     return db.getTrades(limit || 500);
@@ -836,6 +864,10 @@ app.whenReady().then(async () => {
   }
 
   db.logActivity('app_started', 'Application started');
+
+  // ─── Economic Calendar Sync Service ────────────────────────────────────
+  economicCalendar = new EconomicCalendarSyncService(db);
+  economicCalendar.start();
 
   // ─── News Event Notification Timer ─────────────────────────────────────
   // Check every 60 seconds for upcoming high-impact events and send desktop notification
