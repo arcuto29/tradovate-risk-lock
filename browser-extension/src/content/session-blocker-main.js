@@ -679,7 +679,8 @@
 
   // ─── Override fetch ────────────────────────────────────────────────────────
   var origFetch = window.fetch;
-  window.fetch = function() {
+  var sentinelFetchMarker = '__sentinel_fetch_' + Date.now();
+  var interceptedFetch = function() {
     var url = typeof arguments[0] === 'string' ? arguments[0] : (arguments[0] && arguments[0].url ? arguments[0].url : '');
     var opts = typeof arguments[0] === 'string' ? arguments[1] : arguments[0];
     var method = (opts && opts.method ? opts.method : 'GET').toUpperCase();
@@ -732,11 +733,8 @@
 
     return origFetch.apply(this, arguments);
   };
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // UNIFIED TRADING REQUEST EVALUATOR
-  // Both fetch and XHR call this single function. No duplicated logic.
-  // ═══════════════════════════════════════════════════════════════════════════
+  interceptedFetch._sentinelMarker = sentinelFetchMarker;
+  window.fetch = interceptedFetch;
 
   /**
    * evaluateTradingRequest - Single decision point for ALL trading requests
@@ -901,8 +899,9 @@
   // ─── Override XHR (uses unified evaluateTradingRequest) ──────────────────
   var origOpen = XMLHttpRequest.prototype.open;
   var origSend = XMLHttpRequest.prototype.send;
+  var sentinelXhrMarker = '__sentinel_xhr_' + Date.now();
   XMLHttpRequest.prototype.open = function(m, url) { this._tgUrl = url; this._tgMethod = m; return origOpen.apply(this, arguments); };
-  XMLHttpRequest.prototype.send = function(body) {
+  var interceptedSend = function(body) {
     var method = (this._tgMethod || 'GET').toUpperCase();
     if (isPostOrPut(method) && isOrderUrl(this._tgUrl)) {
       var parsed = null;
@@ -930,6 +929,86 @@
     }
     return origSend.apply(this, arguments);
   };
+  interceptedSend._sentinelMarker = sentinelXhrMarker;
+  XMLHttpRequest.prototype.send = interceptedSend;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OVERRIDE INTEGRITY CHECKER — Self-healing tamper detection
+  // Verifies fetch/XHR overrides are intact every 3 seconds.
+  // If removed: re-applies them and reports the tamper attempt.
+  // ═══════════════════════════════════════════════════════════════════════════
+  var tamperDetected = 0;
+  var TAMPER_CHECK_INTERVAL = 3000;
+
+  function checkOverrideIntegrity() {
+    if (!lockActive) return; // Only enforce when locked
+
+    var tampered = false;
+
+    // Check fetch override
+    if (!window.fetch || !window.fetch._sentinelMarker || window.fetch._sentinelMarker !== sentinelFetchMarker) {
+      tampered = true;
+      window.fetch = interceptedFetch;
+      console.warn('[Sentinel] TAMPER DETECTED: window.fetch was reassigned. Override restored.');
+    }
+
+    // Check XHR send override
+    if (!XMLHttpRequest.prototype.send || !XMLHttpRequest.prototype.send._sentinelMarker || XMLHttpRequest.prototype.send._sentinelMarker !== sentinelXhrMarker) {
+      tampered = true;
+      XMLHttpRequest.prototype.send = interceptedSend;
+      console.warn('[Sentinel] TAMPER DETECTED: XMLHttpRequest.prototype.send was reassigned. Override restored.');
+    }
+
+    // Check XHR open override (simpler check — just verify it's not the original)
+    if (XMLHttpRequest.prototype.open === origOpen) {
+      tampered = true;
+      XMLHttpRequest.prototype.open = function(m, url) { this._tgUrl = url; this._tgMethod = m; return origOpen.apply(this, arguments); };
+      console.warn('[Sentinel] TAMPER DETECTED: XMLHttpRequest.prototype.open was restored. Override re-applied.');
+    }
+
+    if (tampered) {
+      tamperDetected++;
+      window.postMessage({ type: 'TRL_ORDER_BLOCKED', reason: 'TAMPER DETECTED: Order interceptors were removed. Protection restored. Attempt #' + tamperDetected, priority: 'CRITICAL' }, '*');
+      window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: { type: 'tamper_detected', count: tamperDetected, timestamp: Date.now() } }, '*');
+    }
+  }
+
+  setInterval(checkOverrideIntegrity, TAMPER_CHECK_INTERVAL);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DEVTOOLS DETECTION — Detect if user opens DevTools on trading platform
+  // Uses timing-based detection (debugger statement pauses execution when DevTools open).
+  // Does NOT block trading — just logs the attempt and shows a warning.
+  // ═══════════════════════════════════════════════════════════════════════════
+  var devToolsOpen = false;
+  var devToolsWarned = false;
+  var DEVTOOLS_CHECK_INTERVAL = 4000;
+
+  function checkDevTools() {
+    if (!lockActive) { devToolsOpen = false; devToolsWarned = false; return; }
+
+    var threshold = 100; // ms — debugger pauses execution for much longer than this
+    var before = performance.now();
+    (function() { debugger; })(); // eslint-disable-line no-debugger
+    var after = performance.now();
+
+    var wasOpen = devToolsOpen;
+    devToolsOpen = (after - before) > threshold;
+
+    if (devToolsOpen && !wasOpen && !devToolsWarned) {
+      devToolsWarned = true;
+      console.warn('[Sentinel] DevTools detected while locked. This is logged as a potential bypass attempt.');
+      window.postMessage({ type: 'TRL_DIAGNOSTIC_LOG', entry: { type: 'devtools_opened', timestamp: Date.now() } }, '*');
+      // Report to desktop app (logged, not blocked)
+      window.postMessage({ type: 'TRL_COACH_WARN', reason: 'DEVTOOLS DETECTED', message: 'DevTools opened while locked. This does not disable protection — interceptors will self-heal if tampered with.' }, '*');
+    }
+
+    if (!devToolsOpen && wasOpen) {
+      devToolsWarned = false; // Reset so we can warn again if reopened
+    }
+  }
+
+  setInterval(checkDevTools, DEVTOOLS_CHECK_INTERVAL);
 
   // ─── P&L Tracking: Monitor incoming WebSocket messages for trade results ───
   // TopstepX sends trade results back through WebSocket.
