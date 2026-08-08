@@ -2597,11 +2597,6 @@ select option {
 
 /* ═══ REDUCED MOTION: Respect user preference ═══ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
   .nebula-bg::before, .nebula-bg::after { animation: none !important; }
   .stars { animation: none !important; }
   .stars::before { animation: none !important; }
@@ -2609,6 +2604,8 @@ select option {
   .animate-float { animation: none !important; }
   .animate-pulse-glow { animation: none !important; }
   .shield-icon { animation: none !important; }
+  .card-glow::before { animation: none !important; }
+  .text-gradient { animation: none !important; background-size: 100% 100% !important; }
 }
 
 
@@ -2623,8 +2620,4 @@ select option {
 [data-theme="neon"] .card-glow { --glow-1: rgba(244,114,182,0.3); --glow-2: rgba(168,85,247,0.25); background: rgba(15,5,20,0.8); }
 [data-theme="frost"] .card-glow { --glow-1: rgba(148,163,184,0.25); --glow-2: rgba(96,165,250,0.2); background: rgba(15,20,30,0.8); }
 
-/* Reduced motion: static borders */
-@media (prefers-reduced-motion: reduce) {
-  .card-glow::before { animation: none !important; }
-  .text-gradient { animation: none !important; background-size: 100% 100% !important; }
-}
+/* Reduced motion handled above */
